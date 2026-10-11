@@ -17,14 +17,14 @@ case remains useful as the simpler baseline for comparing these relationships.
 > and [validation evidence](../../../research/postgres-validation.md). The
 > [primary-source ledger](../../../research/postgres-sources.md) explains the
 > PostgreSQL, JDBC, and Rust client rules behind the design. A check is evidence
-> only after the integrator records that it ran against this implementation.
+> only when a dated validation record identifies execution against this implementation.
 
 ## Carry the method across persistence
 
 ROO (Relationship & Ownership Oriented design) is a language-independent method.
 It starts here with the same scenario and invariants as the in-memory case. The new question is which
 relationships must survive a process and coordinate competing writers. Retain
-the seven contract fields, then choose row keys, locks, transactions, and
+the eight contract fields, then choose row keys, locks, transactions, and
 recovery observations to realize them. Java and Rust still express local access
 and orchestration; PostgreSQL supplies the cross-session commit and locking
 mechanisms. The evidence records below delimit the checked failure schedules
@@ -542,22 +542,22 @@ hardware caches or a real storage controller honor flushes. The simulator's
 provider table shares this PostgreSQL server and WAL; its survival is not
 evidence about an external provider.
 
-## The seven-field Relationship Contract in a durable system
+## The eight-field Relationship Contract in a durable system
 
 The [ROO relationship chapter](../../../docs/02-relationship-design.md) asks
-seven questions. PostgreSQL makes their answers span memory, durable identities,
+eight questions. PostgreSQL makes their answers span memory, durable identities,
 database connections, locks, and independently committed participants.
 
-| Relationship | Owner / resource custodian | Stable identity | Mutation authority | Access regime | Validity horizon | Execution domain | Failure boundary |
-|---|---|---|---|---|---|---|---|
-| Order → line facts | App database retains lines under the order row | `(scope, line_no)` | Validated add operation; order row serializes allocation | Order-row lock, line insert, and total update in one app transaction | Lines remain while the synthetic scope is retained; frozen after prepare | Concurrent sessions and processes share PostgreSQL coordination | Rejected or aborted add leaves both line and total unchanged |
-| Command → order row | Application adapter owns each connection and transaction; database owns committed row | `scope` identifies one synthetic order | Domain decides; adapter performs validated writes | Fresh `SELECT ... FOR UPDATE`, then reload and revalidate | Lock exists only until commit/rollback; stable scope lasts through the fixture | Any Java/Rust worker using the dedicated cluster | Known abort may retry the whole short transaction; uncertain commit is inspected |
-| Use case → connection/transaction | Adapter opens and closes one connection for each short unit; no application cache owns committed state | Connection/session identity is temporary; domain scope and operation IDs carry durable identity | Adapter may issue only the writes for its current unit of work | Java disables auto-commit; Rust's `Transaction` exclusively borrows its `Client` | The transaction ends at commit/rollback; a closed connection cannot carry a lock forward | One connection per short operation; other sessions and processes remain independent | Known abort may retry the whole unit; lost commit reply requires a fresh connection and inspection |
-| Order → payment/refund intent | `roo_app.orders` retains active immutable request | Separate `PaymentId` or `RefundId`, scoped to `scope` and typed operation | App use case prepares once; retries reuse the exact request | Persist intent under order lock; release lock before provider call | Intent survives app process loss and remains through the terminal state | Multiple local processes; each owns a separate connection | Prepare failure precedes provider call; later failure leaves intent available to reconcile |
-| Application → provider simulator | `roo_provider.records` is an independent durable authority | `(scope, kind, operation_id)` plus full request fingerprint | Provider adapter inserts a terminal result; app supplies the persisted request | Separate connection; scope advisory transaction lock; PK and refund unique index | Retained until explicit synthetic harness cleanup | Independent provider transaction may overlap app workers | Provider commit survives app failure; matching key is stable; mismatch is `KeyConflict` |
-| Terminal order → outbox fact | `roo_app.outbox` retains terminal event facts | `payment:<PaymentId>` or `refund:<RefundId>` within scope | Finalizer writes event only after revalidating intent | Same app transaction as terminal order state; unique EventId | Retained for the fixture, including delivered events | App session commits both rows atomically | Local rollback removes both candidate writes; provider effect remains independent |
-| Relay → consumer inbox | `roo_consumer.inbox` owns the copied event fingerprint | `(scope, event_id)` | Relay requests delivery; consumer adapter commits one inbox row | Independent consumer connection and transaction; new-statement fingerprint check after conflict | Inbox fact survives app ack rollback and process restart | Multiple relay processes, serialized here by the order lock | Consumer commit can outlive app ack; safe retry deduplicates identical content |
-| Observer → snapshot | Database retains each authority's rows; runner assembles output | Scope plus the selected retained identities | Read-only snapshot adapter | One aggregate `SELECT` or read-only `REPEATABLE READ` transaction | One statement snapshot, or one explicit read transaction | A new connection may observe later commits than the action response | Multiple READ COMMITTED statements can tear; use a consistent read boundary |
+| Relationship | Owner / resource custodian | Stable identity | Invariant coordinator | Authorization | Access regime | Validity horizon | Execution domain | Failure boundary |
+|---|---|---|---|---|---|---|---|---|
+| Order → line facts | App database retains lines under the order row | `(scope, line_no)` | Validated add operation; order row serializes allocation | Not implemented; synthetic callers only | Order-row lock, line insert, and total update in one app transaction | Lines remain while the synthetic scope is retained; frozen after prepare | Concurrent sessions and processes share PostgreSQL coordination | Rejected or aborted add leaves both line and total unchanged |
+| Command → order row | Application adapter owns each connection and transaction; database owns committed row | `scope` identifies one synthetic order | Domain decides; adapter performs validated writes | Not implemented; synthetic callers only | Fresh `SELECT ... FOR UPDATE`, then reload and revalidate | Lock exists only until commit/rollback; stable scope lasts through the fixture | Any Java/Rust worker using the dedicated cluster | Known abort may retry the whole short transaction; uncertain commit is inspected |
+| Use case → connection/transaction | Adapter opens and closes one connection for each short unit; no application cache owns committed state | Connection/session identity is temporary; domain scope and operation IDs carry durable identity | Adapter may issue only the writes for its current unit of work | Not implemented; synthetic callers only | Java disables auto-commit; Rust's `Transaction` exclusively borrows its `Client` | The transaction ends at commit/rollback; a closed connection cannot carry a lock forward | One connection per short operation; other sessions and processes remain independent | Known abort may retry the whole unit; lost commit reply requires a fresh connection and inspection |
+| Order → payment/refund intent | `roo_app.orders` retains active immutable request | Separate `PaymentId` or `RefundId`, scoped to `scope` and typed operation | App use case prepares once; retries reuse the exact request | Not implemented; synthetic callers only | Persist intent under order lock; release lock before provider call | Intent survives app process loss and remains through the terminal state | Multiple local processes; each owns a separate connection | Prepare failure precedes provider call; later failure leaves intent available to reconcile |
+| Application → provider simulator | `roo_provider.records` is an independent durable authority | `(scope, kind, operation_id)` plus full request fingerprint | Provider adapter inserts a terminal result; app supplies the persisted request | Not implemented; synthetic callers only | Separate connection; scope advisory transaction lock; PK and refund unique index | Retained until explicit synthetic harness cleanup | Independent provider transaction may overlap app workers | Provider commit survives app failure; matching key is stable; mismatch is `KeyConflict` |
+| Terminal order → outbox fact | `roo_app.outbox` retains terminal event facts | `payment:<PaymentId>` or `refund:<RefundId>` within scope | Finalizer writes event only after revalidating intent | Not implemented; synthetic callers only | Same app transaction as terminal order state; unique EventId | Retained for the fixture, including delivered events | App session commits both rows atomically | Local rollback removes both candidate writes; provider effect remains independent |
+| Relay → consumer inbox | `roo_consumer.inbox` owns the copied event fingerprint | `(scope, event_id)` | Relay requests delivery; consumer adapter commits one inbox row | Not implemented; synthetic callers only | Independent consumer connection and transaction; new-statement fingerprint check after conflict | Inbox fact survives app ack rollback and process restart | Multiple relay processes, serialized here by the order lock | Consumer commit can outlive app ack; safe retry deduplicates identical content |
+| Observer → snapshot | Database retains each authority's rows; runner assembles output | Scope plus the selected retained identities | Read-only snapshot adapter | Not implemented; synthetic callers only | One aggregate `SELECT` or read-only `REPEATABLE READ` transaction | One statement snapshot, or one explicit read transaction | A new connection may observe later commits than the action response | Multiple READ COMMITTED statements can tear; use a consistent read boundary |
 
 The same row-lock relationship has different language-level representations.
 Java explicitly opens and closes JDBC connections and transactions. Rust's
@@ -689,6 +689,6 @@ Read the [frozen PostgreSQL protocol](SPEC.md), [database schema](schema.sql),
 [independent oracle](../expected.tsv), [execution record](../../../research/postgres-run.md),
 [validation ledger](../../../research/postgres-validation.md), and
 [primary-source ledger](../../../research/postgres-sources.md). ROO background:
-[seven-field Relationship Contract](../../../docs/02-relationship-design.md),
+[eight-field Relationship Contract](../../../docs/02-relationship-design.md),
 [architecture boundaries](../../../docs/05-architecture.md), and
 [cross-language discussion](../../../docs/06-cross-language.md).

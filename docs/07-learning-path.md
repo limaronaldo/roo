@@ -2,7 +2,7 @@
 
 This is an initial syllabus for learning ROO (Relationship & Ownership Oriented design), a proposed, language-independent method for describing and reviewing important software relationships. It pairs method practice with a Rust laboratory; it is not a claim to cover all object-oriented, Rust, pattern, or architecture literature.
 
-The portable method flow is scenario and invariant → seven-field Relationship Contract → language, runtime, storage, and protocol realization → evidence and remaining assumptions. The fields are Owner / resource custodian, Stable identity, Mutation authority, Access regime, Validity horizon, Execution domain, and Failure boundary.
+Use the [canonical contract and six-step procedure](02-relationship-design.md) throughout the stages below.
 
 The Rust implementation and evidence in Stages 3 and 6 provide this syllabus's required Rust laboratory qualification. ROO can be adopted independently in another language by carrying the same scenarios, invariants, and relationship contracts into that language and collecting its own evidence; that adoption does not qualify the Rust laboratory.
 
@@ -22,9 +22,9 @@ Use the same small domain throughout: a library lends physical book copies to me
 
 **Read:** [ROO foundations](01-foundations.md) and [relationship design](02-relationship-design.md) in this project. Then use the Relationship Contract in [cross-language portability](06-cross-language.md).
 
-**Exercise:** for `Library → Copy`, `Library → Loan`, and `Loan → Member`, fill all seven Relationship Contract fields. In the owner/resource-custodian field, distinguish memory or external-resource custody from domain responsibility when they differ. Decide which object graph links are useful only in memory and which relationships must survive loading from a store.
+**Exercise:** for `Library → Copy`, `Library → Loan`, and `Loan → Member`, fill all eight Relationship Contract fields. In the owner/resource-custodian field, distinguish memory or external-resource custody from domain responsibility when they differ. Decide which object graph links are useful only in memory and which relationships must survive loading from a store.
 
-**Deliver:** a contract table for five relationships that fills all seven fields, plus a short note for each boundary where a reference, ID, copied value, or command is the right interface. Mark every promise by its intended enforcement mechanism—compiler, runtime, storage/protocol, or convention/test—and record the available evidence.
+**Deliver:** a contract table for five relationships that fills all eight fields, plus a short note for each boundary where a reference, ID, copied value, or command is the right interface. Mark every promise by its intended enforcement mechanism—compiler, runtime, storage/protocol, or convention/test—and record the available evidence.
 
 **Review question:** are custody, domain responsibility, stable identity, mutation authority, and caller authorization each explicit rather than collapsed into one answer?
 

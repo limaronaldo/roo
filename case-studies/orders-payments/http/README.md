@@ -17,7 +17,7 @@ result, and what to do when a response disappears.
 > **Evidence boundary.** The HTTP contract specifies behavior but does not prove
 > execution or recovery. See the [run](../../../research/http-run.md),
 > [validation](../../../research/http-validation.md), [integration receipt](../../../research/http-integration-evidence.json), and
-> [independent review](../../../research/http-review.md) for results, and the
+> [separate AI-agent review](../../../research/http-review.md) for results, and the
 > [source ledger](../../../research/http-sources.md) for dependency facts.
 > [Regression](../../../research/http-regression.log) and
 > [PostgreSQL observations](../../../research/http-postgres-regression-evidence.json)
@@ -27,7 +27,7 @@ result, and what to do when a response disappears.
 
 ROO (Relationship & Ownership Oriented design) is a language-independent method.
 Here it asks how the same scenario and invariants hold when a caller can lose a
-response. Keep the seven relationship fields and decide which identity the next
+response. Keep the eight relationship fields and decide which identity the next
 request must reuse, who can perform a
 transition, and which committed facts survive that loss. Java and Rust realize
 the local request handling; the accepted PostgreSQL adapters realize persistence
@@ -505,24 +505,24 @@ reactor thread. A full admission gate returns `503 Busy`. No global application
 mutex hides the row-lock schedule. Different requests can therefore contend at
 PostgreSQL and the test harness can witness the actual database lock wait.
 
-## ROO's seven-field relationship contract at the HTTP boundary
+## ROO's eight-field relationship contract at the HTTP boundary
 
-The matrix applies the seven fields from
+The matrix applies the eight fields from
 [ROO relationship design](../../../docs/02-relationship-design.md): owner or
-resource custodian, stable identity, mutation authority, access regime, validity
-horizon, execution domain, and failure boundary. Memory custody, domain
-responsibility, and durable database identity are named separately where they
-differ.
+resource custodian, stable identity, invariant coordinator, authorization,
+access regime, validity horizon, execution domain, and failure boundary. Memory
+custody, domain responsibility, durable database identity, and caller permission
+are named separately where they differ.
 
-| Relationship | Owner / custodian | Stable identity | Mutation authority | Access regime | Validity horizon | Execution domain | Failure boundary |
-|---|---|---|---|---|---|---|---|
-| HTTP request → validated command | Handler owns body bytes and immutable parsed input | Scope plus typed PaymentId or RefundId where applicable | Protocol adapter validates and constructs one accepted `Action` | Owned input; no mutable domain alias | One request; body buffers die after response handling | One bounded HTTP worker or Tokio blocking task | Invalid syntax, duplicate fields, or bad identity reject before SQL |
-| Handler task → application invocation | Composition root owns long-lived stateless adapters; request owns its invocation | Scope and the action's explicit identity | Application coordinator alone orders domain operations | One call using immutable input; no shared cursor or order object | Until the operation and response snapshot finish | Concurrent server workers; no global operation mutex | Domain result is distinct from infrastructure failure and a lost socket |
-| Application → PostgreSQL transaction | Database adapter owns the connection; PostgreSQL owns committed rows | Scope key and operation IDs | Existing domain/application validates; adapter performs only the bounded persistence unit | Fresh connection, short transaction, order row lock | Through that transaction's commit or rollback | Across threads, Java/Rust processes, and concurrent sessions | Known abort may retry a short transaction; unknown commit requires inspection |
-| Order → lines and state | `roo_app.orders` is the serialization row; line rows retain accepted facts | Scope plus `(scope, line_no)` | Add and transition operations in the accepted application | Reload under `FOR UPDATE`; no cached mutable order | Row facts remain through the synthetic scenario | PostgreSQL serializes writers across processes | Rejected add leaves line and total unchanged; add after uncertain commit is inspected |
-| Order intent → provider record | Provider schema owns its independently committed record | Scope, operation kind, natural ID, and complete fingerprint | Application submits only the persisted intent; provider adapter compares every field | Separate provider connection and transaction, outside the app lock | Retained for scenario recovery and replay | Competing provider calls use the provider advisory lock and uniqueness rules | Same fingerprint returns retained result; changed fingerprint conflicts; timeout can be Unknown |
-| Outbox event → inbox record | App owns outbox/ack; consumer schema owns copied inbox fact | Scope and EventId, with copied event fingerprint | Relay requests delivery; inbox uniqueness/deduplication controls effect | Consumer commit is independent; app acknowledges afterward | Inbox can outlive a failed or rolled-back acknowledgement | Multiple relay workers; app row lock serializes this simulator's relay | Redelivery is safe for the same fingerprint; conflicting content is rejected |
-| Database snapshot → HTTP response | Database owns the observed rows; handler owns serialized response bytes | Scope and the snapshot's eleven named fields | `GET` observes; POST reports its result and then snapshots | One consistent read; response is a detached value | Fresh only as of that database observation | The next concurrent transaction may commit before the client reads bytes | Response loss says nothing about commit; caller follows operation-specific recovery |
+| Relationship | Owner / custodian | Stable identity | Invariant coordinator | Authorization | Access regime | Validity horizon | Execution domain | Failure boundary |
+|---|---|---|---|---|---|---|---|---|
+| HTTP request → validated command | Handler owns body bytes and immutable parsed input | Scope plus typed PaymentId or RefundId where applicable | Protocol adapter validates and constructs one accepted `Action` | Not implemented; synthetic callers only | Owned input; no mutable domain alias | One request; body buffers die after response handling | One bounded HTTP worker or Tokio blocking task | Invalid syntax, duplicate fields, or bad identity reject before SQL |
+| Handler task → application invocation | Composition root owns long-lived stateless adapters; request owns its invocation | Scope and the action's explicit identity | Application coordinator alone orders domain operations | Not implemented; synthetic callers only | One call using immutable input; no shared cursor or order object | Until the operation and response snapshot finish | Concurrent server workers; no global operation mutex | Domain result is distinct from infrastructure failure and a lost socket |
+| Application → PostgreSQL transaction | Database adapter owns the connection; PostgreSQL owns committed rows | Scope key and operation IDs | Existing domain/application validates; adapter performs only the bounded persistence unit | Not implemented; synthetic callers only | Fresh connection, short transaction, order row lock | Through that transaction's commit or rollback | Across threads, Java/Rust processes, and concurrent sessions | Known abort may retry a short transaction; unknown commit requires inspection |
+| Order → lines and state | `roo_app.orders` is the serialization row; line rows retain accepted facts | Scope plus `(scope, line_no)` | Add and transition operations in the accepted application | Not implemented; synthetic callers only | Reload under `FOR UPDATE`; no cached mutable order | Row facts remain through the synthetic scenario | PostgreSQL serializes writers across processes | Rejected add leaves line and total unchanged; add after uncertain commit is inspected |
+| Order intent → provider record | Provider schema owns its independently committed record | Scope, operation kind, natural ID, and complete fingerprint | Application submits only the persisted intent; provider adapter compares every field | Not implemented; synthetic callers only | Separate provider connection and transaction, outside the app lock | Retained for scenario recovery and replay | Competing provider calls use the provider advisory lock and uniqueness rules | Same fingerprint returns retained result; changed fingerprint conflicts; timeout can be Unknown |
+| Outbox event → inbox record | App owns outbox/ack; consumer schema owns copied inbox fact | Scope and EventId, with copied event fingerprint | Relay requests delivery; inbox uniqueness/deduplication controls effect | Not implemented; synthetic callers only | Consumer commit is independent; app acknowledges afterward | Inbox can outlive a failed or rolled-back acknowledgement | Multiple relay workers; app row lock serializes this simulator's relay | Redelivery is safe for the same fingerprint; conflicting content is rejected |
+| Database snapshot → HTTP response | Database owns the observed rows; handler owns serialized response bytes | Scope and the snapshot's eleven named fields | `GET` observes; POST reports its result and then snapshots | Not implemented; synthetic callers only | One consistent read; response is a detached value | Fresh only as of that database observation | The next concurrent transaction may commit before the client reads bytes | Response loss says nothing about commit; caller follows operation-specific recovery |
 
 This is the concrete ROO contract, not an abstract analogy. A Rust borrow can
 keep a `Transaction` tied to its `Client` inside one process. It cannot lock an
@@ -685,7 +685,7 @@ For exact commands, toolchain, and checks, see the dated [run](../../../research
 [validation](../../../research/http-validation.md), and [qualification log](../../../research/http-checks.log).
 The [integration receipt](../../../research/http-integration-evidence.json) records
 scenarios, statuses, counters, process IDs, and recovery schedules; the
-[independent review](../../../research/http-review.md) assesses the frozen scope.
+[separate AI-agent review](../../../research/http-review.md) assesses the frozen scope.
 The earlier PostgreSQL evidence remains in the [PostgreSQL tutorial](../postgres/README.md)
 and its own research records. A source route or compiled server alone does not
 prove transport parity or safe recovery after response loss; use the receipt to
@@ -709,6 +709,6 @@ check where the server was stopped, what the client observed, and what recovery 
 | [Historical regression runner](regression.sh) | Rechecks the original in-memory, PostgreSQL, and ROO cases with new receipts |
 | [Accepted PostgreSQL Java adapters](../postgres/java/src/roo/postgres/Database.java) | Structured loopback connections, short transaction policy, database gates |
 | [Accepted PostgreSQL Rust API](../postgres/rust/src/database.rs) | `Database::{init,step,snapshot}` and existing persistence protocol |
-| [ROO relationship contract](../../../docs/02-relationship-design.md) | Seven-field review frame used in the matrix above |
+| [ROO relationship contract](../../../docs/02-relationship-design.md) | Eight-field review frame used in the matrix above |
 | [Architecture boundaries](../../../docs/05-architecture.md) | Memory/resource, transaction, semantic, and deployment boundaries |
 | [Cross-language guide](../../../docs/06-cross-language.md) | Java and Rust access, identity, and concurrency distinctions |

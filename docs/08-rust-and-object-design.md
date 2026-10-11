@@ -1,29 +1,15 @@
 # Rust and object-oriented design: a relationship-first guide
 
-**Edition:** English companion guide for ROO v0.1  
-**Reviewed:** 2026-10-11  
-**Purpose:** Compare object-oriented design with idiomatic Rust, then use the same design questions in Java and other languages.  
-**Status:** Research and teaching material. ROO is a proposed design and review method, not a new language feature, formal proof system, or empirically validated advantage.
+Use this companion with the [canonical contract and procedure](02-relationship-design.md).
+The original [Portuguese guide](../research/sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md)
+is preserved; the coverage crosswalk below maps its 29 topics.
 
-## How to read this guide
-
-ROO (Relationship & Ownership Oriented design) is a proposed, language-independent method. This companion guide works through it with Rust and object-oriented design. Its portable flow starts with a scenario and invariant, records the seven-field Relationship Contract, maps each field to language, runtime, storage, and protocol choices, then names the evidence and remaining assumptions.
-
-The original Portuguese guide remains preserved at [RUST_VS_OO_GUIA_COMPLETO_2026.original.md](../research/sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md). Its 29 topics are mapped to this edition in the coverage crosswalk near the end.
-
-The existing [concept atlas](03-concept-atlas.md), [relationship-design chapter](02-relationship-design.md), [architecture chapter](05-architecture.md), and [23-pattern catalog](04-pattern-catalog.md) provide deeper material on specific topics.
-
-**Code-fence rule:** Every fenced Rust, Java, SQL, shell, or pseudocode example in this guide is illustrative only and has not been compiled or executed as part of this document. Conceptual Mermaid diagrams are explanatory, not extracted from a running system.
-
-For executable Rust evidence, use the linked [laboratory guide](laboratory.md) and its actual source files. Do not infer that an example is executable from syntax highlighting. The preserved source said its original authoring session lacked Rust and Cargo. That is historical provenance. On 2026-10-11, this host reports Rust and Cargo 1.96.0 and OpenJDK 26.0.1.
-
-A [separate source-fence record](../research/guide-snippet-checks.json) reports metadata compilation of 15 selected, self-contained Rust fences from the original Portuguese document using a minimal wrapper.
-
-A separate [Java selected-fence record](../research/guide-java-snippet-check.json) reports class-file compilation of the original sealed-interface/records fence beginning at line 209, with `javac --release 21 -Xlint:all -Werror` on OpenJDK 26.0.1. That one Java fence was not run; the source's partial dependency-injection example remains unchecked.
-
-The Rust record does not establish execution, linking, behavior, compilation of every original or new fence, or production correctness. The single Java check does not establish runtime behavior, correctness of other Java examples, or case-study validation. Metadata generation for FFI code does not demonstrate target linking or safety.
-
-The orders-and-payments implementations have separate, executed local evidence summarized in [the case validation record](../research/orders-payments-validation.md). These case checks do not change the illustrative-only status of code fences in this guide.
+Rust and Java fences marked **Compiled and tested in CI** are checked directly
+from this Markdown, together with the examples in
+[cross-language portability](06-cross-language.md).
+Other blocks are labeled **Illustrative**. For broader claims and review
+provenance, see [Claims and limits](claims-and-limits.md) and
+[How ROO was made](how-roo-was-made.md).
 
 ## 1. The thesis: design obligations before representation
 
@@ -81,57 +67,23 @@ Count verified properties, not classes, traits, crates, or lines of code. A prop
 
 ## 3. The ROO Relationship Contract
 
-A diagram arrow can show connectivity while hiding its operational meaning. A Relationship Contract records the essential policy for an important association. It is a review aid and design proposal, not executable Rust syntax or a formal proof calculus. Use the seven fields defined in the project README and worksheet:
+Use the [eight-field contract](02-relationship-design.md#21-the-eight-field-relationship-contract)
+and [six-step procedure](02-relationship-design.md#23-the-six-step-decision-procedure)
+defined in chapter 2. Custody, invariant coordination, identity, and authorization
+each have an explicit slot. The [short worksheet](../templates/relationship-contract.md)
+fits in a PR or an ADR.
 
-| Field | Question |
-|---|---|
-| **Owner / resource custodian** | What keeps the related value, state, or resource available, and who releases it? |
-| **Stable identity** | If the target has domain identity, what key, scope, version, reuse, and deletion rules identify it across operations or reloads? |
-| **Mutation authority** | Which component may request and perform which state changes while preserving which invariants? |
-| **Access regime** | Is access owned, borrowed, copied, transferred, snapshot-based, locked, actor-mediated, or otherwise coordinated? |
-| **Validity horizon** | For what interval is the value, handle, observation, permission, or version usable? What makes it stale or invalid? |
-| **Execution domain** | Which call, thread, task, actor, process, service, or transaction coordinates overlapping access? |
-| **Failure boundary** | What is rolled back, retained, retried, reconciled, or delivered if work fails partway through? |
+For `Order -> PaymentAttempt`, retain the immutable attempt ID before calling
+the provider. The application coordinates prepare/call/finalize; the provider
+retains its independent effect. A timeout produces an unknown observation,
+resolved by the same attempt ID. Caller authorization is an additional policy,
+absent from the teaching case. The
+[completed recovery contract](../case-studies/orders-payments/adoption/relationship-contract.md)
+shows the full record and Java/Rust mappings.
 
-These fields must not be collapsed:
-
-- Resource custody is distinct from domain responsibility, stable identity, and authorization.
-- A durable database ID identifies data but does not authorize access to it.
-- A mutable borrow grants a form of exclusive access but not permission to make every business change.
-- A transaction may make database writes atomic but does not include a payment provider unless the provider participates in a defined protocol.
-- A snapshot can remain valid as historical evidence while being stale for a new decision.
-- A task may own a future while external work already completed before that future was cancelled.
-
-### An illustrative relationship record
-
-The following is illustrative relationship notation, not code or a compiled contract. It shows the seven fields; the complete worksheet adds evidence, open questions, and cross-language interpretation.
-
-```text
-Relationship: Order -> PaymentAttempt
-Owner / resource custodian: payment subsystem owns attempt state
-Identity: durable attempt ID scoped to provider and merchant account
-Mutation authority: payment service requests authorize, capture, and refund
-Access regime: Order stores the attempt ID and a read-only status observation
-Validity horizon: status observation is versioned and may become stale
-Execution domain: remote provider call plus local persistence workflow
-Failure boundary: timeout may mean unknown outcome; reconcile by attempt ID
-```
-
-The preserved label `Identity` in this notation is shorthand for the canonical **Stable identity** field.
-
-Use several records when one relationship has distinct modes. An Order can retain only a Customer ID between requests, resolve an authorized view during checkout, and keep an owned snapshot of the commercial facts used to quote the order.
-
-### A short decision process
-
-1. State a concrete allowed scenario, a forbidden scenario, and a failure case.
-2. List the state that must agree and the moment at which it must agree.
-3. Complete all seven fields: Owner / resource custodian, Stable identity, Mutation authority, Access regime, Validity horizon, Execution domain, and Failure boundary. Keep custody, domain responsibility, identity, mutation authority, and caller authorization distinct.
-4. Map the contract to a language, runtime, storage, and protocol realization. Choose a representation that meets the requirements, including concurrency, suspension, transaction, retry, and cancellation behavior.
-5. Name what checks each claim, record the evidence, and state the assumptions that remain.
-6. Try a counterexample: delete a target, reuse an ID, submit twice, time out after a remote effect, or race two updates.
-7. Revise the contract or boundary when a counterexample exposes a missing requirement.
-
-The full [relationship design chapter](02-relationship-design.md) includes notation, a commerce relationship matrix, graph policies, API choices, and review exit criteria. Reuse the [Relationship Contract worksheet](../templates/relationship-contract.md) when reviewing a real design.
+Three clocks explain why this matters: memory validity of a loaded value,
+business validity of an attempt, and freshness of its observed status.
+A safe reference can point to a status that is already stale.
 
 ## 4. Object-oriented design, inheritance, and composition
 
@@ -171,9 +123,10 @@ Java records are special classes for fixed components. Their fields are final, b
 
 Ordinary interfaces remain useful for open contracts, with default methods providing limited shared behavior.
 
-[Oracle: record classes](https://docs.oracle.com/en/java/javase/26/language/records.html), [sealed classes and interfaces](https://docs.oracle.com/en/java/javase/26/language/sealed-classes-interfaces.html), [Java SE 26 Language Specification](https://docs.oracle.com/en/java/javase/26/docs/specs/jls26.pdf). The following Java and Rust fragments are illustrative only.
+[Oracle: record classes](https://docs.oracle.com/en/java/javase/26/language/records.html), [sealed classes and interfaces](https://docs.oracle.com/en/java/javase/26/language/sealed-classes-interfaces.html), [Java SE 26 Language Specification](https://docs.oracle.com/en/java/javase/26/docs/specs/jls26.pdf). The following examples exercise the same three closed payment outcomes.
 
-They show parallel closed result sets and have not been compiled in this guide.
+<!-- roo-example: closed-payment-java -->
+**Compiled and tested in CI · Java.**
 
 ```java
 sealed interface PaymentResult permits Approved, Declined, Unknown {}
@@ -181,7 +134,28 @@ sealed interface PaymentResult permits Approved, Declined, Unknown {}
 record Approved(String receiptId) implements PaymentResult {}
 record Declined(String reason) implements PaymentResult {}
 record Unknown(String attemptId) implements PaymentResult {}
+
+class ClosedPaymentExample {
+    static String describe(PaymentResult result) {
+        return switch (result) {
+            case Approved a -> "approved:" + a.receiptId();
+            case Declined d -> "declined:" + d.reason();
+            case Unknown u -> "unknown:" + u.attemptId();
+        };
+    }
+
+    public static void main(String[] args) {
+        if (!describe(new Approved("r1")).equals("approved:r1")
+                || !describe(new Declined("limit")).equals("declined:limit")
+                || !describe(new Unknown("p1")).equals("unknown:p1")) {
+            throw new AssertionError("payment outcome classification");
+        }
+    }
+}
 ```
+
+<!-- roo-example: closed-payment-rust -->
+**Compiled and tested in CI · Rust.**
 
 ```rust
 enum PaymentResult {
@@ -189,17 +163,38 @@ enum PaymentResult {
     Declined { reason: String },
     Unknown { attempt_id: String },
 }
+
+fn describe(result: PaymentResult) -> String {
+    match result {
+        PaymentResult::Approved { receipt_id } => format!("approved:{receipt_id}"),
+        PaymentResult::Declined { reason } => format!("declined:{reason}"),
+        PaymentResult::Unknown { attempt_id } => format!("unknown:{attempt_id}"),
+    }
+}
+
+assert_eq!(describe(PaymentResult::Approved { receipt_id: "r1".into() }), "approved:r1");
+assert_eq!(describe(PaymentResult::Declined { reason: "limit".into() }), "declined:limit");
+assert_eq!(describe(PaymentResult::Unknown { attempt_id: "p1".into() }), "unknown:p1");
 ```
 
 Both approaches can make the alternatives explicit. Their construction rules, pattern matching, API evolution, serialization, and caller ergonomics differ. Neither verifies the authenticity of a provider response.
 
 ### Dependency injection is composition, not a Java-only feature
 
-Constructor injection can be written directly in Java or C# without a reflection-based container. Rust commonly wires dependencies in a composition root and uses concrete types, generics, or a trait object. A container is useful when its lifecycle and composition features repay its cost; it is not a prerequisite for OO. The following Java sketch is illustrative and uncompiled.
+Constructor injection can be written directly in Java or C# without a reflection-based container. Rust commonly wires dependencies in a composition root and uses concrete types, generics, or a trait object. A container is useful when its lifecycle and composition features repay its cost; it is not a prerequisite for OO. This Java example tests a wired reader with a known and a missing identity.
 
 A repository contract narrows the method available to the use case; it says nothing about database isolation or tenant authorization.
 
+<!-- roo-example: reader-injection-java -->
+**Compiled and tested in CI · Java.**
+
 ```java
+import java.util.Objects;
+import java.util.Optional;
+
+record UserId(long value) {}
+record User(UserId id, String name) {}
+
 interface UserReader {
     Optional<User> load(UserId id);
 }
@@ -208,7 +203,23 @@ final class FindUser {
     private final UserReader reader;
 
     FindUser(UserReader reader) {
-        this.reader = reader;
+        this.reader = Objects.requireNonNull(reader);
+    }
+
+    Optional<User> find(UserId id) {
+        return reader.load(id);
+    }
+}
+
+class ReaderInjectionExample {
+    public static void main(String[] args) {
+        User user = new User(new UserId(1), "Ada");
+        FindUser useCase = new FindUser(id ->
+            id.equals(user.id()) ? Optional.of(user) : Optional.empty());
+        if (!useCase.find(user.id()).orElseThrow().equals(user)
+                || useCase.find(new UserId(2)).isPresent()) {
+            throw new AssertionError("reader capability");
+        }
     }
 }
 ```
@@ -281,9 +292,12 @@ Exhaustive matching checks handling of declared variants, not whether the provid
 
 Typestate uses distinct types for stages of a local protocol. A consuming transition can make the old value unavailable and return a value with a new API. This is useful for local builders, open or closed resources, or a short compile-time workflow. Private constructors are important; a public generic constructor or unrestricted deserializer may manufacture an invalid stage.
 
-Persisted, user-selected, or dynamically changing states usually fit an enum and validated transition methods better. Typestate can complicate collections, rehydration, serialization, and recovery. Neither typestate nor an enum proves authorization, elapsed-time policy, or database concurrency control. The following fragment is illustrative, not compiled.
+Persisted, user-selected, or dynamically changing states usually fit an enum and validated transition methods better. Typestate can complicate collections, rehydration, serialization, and recovery. Neither typestate nor an enum proves authorization, elapsed-time policy, or database concurrency control. The following example checks that a consuming transition preserves content.
 
 It sketches a local transition; the word Reviewed is a type-level label, not proof that a trusted person performed a review.
+
+<!-- roo-example: article-transition-rust -->
+**Compiled and tested in CI · Rust.**
 
 ```rust
 struct Draft;
@@ -302,6 +316,13 @@ impl Article<Draft> {
         }
     }
 }
+
+let draft = Article::<Draft> {
+    content: "Relationship decisions".into(),
+    state: std::marker::PhantomData,
+};
+let reviewed: Article<Reviewed> = draft.mark_reviewed();
+assert_eq!(reviewed.content, "Relationship decisions");
 ```
 
 For a consuming operation that can fail, choose whether the caller keeps, recovers, or loses the input. Returning the rejected draft alongside an error supports repair and retry. Keeping the input borrowed can support an all-or-nothing local validation step. Neither strategy reverses an external side effect.
@@ -380,6 +401,8 @@ Use cargo metadata as an input to that gate rather than treating a diagram as th
 Virtual workspaces should set the resolver explicitly at the workspace root. Record the project's tested minimum Rust version and exact toolchain policy separately. [Rust Edition Guide: resolver 3](https://doc.rust-lang.org/edition-guide/rust-2024/cargo-resolver.html), [Cargo workspaces](https://doc.rust-lang.org/cargo/reference/workspaces.html). The following manifest is illustrative.
 
 Its package names, dependencies, lints, and workspace policy are not a project template.
+
+**Illustrative · protocol or configuration.**
 
 ```toml
 [workspace]
@@ -460,6 +483,8 @@ The transactional outbox stores business state and a publication intent in the s
 
 The pattern does not enlist an external payment provider in the SQL transaction and does not guarantee end-to-end exactly-once behavior. [AWS Prescriptive Guidance: transactional outbox](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html). Conceptual sequence, not an executable implementation:
 
+**Illustrative · protocol or configuration.**
+
 ```text
 load the order at version v
 validate price, quantity, currency, and state
@@ -499,9 +524,11 @@ UML can communicate types and relationships, but its association, aggregation, a
 
 Do not draw a destruction marker merely because a non-Copy value moved. A move transfers access; the value may be used at its new location. A Cargo package graph is not a deployment diagram: crates do not identify network boundaries, trust zones, transaction scope, or latency. Conceptual Mermaid diagram, not generated from executable code:
 
+**Illustrative · diagram.**
+
 ```mermaid
 flowchart LR
-    A[Domain rule and identity] --> B[Seven-field relationship contract]
+    A[Domain rule and identity] --> B[Eight-field relationship contract]
     B --> C[Owner, access, and authority]
     C --> D[Failure and consistency boundary]
     D --> E[Language representation]
@@ -510,6 +537,8 @@ flowchart LR
 ```
 
 A sequence diagram should label effects and failure boundaries. This conceptual diagram shows why local ownership and remote effects are separate:
+
+**Illustrative · diagram.**
 
 ```mermaid
 sequenceDiagram
@@ -532,6 +561,8 @@ The diagram does not prove that either API enforces authorization or that the da
 ## 13. Quality scenarios and trade-offs
 
 Choose architecture from quality scenarios rather than fashion. State who triggers the event, the stimulus, environment, component, response, and measure. A scenario should name the observable failure boundary. Illustrative scenario, not an approved target or measured service level:
+
+**Illustrative · protocol or configuration.**
 
 ```text
 Source: authenticated order client
@@ -600,11 +631,13 @@ Those case files compare Java composition, a legitimate Java inheritance variant
 
 The specification and scenarios cover typed IDs and money, positive quantities, checked totals, state transitions, payment idempotency, uncertain outcomes, reconciliation, and local failures. The case explains the remote-effect/local-commit gap and the outbox publication gap.
 
-**The integrator reports 42 common fixture scenarios matching an exact independent oracle across all three variants.** The Java suite reports 280 explicit checks across composition and template-method variants plus two intended compiler-negative checks. The Rust suite reports 20 unit tests, two positive examples, and three intended compiler-negative checks; each runner also rejected ten malformed fixture cases. Formatting and Clippy checks passed, as did the existing ROO v0.1 laboratory's 17 recorded checks. Exact commands and results belong in [the case validation record](../research/orders-payments-validation.md).
-
-This is local evidence for deterministic in-memory implementations. It does not establish real database durability, concurrent recovery, actual provider consistency or retention, production safety, or broad performance differences. A planned independent review may still identify corrections. The case's precise limits appear in its README and specification. The current standard-library Rust laboratory is a separate learning artifact with expressly limited scope, not a payment processor.
-
-The lab's order uses integer cents and one implied currency; it does not implement tax, inventory, authorization, durable storage, a payment provider, or a production outbox. See its [limits and source tour](laboratory.md).
+The [shared oracle](../case-studies/orders-payments/expected.tsv) specifies
+42 in-memory scenarios across Java composition, Java Template Method, and Rust.
+The [dated validation record](../research/orders-payments-validation.md)
+records their execution. PostgreSQL and HTTP add separate
+[restart](../case-studies/orders-payments/postgres/README.md) and
+[response-loss](../case-studies/orders-payments/http/README.md) evidence.
+Their scopes are collected in [Claims and limits](claims-and-limits.md).
 
 ## 16. Myths and project decisions
 
@@ -662,7 +695,7 @@ Use the [learning path](07-learning-path.md) for exercises and suggested reading
 
 - [ ] The invariant and identity rule are stated before choosing a pointer or class.
 - [ ] Owner/resource custodian is distinct from domain responsibility, stable identity, and caller authorization.
-- [ ] Mutation authority and caller authorization are separate.
+- [ ] Invariant coordination and caller authorization are separate.
 - [ ] Access mode, validity horizon, execution domain, and failure boundary are explicit.
 - [ ] Stale, missing, deleted, cross-tenant, and reused IDs have defined handling.
 - [ ] Snapshots state their version or freshness boundary.
@@ -755,4 +788,4 @@ These links support the specific language rules or historical concepts cited abo
 - PostgreSQL, [transactions tutorial](https://www.postgresql.org/docs/current/tutorial-transactions.html) and [SELECT locking clauses](https://www.postgresql.org/docs/current/sql-select.html).
 - Martin Fowler, [Patterns of Enterprise Application Architecture](https://martinfowler.com/books/eaa.html), for the author's description of the book and its scope.
 
-ROO's seven-field vocabulary and combined workflow are a proposed synthesis. Existing concepts such as information hiding, behavioral subtyping, DDD, ownership types, RAII, and transactional outbox have substantial prior work. This guide makes no claim of historical priority, measured defect reduction, universal superiority, or production readiness.
+See [Claims and limits](claims-and-limits.md) for the proposal's scope and prior-art boundary.

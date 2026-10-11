@@ -8,7 +8,7 @@ Start with a payment or refund POST whose response is lost: persisted intent
 and the same operation identity allow recovery, while line POST has no durable
 receipt and must be inspected before a caller chooses another attempt. The
 [HTTP contract](../SPEC.md), [PostgreSQL tutorial](../../postgres/README.md), and
-[original case](../../README.md) define the behavior. Chapter 2's [contract](../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
+[original case](../../README.md) define the behavior. Chapter 2's [contract](../../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../../templates/relationship-contract.md) help separate
 request custody, the accepted application's domain responsibility, durable
 scope and operation identity, mutation authority, access duration, execution,
@@ -70,7 +70,7 @@ allows bounded work to drain; intentional SIGKILL bypasses graceful shutdown.
 
 `build.sh` compiles both source directories into this extension's separate
 `build/classes`, with `--release 21 -Xlint:all -Werror`, then runs pure parsing,
-configuration, stream-cap, and mapping checks. The root integrator executes all
+configuration, stream-cap, and mapping checks. The verification scripts execute all
 builds and checks serially. Authored source and pure checks do not establish real
 HTTP, concurrency, response-loss, or WAL-recovery acceptance; the shared root
 harness and recorded receipts provide those separate evidence lanes.

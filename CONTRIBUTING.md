@@ -13,9 +13,17 @@ relationship decisions, tradeoffs, prior art, and evidence. Distinguish a
 proposal, an executable example, and an established result.
 
 Use English for new documentation, comments, tests, changelog entries, and
-pull request descriptions. Preserve historical research records and supplied
-inputs; add new evidence instead of rewriting old results. Do not rename crate,
+pull request descriptions. Preserve existing public historical records; add
+new evidence instead of rewriting old results. Supplied inputs are not
+automatically approved for publication: do not archive attachments or raw
+review text by default. Publish only a relevant summary with material that is
+authorized for this public project. Do not rename crate,
 package, fixture, or scenario identifiers as a side effect of a prose change.
+
+Keep private case studies private. A public case report should use a generic
+system description and synthetic data, with publication rights confirmed by
+the contributor. Exclude credentials, configuration secrets, personal data,
+and private organizational or personal context from documentation and evidence.
 
 ## Work on a focused branch
 
@@ -37,6 +45,18 @@ solution to a starter exercise is not a suitable change to the untouched
 starter shipped for qualification unless the teaching contract is also updated.
 
 ## Validate the affected behavior
+
+For chapter examples, with Rust 1.96+, JDK 21+, and Python 3:
+
+```sh
+python3 scripts/check_doc_examples.py
+```
+
+Keep every chapter Rust/Java fence visibly classified and registered with that
+check. Rust fences run as doctests through `include_str!`; Java fences compile
+for release 21 with warnings denied and execute their assertions. Configuration,
+protocol pseudocode, and diagrams carry an **Illustrative** label. The
+[claims page](docs/claims-and-limits.md) explains the scope of each evidence class.
 
 For root Rust laboratory changes, with Rust 1.96 or newer:
 

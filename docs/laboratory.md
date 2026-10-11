@@ -2,7 +2,9 @@
 
 The `roo` package is a small standard-library-only teaching library. Its APIs make selected ownership and behavioral decisions observable. It is not a production order system, graph database, event broker, or distributed workflow engine.
 
-ROO (Relationship & Ownership Oriented design) is a language-independent method. Its flow is scenario and invariant → Relationship Contract with Owner / resource custodian, Stable identity, Mutation authority, Access regime, Validity horizon, Execution domain, and Failure boundary → language, runtime, storage, and protocol realization → evidence and remaining assumptions.
+ROO is language-independent. This lab realizes selected decisions from the
+[canonical contract and procedure](02-relationship-design.md) in Rust.
+See [claims and limits](claims-and-limits.md) for the evidence boundaries.
 
 This package defines the Rust laboratory qualification for selected Rust mechanics and behaviors. That qualification is separate from adopting the ROO method in another language: carry over the same scenarios, invariants, and contracts, then establish evidence for that language's runtime, storage, and protocols.
 

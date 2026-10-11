@@ -8,7 +8,7 @@ Start with provider success followed by failed local finalization: the committed
 intent and its PaymentId must remain available for recovery, while terminal
 order state and its event commit together. The [frozen PostgreSQL contract](../SPEC.md)
 and [original case](../../README.md) define those invariants. Chapter 2's
-[Relationship Contract](../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
+[Relationship Contract](../../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../../templates/relationship-contract.md) help separate
 resource custody, domain responsibility, durable operation identity, mutation
 authority, access duration, execution, and failure before choosing Java, JDBC,
@@ -29,7 +29,7 @@ The hooks are trusted capabilities, not a defense against malicious subclasses.
 
 ## Build and use
 
-The integrator installs the dedicated local cluster/schema and fetches the
+The test harness installs the dedicated local cluster/schema and fetches the
 pinned pgJDBC 42.7.14 jar at `../.deps/postgresql-42.7.14.jar`. Its SHA-256 is
 `73914527305a40cce504b0d3d90b23caf565136912d607ae8ae7c5895512332c`.
 Use JDK 21 or newer; validation used JDK 26. Compilation targets Java 21 and treats all compiler warnings as errors.

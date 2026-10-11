@@ -173,7 +173,7 @@ application a different local access guarantee; it does not provide rollback
 for a remote effect. The policy outcome can match across these variants without
 requiring identical class or type structures.
 
-For the neutral reasoning behind these choices, return to the [seven-field
+For the neutral reasoning behind these choices, return to the [eight-field
 worksheet](../../../templates/relationship-contract.md) and the [filled case
 contract](../adoption/relationship-contract.md). The comparison is limited to
 the checked exercises. Matching outputs do not establish universal equivalence

@@ -14,7 +14,7 @@ provider, persist to a database, or move money.
 > [`scenarios.tsv`](../orders-payments/scenarios.tsv) and
 > [`expected.tsv`](../orders-payments/expected.tsv); the cross-language checker
 > is [`verify.py`](../orders-payments/verify.py), invoked by
-> [`verify.sh`](../orders-payments/verify.sh). The integrator reports that the
+> [`verify.sh`](../orders-payments/verify.sh). The dated validation records that the
 > complete `bash case-studies/orders-payments/verify.sh` run passed: Java has
 > 280 explicit unit checks across both variants and two intended
 > compiler-negative checks; Rust has 20 unit tests, two positive doctests, and
@@ -38,7 +38,7 @@ realize those decisions with different access and reuse mechanisms; the
 [PostgreSQL](postgres/README.md) and [HTTP](http/README.md) extensions carry them
 across persistence and request boundaries.
 
-Use the seven-field Relationship Contract below to review each realization.
+Use the eight-field Relationship Contract below to review each realization.
 Keep resource custody (who holds a value or connection), domain responsibility
 (who protects an invariant), identity (what remains the same across retries),
 and authorization (who is permitted to act) distinct. An order's responsibility
@@ -407,7 +407,7 @@ local terminal transition, while delivery and acknowledgement happen afterward.
 
 ## Relationship Contracts
 
-The following contracts apply the seven fields from [ROO relationship design](../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract).
+The following contracts apply the eight fields from [ROO relationship design](../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract).
 They are scoped to this exercise. They are not blanket recommendations that
 every commerce system should store payment state inside an order or use one
 process as its execution boundary.
@@ -418,7 +418,8 @@ process as its execution boundary.
 |---|---|
 | Owner / resource custodian | `Order` owns its line values. A line has no independently retained identity in this bounded specification. |
 | Stable identity | The order is identified by `OrderId`; lines are embedded values belonging to that order. Do not infer a durable line key from list position. |
-| Mutation authority | Only invariant-preserving order operations add a line or update the checked total. Once a payment intent is prepared, line changes are forbidden. |
+| Invariant coordinator | Only invariant-preserving order operations add a line or update the checked total. Once a payment intent is prepared, line changes are forbidden. |
+| Authorization | Not implemented in this teaching case; a live system needs an authenticated caller policy. |
 | Access regime | Callers supply candidate values and receive values, immutable views, or snapshots. They do not replace the internal list, status, or total directly. |
 | Validity horizon | A line remains part of the order until the order value is discarded; commercial facts are frozen from successful intent preparation onward. A detached store snapshot has its own observation time. |
 | Execution domain | One coordinator operates on one detached candidate at a time in a deterministic single-threaded scenario. No concurrency guarantee is exercised. |
@@ -437,7 +438,8 @@ business policy by itself.
 |---|---|
 | Owner / resource custodian | The store owns the last committed order snapshot, outbox records, and acknowledgement flags. The coordinator owns the current operation and its detached candidate. |
 | Stable identity | The store resolves the scenario's `OrderId`; event records use their `EventId`. A snapshot is not itself the durable identity. |
-| Mutation authority | The coordinator proposes a candidate. The store alone decides whether the simulated commit is installed. |
+| Invariant coordinator | The coordinator proposes a candidate. The store alone decides whether the simulated commit is installed. |
+| Authorization | Not implemented in this teaching case; a live system needs an authenticated caller policy. |
 | Access regime | Candidate and committed state are copied or otherwise detached according to the implementation. Callers must not retain a mutable alias that can advertise an uncommitted terminal state. |
 | Validity horizon | A candidate is valid for one local operation. After a failed commit, the next read or operation observes the committed snapshot; a fresh fixture starts empty. |
 | Execution domain | In-memory, single-threaded, one process, one scenario. There are no concurrent writers, crash boundaries, or interprocess readers. |
@@ -455,7 +457,8 @@ exists here.
 |---|---|
 | Owner / resource custodian | The provider simulator owns the separate key-to-request/result records and successful-effect counts. They are not part of the local order snapshot. |
 | Stable identity | Payment and refund IDs are distinct keys in operation-specific namespaces. Each key is paired with its complete immutable request tuple. |
-| Mutation authority | The coordinator may request or look up an intent. The provider simulator decides its result and owns the effect record. A conflict probe is adapter-only and bypasses checkout. |
+| Invariant coordinator | The coordinator may request or look up an intent. The provider simulator decides its result and owns the effect record. A conflict probe is adapter-only and bypasses checkout. |
+| Authorization | Not implemented in this teaching case; a live system needs an authenticated caller policy. |
 | Access regime | The coordinator passes immutable typed request facts to the adapter and receives a result value: Java passes immutable record references; Rust passes a shared `&Request`. The simulator retains its own immutable record/facts; no mutable provider-record handle escapes. |
 | Validity horizon | A request is bound to the intent persisted before the call. Simulator key records remain for the entire scenario with no expiry or eviction. |
 | Execution domain | Synchronous function calls in one deterministic process. There is no network, concurrent provider worker, cancellation, or real timeout. |
@@ -473,7 +476,8 @@ integration evidence.
 |---|---|
 | Owner / resource custodian | The local store retains the immutable intent; the provider simulator separately retains any remote record and effect. Neither store owns both sides. |
 | Stable identity | `PaymentId` identifies the attempt. The complete request also includes `OrderId`, currency, and amount so identity reuse cannot silently change its meaning. |
-| Mutation authority | The coordinator prepares one intent in `Draft`; the provider applies the request; the coordinator records a confirmed local transition. No caller may rewrite the stored intent. |
+| Invariant coordinator | The coordinator prepares one intent in `Draft`; the provider applies the request; the coordinator records a confirmed local transition. No caller may rewrite the stored intent. |
+| Authorization | Not implemented in this teaching case; a live system needs an authenticated caller policy. |
 | Access regime | The intent is copied or borrowed immutably into a request. A retry uses that same request; it does not derive a fresh key from current object identity. |
 | Validity horizon | The intent persists through `Pending` and remains available for retry/reconciliation. The simulator retains its matching key through the fixture scenario. |
 | Execution domain | The local prepare, provider call, and local finalization are ordered by the coordinator but are separate boundaries. Provider state is outside the local commit. |
@@ -491,7 +495,8 @@ not interchangeable.
 |---|---|
 | Owner / resource custodian | The local store owns committed outbox records and acknowledgement state. The consumer separately owns the set/count of event IDs it has applied. |
 | Stable identity | `EventId` is stable across retries: `payment:<PaymentId>` for the payment terminal fact and `refund:<RefundId>` for the full refund fact. |
-| Mutation authority | The coordinator creates an immutable event with a terminal transition. The relay delivers and acknowledges. The consumer alone applies a unique event ID once. |
+| Invariant coordinator | The coordinator creates an immutable event with a terminal transition. The relay delivers and acknowledges. The consumer alone applies a unique event ID once. |
+| Authorization | Not implemented in this teaching case; a live system needs an authenticated caller policy. |
 | Access regime | Event values carry copied IDs and amount facts. The consumer does not mutate an order through an event back-reference. |
 | Validity horizon | A committed event remains in the outbox throughout the scenario; a delivery attempt can recur until acknowledgement. Consumer deduplication state remains for that scenario. |
 | Execution domain | Delivery is a scripted local call in insertion order. There is no broker, parallel relay, process restart, or independent consumer database. |
@@ -509,7 +514,8 @@ durable deduplication with an explicitly scoped retention policy.
 |---|---|
 | Owner / resource custodian | The order store retains its refund intent; the provider retains the original payment record and any separate refund effect. |
 | Stable identity | The refund has its own `RefundId` and retains the original `PaymentId`, `OrderId`, currency, and full amount. Payment and refund identities are never conflated. |
-| Mutation authority | A refund can be prepared only for a confirmed `Paid` order. The coordinator requests one full refund; the provider verifies it against the approved charge. |
+| Invariant coordinator | A refund can be prepared only for a confirmed `Paid` order. The coordinator requests one full refund; the provider verifies it against the approved charge. |
+| Authorization | Not implemented in this teaching case; a live system needs an authenticated caller policy. |
 | Access regime | The refund request refers to typed identities and copied amount facts, not a mutable pointer into the payment object. The original payment is observed through the provider's contract. |
 | Validity horizon | The payment approval remains the basis for the refund. The refund intent remains active through `Refunding` until a terminal local transition is committed. |
 | Execution domain | Refund execution is a separate provider operation coordinated after payment approval. The exercise processes one operation at a time in one thread. |
@@ -645,7 +651,7 @@ println!("Committed state: {:?}; remote charges: {}", store.order().state(), pro
 
 This excerpt is from the runnable example; its assertions and printed result
 make the timeout/recovery boundary observable. The example passed in the
-integrator's recorded run. The complete domain transitions are private to the
+dated recorded run. The complete domain transitions are private to the
 crate; [`lib.rs`](rust/src/lib.rs) includes compiler-negative doctests showing
 use-after-move (`E0382`), an immutable view that conflicts with an exclusive
 application borrow (`E0502`), and an external caller attempting a crate-private
@@ -763,7 +769,7 @@ reference or snapshot is valid, and what survives a partial failure. Each
 language expresses and checks those decisions differently.
 
 To port the case, first write down the scenario's invariants and partial-failure
-outcomes. Next fill the same seven contract fields for order/lines, intent/provider,
+outcomes. Next fill the same eight contract fields for order/lines, intent/provider,
 and event/consumer. Then choose local access rules, persistence keys and atomic
 units, and protocol recovery behavior that realize those decisions. Finally
 identify the supporting compiler checks, runtime checks, and recorded scenarios,
@@ -839,7 +845,7 @@ From the repository root, the canonical validation command is:
 bash case-studies/orders-payments/verify.sh
 ```
 
-The integrator's [validation record](../../research/orders-payments-validation.md)
+The dated [validation record](../../research/orders-payments-validation.md)
 reports that it exited successfully. The Java build compiled with
 `javac --release 21 -Xlint:all -Werror`, ran 280 explicit assertions across both
 variants, and checked two expected diagnostics. Rust ran 20 unit tests, two
@@ -921,7 +927,7 @@ language's ownership or inheritance model can fill.
 | [Runnable recovery example](rust/examples/recovery.rs) | Compiled and executed timeout, reconciliation, refund, and redelivery walkthrough. |
 | [Primary-source ledger](../../research/orders-payments-sources.md) | Provider idempotency, local-outbox, and language-semantics source checks with evidence limits. |
 | [Local validation evidence](../../research/orders-payments-validation.md) | Exact local toolchain, commands, results, and proof boundaries. |
-| [Relationship design](../../docs/02-relationship-design.md) | ROO's seven-field contract and commerce relationship discussion. |
+| [Relationship design](../../docs/02-relationship-design.md) | ROO's eight-field contract and commerce relationship discussion. |
 | [Architecture](../../docs/05-architecture.md) | Boundaries, persistence, messages, transaction and failure distinctions. |
 | [Cross-language transfer](../../docs/06-cross-language.md) | Language-specific ownership, identity, encapsulation, and concurrency considerations. |
 

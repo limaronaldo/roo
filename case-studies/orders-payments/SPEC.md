@@ -198,7 +198,7 @@ effect. Each step still executes after earlier domain failures.
 
 ## Required common scenarios
 
-The integrator owns the actual TSV and expected TSV. The following rows are
+The shared TSV input and expected-result fixtures define the comparison. The following rows are
 normative inputs. `A` below is the exact prefix `add:100:2;add:50:1` (total 250),
 expanded literally in the fixture. Each scenario starts fresh.
 
@@ -281,6 +281,6 @@ and infrastructure contracts.
 
 Acceptance requires matching expected TSV for every row in all three variants,
 meaningful language unit tests, the intended compiler-negative checks, and a
-documented seven-field relationship analysis in the companion case README.
-The schema is frozen before implementation; changes require integrator agreement
+documented eight-field relationship analysis in the companion case README.
+The schema is frozen before implementation; changes require an explicit shared-contract review
 and synchronized fixtures, implementations, and documentation.

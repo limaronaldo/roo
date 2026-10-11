@@ -8,7 +8,7 @@ Begin with a lost payment or refund response: recovery reuses the persisted
 operation identity, while line POST has no durable receipt and requires state
 inspection before another attempt. The [HTTP contract](../SPEC.md),
 [PostgreSQL tutorial](../../postgres/README.md), and [original case](../../README.md)
-define the boundary. Chapter 2's [Relationship Contract](../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
+define the boundary. Chapter 2's [Relationship Contract](../../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../../templates/relationship-contract.md) guide decisions
 about request custody, the application's domain responsibility, durable scope
 and operation identity, mutation authority, access duration, execution, and
@@ -22,7 +22,7 @@ it does not spawn a runner or duplicate domain SQL. The dependency pins are Axum
 0.8.9, Tokio 1.53.2, serde_json 1.0.154, serde 1.0.229, and postgres 0.19.14.
 Serde uses a handwritten object visitor, without its derive feature.
 
-From this directory, the root integrator runs these checks serially:
+From this directory, run these checks serially:
 
 ```sh
 cargo test --locked

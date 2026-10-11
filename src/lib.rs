@@ -26,3 +26,12 @@ pub mod order;
 pub mod strategy;
 pub mod typestate;
 pub mod view;
+
+// Keep the published chapter examples executable without adding runtime code.
+#[cfg(doctest)]
+#[doc = include_str!("../docs/06-cross-language.md")]
+pub struct CrossLanguageDocumentation;
+
+#[cfg(doctest)]
+#[doc = include_str!("../docs/08-rust-and-object-design.md")]
+pub struct ObjectDesignDocumentation;

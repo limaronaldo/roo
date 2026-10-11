@@ -5,9 +5,8 @@
       {% if config.extra.edition == 'dev' %}
         <strong>Development</strong> · Follows main; unreleased changes.
       {% else %}
-        <strong>{{ config.extra.edition }}</strong> · {{ 'Stable release documentation.' if config.extra.edition == config.extra.default_edition else 'Archived release documentation.' }}
+        <strong>{{ config.extra.edition_label }}</strong>
       {% endif %}
-      <a href="https://github.com/limaronaldo/roo/releases/tag/{{ config.extra.default_edition }}">Latest release {{ config.extra.default_edition }}</a>
     </div>
     <div class="roo-version-control">
       <label for="roo-version">Version</label>

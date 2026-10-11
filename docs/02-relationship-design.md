@@ -1,88 +1,84 @@
 # 2. Relationship design: from arrows to enforceable contracts
 
-A relationship is a continuing or operation-scoped obligation between participants.
-An arrow in a model describes connectivity; a ROO relationship contract describes how that connectivity is allowed to work.
-ROO — Relationship & Ownership Oriented design — is a language-independent method for making those obligations explicit.
-This chapter proposes notation and a procedure for v0.1.
-Begin with a scenario and its invariants, use the seven fields to decide relationships, then select mechanisms that realize those decisions.
-The notation is a language-independent review aid, not executable syntax or a formal proof language; Rust supplies the laboratory realizations in this edition.
+A diagram shows connectivity. A Relationship Contract describes what each
+connection permits, retains, and risks. This chapter is the **canonical
+definition** of the ROO contract, compact notation, and adoption procedure.
+Other chapters apply it; they do not define alternative versions.
 
-## 2.1 The seven-field Relationship Contract
+Write a contract when a relationship crosses a **lifecycle, process,
+transaction, or trust boundary**, or carries an invariant whose coordinator is
+unclear. A plain local value with no consequential boundary rarely needs its
+own worksheet. Split a contract when access modes have different obligations.
 
-For every architecturally significant relationship, write these seven fields.
-Supporting questions refine the fields rather than replacing them.
+## 2.1 The eight-field Relationship Contract
 
-| Field | Required statement | Supporting questions |
+First name the scenario, relationship/cardinality, allowed and forbidden
+outcomes, and the invariant's observation boundary. Then answer these fields:
+
+| Field | Compact key | Required question |
 |---|---|---|
-| Owner / resource custodian | What keeps the related state or resource available? | Is ownership nested, independent, shared, or transferred? Who releases it? |
-| Stable identity | What identifies the target, if identity is needed? | What are the scope, reuse, deletion, and version rules? Is cardinality zero, one, or many? |
-| Mutation authority | Who may request and execute which changes? | Which operations preserve invariants? Are authorization and access capability distinct? |
-| Access regime | How access and aliasing are coordinated | Value, shared borrow, exclusive borrow, checked handle, snapshot, lock, actor, or other policy? |
-| Validity horizon | During which interval is the relationship usable? | Memory lifetime, business lifecycle, freshness deadline, and revocation conditions? |
-| Execution domain | Where and how operations may overlap | Thread, task, process, service? May access cross suspension or reentrancy? |
-| Failure boundary | What happens if the interaction fails partway? | Atomicity, rollback, retry, cancellation, uncertain outcome, and recovery responsibilities? |
+| Owner / resource custodian | Custodian | Who retains the state or resource, and who releases it? |
+| Stable identity | Identity | What identifies the target across replacement or restart, with what scope, version, reuse, and deletion rules? |
+| Invariant coordinator | Coordinator | Which operations and component preserve the invariant when state changes? |
+| Authorization | Authorization | Which principal may request each operation, under what policy and revocation rule? |
+| Access regime | Access | What may be observed, resolved, changed, copied, shared, or transferred, and which aliases are allowed? |
+| Validity horizon | Horizon | When does access expire or an observation become stale in memory, business lifecycle, or freshness terms? |
+| Execution domain | Execution | Where are overlapping operations coordinated, including suspension, reentrancy, processes, and transactions? |
+| Failure boundary | Failure | Which effects survive rejection, cancellation, or partial failure, and who retries, reconciles, or compensates? |
 
-A relationship may require several entries if its operating modes differ.
-For example, `Order → Customer` during validation uses a resolved read view, while the stored Order retains only an ID and selected snapshot data.
-Calling both modes simply “a reference” conceals a major distinction.
-An unknown field is an open design issue; it is not permission to assume an unlimited lifetime or arbitrary mutation.
+Custody retains a resource; coordination protects a rule; identity recognizes
+an entity; authorization permits a principal to act. Even when one component
+fills all four roles, record them separately. Capability possession, a mutable
+borrow, and knowledge of an ID are not substitutes for a caller policy.
 
-## 2.2 Reusable notation
+Use `not applicable` with a reason or `not implemented` with its consequence.
+An unknown field is an open design issue. Evidence and assumptions accompany
+the eight decisions; they are not additional relationship fields.
 
-Use a named arrow followed by the seven fields:
+**Development change:** v0.1.0 used seven fields and grouped coordination with
+caller permission under “Mutation authority.” This edition splits those roles.
+The tagged first edition remains available with its original wording.
 
-```text
-R(name: Source -> Target [cardinality]) {
-  owner: custodian and retention rule;
-  identity: key/scope/version/reuse policy, or value-only;
-  authority: permitted operations and their coordinator;
-  access: regime and aliasing rule;
-  horizon: validity/freshness/lifecycle interval;
-  execution: execution domain and suspension/reentrancy rule;
-  failure: atomicity, error outcomes, retry/recovery rule;
-}
-```
+## 2.2 Compact notation
 
-Use additional `invariant`, `evidence`, and `open` lines when useful.
-`evidence` records the mechanism and its verified scope: compiler/static check, runtime validation, database constraint or transaction, protocol behavior, or human review.
-Tests provide observations about the mechanism exercised; documented assumptions remain assumptions until supported by evidence at their own boundary.
-`open` records an unresolved requirement so it cannot be mistaken for an implemented guarantee.
-A shorthand label such as `owned`, `borrowed`, `identified`, `snapshot`, `shared`, or `transferred` is an index into a complete contract, not its substitute.
-
-Example for a contained part:
-
-First decide that the whole retains its parts, coordinates their commercial transitions, and rejects invalid candidate changes before installation.
-The following notation realizes that policy with Rust storage vocabulary; `Vec<LineItem>` is a representation choice rather than the premise of the relationship.
+Use this one-line-per-field format in a PR or ADR. These keys map directly to
+the table above; they are review text, not executable syntax.
 
 ```text
-R(order_items: Order -> LineItem [0..n]) {
-  owner: Order owns Vec<LineItem>; removing an item releases that value;
-  identity: line identity is scoped to the Order; no independent lifecycle;
-  authority: Order operations add/remove/reprice before submission;
-  access: shared item views; mutation stays inside Order operations;
-  horizon: owned until removal/drop; submission freezes commercial facts;
-  execution: one coordinator per loaded Order; short local operations;
-  failure: validate candidate change first, then install or return error;
-  invariant: quantity > 0; one currency; total arithmetic is checked;
-  evidence: private fields + runtime validation + invariant tests;
-}
+Relationship: Order -> LineItem [0..n]
+Invariant: positive quantity; one currency; checked total
+Custodian: Order retains line values until removal or order release
+Identity: line identity is local to its order; no independent lifecycle
+Coordinator: Order.add/remove/reprice validates before installing changes
+Authorization: caller policy is outside this local example and must be supplied
+Access: callers read line views; mutation passes through Order operations
+Horizon: views end with the operation; submission freezes commercial facts
+Execution: one loaded-order coordinator; durable writers need store coordination
+Failure: reject an invalid candidate without changing the order
+Evidence: private representation, runtime validation, and invariant tests
+Open: revisit identity if returns or fulfillment require independent line tracking
 ```
 
-If a line needs returns or fulfillment tracked independently, revisit the identity and lifecycle assumptions.
-The initial representation is not a permanent law of the domain.
+The [worksheet](../templates/relationship-contract.md) provides a blank form.
+A complete [payment-recovery example](../case-studies/orders-payments/adoption/relationship-contract.md)
+maps the same decisions to Java composition, Java inheritance, and Rust.
+Add longer explanations only where a consequential tradeoff needs them.
 
-## 2.3 A decision process
+## 2.3 The six-step decision procedure
 
-1. **Describe behavior.** Write the scenario, expected outcome, forbidden outcome, and relevant failure.
-2. **Locate the invariant.** List the exact pieces of state that must agree, and at which observation boundary.
-3. **Identify clocks and identities.** Decide what survives a call, a task, a restart, a deletion, and a business transition.
-4. **Assign responsibility, custody, and authorization.** Name the domain coordinator, each resource custodian, and the principals permitted to request changes independently.
-5. **Choose access.** Decide observation, controlled mutation, transfer, and coordination policy for the required sharing and overlap before choosing a pointer, lock, or queue.
-6. **Specify crossing points.** Define transfer, lookup, snapshot creation, serialization, suspension, and external effects.
-7. **Select mechanisms and design the API.** Choose language, runtime, storage, and protocol realizations; restrict operations and receivers to communicate the selected authority and access regime.
-8. **Assign evidence.** Mark compiler/static checks, runtime checks, database guarantees, protocol evidence, human review, and unresolved assumptions separately.
-9. **Try a counterexample.** Delete a target, reuse a slot, cancel after an external effect, or race two changes.
-10. **Revise the model.** Change boundaries when the counterexample reveals a missing responsibility rather than adding a pointer mechanically.
+1. **Describe the scenario.** Name the allowed result, forbidden result, relevant
+   failure, and state that must agree at a specified observation boundary.
+2. **Triage the relationships.** Select lifecycle, process, transaction, and
+   trust crossings; separate modes whose obligations differ.
+3. **Complete the contract.** Answer all eight fields before selecting types,
+   pointers, class hierarchies, locks, or queues. Record unknowns explicitly.
+4. **Choose realizations.** Map the decisions to each language, runtime, store,
+   and protocol. Compare alternatives against the same invariant.
+5. **Check a counterexample.** Try deletion, stale state, duplicate request,
+   cancellation after an external effect, or competing updates. Revise the
+   contract if the boundary cannot preserve its promise.
+6. **Record evidence and decide.** Link checks actually observed and unresolved
+   assumptions; accept the tradeoff with its scope or leave the decision open.
 
 A representation decision follows the contract. The middle column gives language-independent policies; the next column offers Rust realizations:
 
@@ -229,7 +225,7 @@ Compile-fail examples are valuable evidence for a specific rejected access patte
 
 ## 2.9 Review exit criteria and open questions
 
-A relationship is ready for implementation when all seven fields have concrete answers and important invariants have named enforcement mechanisms.
+A relationship is ready for implementation when all eight fields have concrete answers and important invariants have named enforcement mechanisms.
 A relationship is ready for production only after its real persistence, authorization, execution, and failure assumptions have been verified in that environment.
 This edition's local lab cannot establish those production properties.
 

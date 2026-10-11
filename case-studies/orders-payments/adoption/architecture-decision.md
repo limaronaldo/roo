@@ -42,7 +42,7 @@ pending outbox record and zero consumers because this recipe performs no relay.
 
 ## Relationship Contracts
 
-The [filled contract](relationship-contract.md) owns the detailed seven-field
+The [filled contract](relationship-contract.md) owns the detailed eight-field
 analysis. This decision covers Order → payment intent → provider record and
 Order → terminal event → consumer fact. An order has at most one payment intent
 and one full refund intent in this bounded model.
@@ -51,7 +51,8 @@ and one full refund intent in this bounded model.
 |---|---|
 | Owner / resource custodian | Store retains committed order/outbox; provider retains its independent key records; consumer retains applied facts. The coordinator uses these capabilities without merging their custody. |
 | Stable identity | OrderId, PaymentId, RefundId, and EventId are distinct. Preserve p1 and its complete immutable request across uncertainty; `payment:p1` identifies the terminal fact. PostgreSQL additionally scopes identities by scenario scope. |
-| Mutation authority | Domain transitions validate state and money; the application coordinates preparation, provider observation, and finalization; store commits local changes. Permission to request an operation is a separate concern. |
+| Invariant coordinator | Domain transitions validate state and money; the application coordinates preparation, provider observation, and finalization; store commits local changes. Permission to request an operation is a separate concern. |
+| Authorization | Not implemented in this teaching case; a live system needs an authenticated caller policy. |
 | Access regime | Observe committed snapshots, submit copied immutable requests, resolve retained provider status, and transfer event facts. Callers cannot arbitrarily replace committed commercial state. |
 | Validity horizon | Freeze lines at preparation; retain the same intent throughout Pending and terminal replay. In-memory records last only for one fresh scenario; persisted extensions retain committed facts across their tested process restarts. |
 | Execution domain | In-memory coordination is single-threaded. PostgreSQL coordinates local writers with short transactions and order row locks; provider calls occur outside the application transaction. |
@@ -156,7 +157,7 @@ keeps state/event agreement local. It costs retained intent/provider/event facts
 recovery paths, and adapter-specific coordination; language access rules do not
 remove these obligations.
 
-Adopt one vertical slice first: document its invariant and seven fields, map its
+Adopt one vertical slice first: document its invariant and eight fields, map its
 actual provider contract, preserve one immutable intent through prepare/effect/
 finalize, and use independent expected observations plus intermediate failure
 checks before considering broader use. The [design review](design-review.md)

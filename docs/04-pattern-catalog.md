@@ -24,10 +24,9 @@ name settles that choice for a design. [Rust Book: enums](https://doc.rust-lang.
 Before choosing a mechanism, name the pressure that makes the pattern useful: variation,
 coordination, resource lifetime, repeated data, delayed work, or restricted access. Name
 its participants and the domain invariant each must preserve. For every important
-relation record **Owner/resource custodian; Stable identity; Mutation authority; Access
-regime; Validity horizon; Execution domain; Failure boundary**. Specify who retains and
-releases resources, who can change state, how access is mediated, when the relation ends,
-where work runs, and who handles rejection, expiry, cancellation, or partial failure.
+relation use the [canonical contract and procedure](02-relationship-design.md).
+A pattern is useful only if its lifecycle, coordination, and failure costs fit
+that contract.
 
 Custody is resource retention and release; domain responsibility is accountability for a
 business rule. Durable identity may outlive any one representation. Authorization is the
@@ -302,7 +301,7 @@ one instance.
 
 ## ROO review checklist for a proposed translation
 
-Before retaining a pattern label in a design, record the seven relationship fields above and answer these questions in plain terms. Begin with domain intent and invariants; then use the Rust-specific questions to review a laboratory mapping:
+Before retaining a pattern label in a design, complete the [eight-field Relationship Contract](02-relationship-design.md#21-the-eight-field-relationship-contract) and answer these questions in plain terms. Begin with domain intent and invariants; then use the Rust-specific questions to review a laboratory mapping:
 
 1. Which axis varies: data shape, algorithm, policy, lifecycle, representation, or
    coordination?

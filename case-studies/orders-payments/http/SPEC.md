@@ -253,7 +253,7 @@ Template Method, and Rust composition against the root-owned marked synthetic
 loopback PostgreSQL cluster. It starts persistent server processes, sends real
 HTTP requests, and retains bounded receipts; it never substitutes CLI calls for
 the observed HTTP action. Existing cluster utilities may be reused unchanged.
-Only the root integrator executes builds, dependency fetches, SQL, and tests.
+Run builds, dependency installation, SQL setup, and tests serially against the isolated fixture.
 
 Required checks, with exact results recorded only after execution:
 

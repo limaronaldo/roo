@@ -1,7 +1,7 @@
 # Maintaining automated release documentation
 
 The public site is [limaronaldo.github.io/roo](https://limaronaldo.github.io/roo/).
-Each stable release tag has its own edition at `/roo/vX.Y.Z/`. Development is
+Each numeric release tag (`vX.Y.Z`) has its own edition at `/roo/vX.Y.Z/`. Development is
 published at `/roo/dev/`. The highest **numeric** stable version is the default;
 for example, `v0.10.0` sorts after `v0.2.0`, regardless of tag creation order.
 
@@ -152,3 +152,10 @@ After a run completes, verify the new edition, older editions, selector,
 search, root redirects, and public source manifests. Keep new prose and labels
 in English. Dependency updates remain deliberate changes to
 `website/requirements.in` and its hash-locked requirements file.
+
+## Edition maturity
+
+v0.1.0 is labeled **first edition (preview)**. Other pre-1.0 snapshots are
+previews too. A stable tag here means numeric `vX.Y.Z`, without a prerelease
+suffix; it is not a claim of method maturity. Version labels are publisher
+metadata; tagged source content stays fixed.
