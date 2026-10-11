@@ -1,0 +1,4 @@
+-- HTTP uses the accepted PostgreSQL schema without alteration or extra receipts.
+-- Install ../postgres/schema.sql once in the dedicated synthetic database.
+-- This file intentionally contains no SQL mutation. In particular, HTTP line
+-- additions have no durable command identity and are not replay-safe.

@@ -1,0 +1,485 @@
+--- before/.gitignore
++++ after/.gitignore
+@@ -16,3 +16,4 @@
+ case-studies/orders-payments/track/java/build/
+ case-studies/orders-payments/track/rust/starter/target/
+ case-studies/orders-payments/track/rust/solution/target/
++/artifacts/
+--- before/case-studies/orders-payments/track/README.md
++++ after/case-studies/orders-payments/track/README.md
+@@ -39,6 +39,9 @@
+ independent effect did or did not occur.
+ 
+ ## Work through the track
++
++For an isolated Docker Compose run and the matching GitHub Actions workflow,
++see the [Docker and CI guide](DOCKER.md).
+ 
+ Run commands from the repository root. First compile the track and its existing
+ Java and Rust PostgreSQL and HTTP targets:
+--- /dev/null
++++ after/.dockerignore
+@@ -0,0 +1,24 @@
++# Send only the synthetic case and container infrastructure to the builder.
++**
++!case-studies/
++!case-studies/orders-payments/
++!case-studies/orders-payments/**
++**/target
++**/build
++**/.runtime
++**/.deps
++**/__pycache__
++**/*.pyc
++**/.git
++**/.git/**
++**/research
++**/artifacts
++**/.env
++**/.env.*
++**/*credentials*
++**/*secret*
++**/*.pem
++**/*.key
++**/.ssh
++**/.aws
++**/.config
+--- /dev/null
++++ after/.github/workflows/roo-track.yml
+@@ -0,0 +1,54 @@
++name: ROO adoption track
++
++on:
++  pull_request:
++    paths:
++      - 'case-studies/orders-payments/**'
++      - 'src/**'
++      - 'examples/**'
++      - 'templates/**'
++      - 'Cargo.toml'
++      - 'Cargo.lock'
++      - 'compose.yaml'
++      - '.dockerignore'
++      - '.github/workflows/roo-track.yml'
++  push:
++    paths:
++      - 'case-studies/orders-payments/**'
++      - 'src/**'
++      - 'examples/**'
++      - 'templates/**'
++      - 'Cargo.toml'
++      - 'Cargo.lock'
++      - 'compose.yaml'
++      - '.dockerignore'
++      - '.github/workflows/roo-track.yml'
++  workflow_dispatch:
++
++permissions:
++  contents: read
++
++jobs:
++  qualify:
++    name: Java and Rust qualification with isolated PostgreSQL
++    runs-on: ubuntu-24.04
++    timeout-minutes: 60
++    steps:
++      - name: Check out source
++        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
++        with:
++          persist-credentials: false
++
++      - name: Build and qualify the adoption track
++        shell: bash
++        run: bash case-studies/orders-payments/track/compose.sh
++
++      - name: Preserve qualification evidence
++        if: ${{ always() }}
++        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
++        with:
++          name: roo-track-${{ github.run_id }}-${{ github.run_attempt }}
++          path: artifacts/roo-track/
++          if-no-files-found: warn
++          retention-days: 14
++          include-hidden-files: false
+--- /dev/null
++++ after/case-studies/orders-payments/track/DOCKER.md
+@@ -0,0 +1,138 @@
++# Docker Compose and GitHub Actions
++
++Use this guide to run the ROO adoption track in a fresh, isolated container or
++through the repository's GitHub Actions workflow. Run the commands below from
++the repository root.
++
++## Requirements and isolation
++
++The host needs Bash, common POSIX utilities, Docker Engine, and the Docker
++Compose plugin. It does not need a host installation of Python, Java, Rust, or
++PostgreSQL. The first image build needs network access to retrieve the pinned
++base images, Bookworm package metadata and packages, locked Rust dependencies,
++and verified Java jars; the tests run with loopback available and external
++networking disabled.
++
++One nonroot container includes PostgreSQL 18.6 server tools, JDK 21, Rust
++1.96.0, Python, and Bash. PostgreSQL runs in that same container on a dynamic
++loopback port. The evaluator owns its start, stop, and immediate restart/WAL
++checks, and its endpoint guard requires loopback; a separate database service
++would not satisfy that lifecycle. The test container has no published ports,
++external network, host mounts, Docker socket, or persistent database volume.
++Each run starts with a fresh container filesystem, so the synthetic database
++is discarded after evidence is copied out.
++
++The base image index digests and GitHub Action commit pins are recorded in
++[`research/roo-compose-pins.json`](../../../research/roo-compose-pins.json).
++Cargo dependencies are locked, and the Java jars are verified by their
++existing fetch helpers. Debian Bookworm OS packages are installed from the
++current security repository during image construction; they are not pinned to
++a dated package snapshot, so a later rebuild can include newer Bookworm
++security updates. The captured package list records the actual packages in a
++run.
++
++## Run the full qualification
++
++With the starter files untouched, run:
++
++```sh
++bash case-studies/orders-payments/track/compose.sh
++```
++
++The default `qualify` mode builds an image from the current checkout, starts one
++new container, and runs the existing `verify.sh` unchanged. It checks the
++starter's expected behavioral RED groups, the completed solution across Java
++composition, Java Template Method, and Rust composition, and the regression
++that completes only e6 while confirming e2 remains incomplete. The wrapper
++returns the qualification's nonzero status if a check fails.
++
++This full qualification deliberately expects the starter gaps to remain
++incomplete. After you solve any starter exercise, use a learner mode below;
++the full qualification will no longer be the appropriate check for that
++edited starter.
++
++## Check learner edits
++
++Choose `starter` or `solution`, then provide an exercise (`e1` through `e6`, or
++`all`) and a variant (`java-composition`, `java-inheritance`, `rust`, or
++`all`). For example, check e1 in Java composition after editing the starter:
++
++```sh
++bash case-studies/orders-payments/track/compose.sh starter e1 java-composition
++```
++
++After completing the starter, run all exercises in all three realizations:
++
++```sh
++bash case-studies/orders-payments/track/compose.sh starter all all
++```
++
++To compare the completed implementation across the full matrix, run:
++
++```sh
++bash case-studies/orders-payments/track/compose.sh solution all all
++```
++
++Each accepted invocation builds a new image from the current local source,
++compiles the selected `starter` or `solution` source set, and runs the selected
++exercise and realization inside one fresh container. The container has no
++bind mount and cannot modify the host checkout. The host wrapper writes run
++evidence under `artifacts/roo-track/`. Edit only the starter policy files:
++[Java](java/starter/roo/payments/LearnerPolicy.java) and
++[Rust](rust/starter/src/learner.rs). The solution files provide the completed
++comparison.
++
++## Evidence and cleanup
++
++Every accepted invocation writes to a new directory under
++`artifacts/roo-track/<unique-run-id>/` and prints that path at the end. It
++records the host command and Docker version output, any build log and build
++status, and the wrapper exit status. Container run logs and selected exit
++statuses are recorded when available. After a container starts, it also
++records image and container identifiers, tool versions, installed OS
++packages, source identity, test status, and collection status. Selected track,
++PostgreSQL, and HTTP receipts and logs are copied out when checks pass or fail;
++image-build failures retain the host build diagnostics and exit status.
++
++The wrapper exports this allowlisted evidence before removing only the
++container it created. It does not export the PostgreSQL data directory or
++environment credentials. Docker may keep the built image and build cache for
++later runs; the wrapper does not prune unrelated or shared Docker resources.
++Use this wrapper for local runs: invoking the Compose service directly runs the
++container entry point but does not perform the wrapper's host-side evidence
++export.
++
++## GitHub Actions
++
++The [ROO adoption track workflow](../../../.github/workflows/roo-track.yml)
++runs on matching pushes and pull requests, and can also be started manually
++with `workflow_dispatch`. It uses `ubuntu-24.04`, invokes the same command as
++the local full qualification, grants only `contents: read`, disables checkout
++credential persistence, pins each action to a commit SHA, and uses no secrets.
++It always attempts to upload `artifacts/roo-track/`, including after a failed
++qualification; uploaded artifacts are kept for 14 days.
++
++The workflow definition alone does not establish a hosted run result. Check an
++actual GitHub Actions job and its uploaded evidence before reporting CI
++qualification. Local and hosted runs are separate evidence: a successful
++Linux ARM64 run does not prove an AMD64 CI execution. The pinned image indexes
++support both architectures, and Docker selects for the local daemon because
++the Compose service does not force a platform.
++
++## Reading failures and results
++
++In full `qualify` mode, the starter's specified `BEHAVIOR eN:` failures are
++expected only for untouched starter code. In a `starter` learner mode, a
++`BEHAVIOR eN:` failure means the selected learner behavior did not pass.
++Compiler, dependency download, PostgreSQL startup, HTTP startup, and missing
++lock-witness failures are environment or infrastructure failures; they are not
++expected starter RED results. The wrapper prints the evidence directory and
++preserves a nonzero status so the corresponding logs and receipts can be
++inspected.
++
++Passing these checks demonstrates the bounded scenarios exercised by this
++track, including selected concurrency, process-death recovery, immediate
++PostgreSQL restart/WAL redo, and HTTP response loss. It does not establish
++hardware power-loss behavior, arbitrary provider or network behavior, every
++interleaving, or production readiness. See the [track contract](SPEC.md) for
++the scope and limits of those checks.
+--- /dev/null
++++ after/case-studies/orders-payments/track/compose.sh
+@@ -0,0 +1,80 @@
++#!/usr/bin/env bash
++# Rebuild edited sources; copy allowlisted evidence out of one disposable container.
++set -euo pipefail
++TRACK="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
++ROOT="$(cd -- "$TRACK/../../.." && pwd)"
++mode="${1:-qualify}"
++exercise="${2:-all}"
++variant="${3:-all}"
++usage='Usage: compose.sh [qualify | starter|solution [e1..e6|all] [java-composition|java-inheritance|rust|all]]'
++if [[ "${1:-}" == --help ]]; then echo "$usage"; exit 0; fi
++if [[ $# -gt 3 || ! "$mode" =~ ^(qualify|starter|solution)$ || ! "$exercise" =~ ^(e[1-6]|all)$ || ! "$variant" =~ ^(java-composition|java-inheritance|rust|all)$ || ( "$mode" == qualify && $# -gt 1 ) ]]; then
++    echo "$usage" >&2; exit 2
++fi
++run_id="$(date -u +%Y%m%dt%H%M%Sz)-$$-${RANDOM}"
++project="roo-track-$run_id"
++container="$project-runner"
++evidence="$ROOT/artifacts/roo-track/$run_id"
++mkdir -p "$evidence"
++export ROO_TRACK_IMAGE="roo-track:$run_id"
++compose=(docker compose --project-name "$project" --project-directory "$ROOT" -f "$ROOT/compose.yaml")
++owned=false
++exported=false
++cleanup() {
++    status=$?
++    trap - EXIT INT TERM
++    set +e
++    if [[ "$owned" == true ]]; then
++        docker stop --time 45 "$container" >/dev/null 2>&1
++        if [[ "$exported" != true ]]; then
++            docker logs "$container" > "$evidence/run.log" 2>&1
++            docker cp "$container:/workspace/evidence/." "$evidence/" 2> "$evidence/export.log"
++            copy_status=$?
++            if [[ $copy_status -ne 0 && $status -eq 0 ]]; then status=$copy_status; fi
++        fi
++        docker rm -v "$container" > "$evidence/cleanup.log" 2>&1
++        cleanup_status=$?
++        printf '%s\n' "$cleanup_status" > "$evidence/cleanup-exit-code.txt"
++        if [[ $cleanup_status -ne 0 && $status -eq 0 ]]; then status=$cleanup_status; fi
++    fi
++    printf '%s\n' "$status" > "$evidence/wrapper-exit-code.txt"
++    printf 'Evidence: %s\n' "$evidence"
++    exit "$status"
++}
++trap cleanup EXIT
++trap 'exit 130' INT
++trap 'exit 143' TERM
++printf '%q ' bash case-studies/orders-payments/track/compose.sh "$@" > "$evidence/host-command.txt"
++printf '\n' >> "$evidence/host-command.txt"
++# Portable content checksums preserve the edited source identity even if build fails.
++# SHA-256 for the baked source is additionally recorded inside successful images.
++(
++    cd "$ROOT"
++    find case-studies/orders-payments -type d \( -name target -o -name build -o -name .runtime -o -name .deps -o -name __pycache__ -o -name .git -o -name research -o -name artifacts -o -name .ssh -o -name .aws -o -name .config \) -prune -o \
++        -type f ! -name '.env*' ! -name '*credentials*' ! -name '*secret*' ! -name '*.pem' ! -name '*.key' ! -name '*.pyc' -exec cksum '{}' \;
++) > "$evidence/host-source-checksums.txt"
++docker version > "$evidence/docker-version.txt" 2>&1
++docker compose version >> "$evidence/docker-version.txt" 2>&1
++set +e
++"${compose[@]}" build --progress plain track 2>&1 | tee "$evidence/build.log"
++build_status=${PIPESTATUS[0]}
++set -e
++printf '%s\n' "$build_status" > "$evidence/build-exit-code.txt"
++if [[ $build_status -ne 0 ]]; then exit "$build_status"; fi
++args=("$mode")
++if [[ "$mode" != qualify ]]; then args+=("$exercise" "$variant"); fi
++# Set ownership before creation so an interrupted create remains scoped for cleanup.
++owned=true
++"${compose[@]}" run --detach --no-deps --name "$container" track "${args[@]}" > "$evidence/container-id.txt"
++docker inspect --format '{{.Image}}' "$container" > "$evidence/image-id.txt"
++docker wait "$container" > "$evidence/container-exit-code.txt"
++docker logs "$container" 2>&1 | tee "$evidence/run.log"
++set +e
++docker cp "$container:/workspace/evidence/." "$evidence/" 2> "$evidence/export.log"
++copy_status=$?
++set -e
++exported=true
++printf '%s\n' "$copy_status" > "$evidence/export-exit-code.txt"
++test_status="$(cat "$evidence/container-exit-code.txt")"
++if [[ "$test_status" -ne 0 ]]; then exit "$test_status"; fi
++exit "$copy_status"
+--- /dev/null
++++ after/case-studies/orders-payments/track/docker/Dockerfile
+@@ -0,0 +1,57 @@
++# Index pins cover amd64 and arm64. No PostgreSQL image VOLUME is inherited.
++FROM postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c AS postgres
++RUN mkdir /roo-pg-lib && find /usr/lib -name 'libpq.so*' -exec cp -L '{}' /roo-pg-lib/ \;
++FROM eclipse-temurin:21-jdk-jammy@sha256:e0c60c487345d1dc9d0fc7b6f0496f3cc941e5132e09296cc17a6decc71b902b AS java
++FROM rust:1.96.0-bookworm@sha256:5e2214abe154fe26e39f64488952e5c991eeed1d6d6da7cc8381ae83927f0cfc
++# Debian packages deliberately follow bookworm security updates; see DOCKER.md.
++RUN apt-get update && apt-get install -y --no-install-recommends \
++    python3 bash ca-certificates libicu72 libldap-2.5-0 liblz4-1 libpam0g \
++    libssl3 libxml2 libxslt1.1 libzstd1 zlib1g libreadline8 \
++    libgssapi-krb5-2 libkrb5-3 libsasl2-2 libnuma1 libatomic1 liburing2 \
++    libselinux1 libsystemd0 libuuid1 tzdata \
++    libfontconfig1 libfreetype6 \
++    && rm -rf /var/lib/apt/lists/* \
++    && groupadd --gid 10001 roo && useradd --uid 10001 --gid roo --create-home roo
++COPY --from=postgres /usr/lib/postgresql/18/ /usr/lib/postgresql/18/
++COPY --from=postgres /usr/share/postgresql/18/ /usr/share/postgresql/18/
++COPY --from=postgres /usr/share/postgresql/postgresql.conf.sample /usr/share/postgresql/postgresql.conf.sample
++COPY --from=postgres /roo-pg-lib/ /usr/local/lib/
++COPY --from=java /opt/java/openjdk/ /opt/java/openjdk/
++ENV JAVA_HOME=/opt/java/openjdk \
++    ROO_PG_BINDIR=/usr/lib/postgresql/18/bin \
++    LD_LIBRARY_PATH=/usr/local/lib \
++    PATH=/opt/java/openjdk/bin:/usr/lib/postgresql/18/bin:/usr/local/cargo/bin:/usr/local/bin:/usr/bin:/bin \
++    CARGO_NET_OFFLINE=true \
++    PYTHONDONTWRITEBYTECODE=1
++WORKDIR /workspace
++COPY --chown=roo:roo case-studies/orders-payments/ case-studies/orders-payments/
++RUN /sbin/ldconfig && chown roo:roo /workspace /usr/local/cargo /usr/local/rustup \
++    && chmod -R a+rX /usr/local/rustup
++USER 10001:10001
++# Check the copied PostgreSQL runtime closure before fetching dependencies.
++RUN failures=0; for binary in postgres initdb pg_ctl psql createdb; do \
++      printf 'Runtime dependencies: %s\n' "$binary"; \
++      dependencies="$(ldd /usr/lib/postgresql/18/bin/"$binary" 2>&1)" || failures=1; \
++      printf '%s\n' "$dependencies"; \
++      if printf '%s\n' "$dependencies" | grep 'not found'; then failures=1; fi; \
++      if printf '%s\n' "$dependencies" | grep -q 'libpq.so.5 =>'; then \
++        if ! printf '%s\n' "$dependencies" | grep -q 'libpq.so.5 => /usr/local/lib/libpq.so.5 '; then failures=1; fi; \
++      elif [ "$binary" = psql ]; then failures=1; fi; \
++    done; exit "$failures"
++RUN python3 -c "import ctypes; pq = ctypes.CDLL('libpq.so.5'); pq.PQlibVersion.restype = ctypes.c_int; version = pq.PQlibVersion(); assert version == 180006, version; getattr(pq, 'PQsendPipelineSync'); print('PASS pinned libpq runtime:', version)"
++RUN LD_BIND_NOW=1 psql --version
++# Fetch only locked graphs and SHA-verified JARs while networking is available.
++RUN for manifest in \
++      case-studies/orders-payments/rust/Cargo.toml \
++      case-studies/orders-payments/postgres/rust/Cargo.toml \
++      case-studies/orders-payments/http/rust/Cargo.toml \
++      case-studies/orders-payments/track/rust/starter/Cargo.toml \
++      case-studies/orders-payments/track/rust/solution/Cargo.toml; do \
++      CARGO_NET_OFFLINE=false cargo fetch --locked --manifest-path "$manifest" || exit; \
++    done \
++    && python3 case-studies/orders-payments/postgres/fetch_jdbc.py \
++    && python3 case-studies/orders-payments/http/fetch_json.py \
++    && java -version && javac -version && rustc --version && cargo --version \
++    && postgres --version && initdb --version && psql --version
++ENTRYPOINT ["bash", "/workspace/case-studies/orders-payments/track/docker/entrypoint.sh"]
++CMD ["qualify"]
+--- /dev/null
++++ after/case-studies/orders-payments/track/docker/entrypoint.sh
+@@ -0,0 +1,37 @@
++#!/usr/bin/env bash
++set -euo pipefail
++cd /workspace
++TRACK=case-studies/orders-payments/track
++mkdir -p evidence
++mode="${1:-qualify}"
++exercise="${2:-all}"
++variant="${3:-all}"
++if [[ $# -gt 3 || ! "$mode" =~ ^(qualify|starter|solution)$ || ! "$exercise" =~ ^(e[1-6]|all)$ || ! "$variant" =~ ^(java-composition|java-inheritance|rust|all)$ || ( "$mode" == qualify && $# -gt 1 ) ]]; then
++    echo 'Usage: compose.sh [qualify | starter|solution [e1..e6|all] [java-composition|java-inheritance|rust|all]]' >&2
++    exit 2
++fi
++finish() {
++    status=$?
++    trap - EXIT INT TERM
++    set +e
++    python3 "$TRACK/docker/evidence.py" collect
++    export_status=$?
++    printf '%s\n' "$status" > evidence/test-exit-code.txt
++    printf '%s\n' "$export_status" > evidence/collection-exit-code.txt
++    if [[ $status -eq 0 && $export_status -ne 0 ]]; then status=$export_status; fi
++    exit "$status"
++}
++trap finish EXIT
++trap 'exit 130' INT
++trap 'exit 143' TERM
++printf '%q ' "$0" "$@" > evidence/command.txt
++printf '\n' >> evidence/command.txt
++python3 "$TRACK/docker/evidence.py" identity
++{ java -version; javac -version; rustc --version; cargo --version; python3 --version; postgres --version; uname -m; } > evidence/tool-versions.txt 2>&1
++dpkg-query -W -f='${Package}\t${Version}\n' > evidence/os-packages.tsv
++if [[ "$mode" == qualify ]]; then
++    bash "$TRACK/verify.sh"
++else
++    bash "$TRACK/build.sh" "$mode"
++    python3 "$TRACK/verify.py" --source "$mode" --exercise "$exercise" --variant "$variant"
++fi
+--- /dev/null
++++ after/case-studies/orders-payments/track/docker/evidence.py
+@@ -0,0 +1,39 @@
++"""Export an allowlist of synthetic receipts/logs, never database data or env."""
++import hashlib
++import json
++from pathlib import Path
++import shutil
++import sys
++
++ROOT = Path('/workspace')
++CASE = ROOT / 'case-studies/orders-payments'
++DEST = ROOT / 'evidence'
++
++
++def identity():
++    excluded = {'target', 'build', '.runtime', '.deps', '__pycache__'}
++    hashes = {}
++    for path in sorted(CASE.rglob('*')):
++        if path.is_file() and not excluded.intersection(path.relative_to(CASE).parts):
++            hashes[str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
++    (DEST / 'source-identity.json').write_text(json.dumps(hashes, indent=2) + '\n')
++
++
++def collect():
++    receipts = {'last-run.json', 'starter-last-run.json', 'solution-last-run.json',
++                'e6-independent-last-run.json'}
++    for directory in (CASE / 'track/.runtime', CASE / 'postgres/.runtime', CASE / 'http/.runtime'):
++        if not directory.exists():
++            continue
++        for path in sorted(directory.iterdir()):
++            if path.is_file() and (path.name in receipts or path.name.endswith('.log')):
++                target = DEST / directory.parent.name / path.name
++                target.parent.mkdir(parents=True, exist_ok=True)
++                shutil.copyfile(path, target)
++
++
++DEST.mkdir(exist_ok=True)
++if sys.argv[1] == 'identity':
++    identity()
++else:
++    collect()
+--- /dev/null
++++ after/compose.yaml
+@@ -0,0 +1,13 @@
++services:
++  track:
++    image: ${ROO_TRACK_IMAGE:-roo-track:local}
++    build:
++      context: .
++      dockerfile: case-studies/orders-payments/track/docker/Dockerfile
++    network_mode: none
++    init: true
++    user: "10001:10001"
++    cap_drop: [ALL]
++    security_opt: [no-new-privileges:true]
++    stop_grace_period: 45s
++    command: [qualify]

@@ -1,0 +1,848 @@
+{
+  "scope": "Language-independent ROO documentation alignment; unchanged identifiers, executable artifacts and historical records",
+  "candidate_id": "798ca514d162ab8d428ab13f2f2154b5eaeea19599d0934522a2148a3a1012bf",
+  "identity_rule": "SHA-256 of UTF-8 json.dumps(files, sort_keys=True, separators=(comma, colon))",
+  "excluded": "Build/dependency/private runtime caches; current method run ledger, candidate manifest and final review status",
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "806c4e5fb5526b270bbd22334b387b34d885c2a391276a30e207bd6939cd1266",
+      "bytes": 493
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "eb26a07f45c43078df345e46694f8f53871ff0cdfa8f214dd45235057ea592e8",
+      "bytes": 147
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "88baf487aaeb82f36a5ca0391ed46a514482d338137415c32b182576fec186f4",
+      "bytes": 244
+    },
+    {
+      "path": "README.md",
+      "sha256": "b92070acd140d586d55606efbba6368dbb71160091b447c95f98a17151792c73",
+      "bytes": 13465
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "sha256": "610a8f9d8f49bcf50422009a929d3caf16fde873bcd8bc9074ede61f9aebbbbd",
+      "bytes": 62999
+    },
+    {
+      "path": "case-studies/orders-payments/SPEC.md",
+      "sha256": "fa05f3d0b69b8e524d99d8923d396bfd2fe3725c265c3a3bfc6ad0efab05790c",
+      "bytes": 18308
+    },
+    {
+      "path": "case-studies/orders-payments/expected.tsv",
+      "sha256": "ec4a5bced20459cf691b568b440572314cf94fe1d0b33f02fa852418ef48dd78",
+      "bytes": 2422
+    },
+    {
+      "path": "case-studies/orders-payments/http/README.md",
+      "sha256": "fab8a291a57f473a8d347b07d7e5265dc7b999507d80004a401121642ba61329",
+      "bytes": 40375
+    },
+    {
+      "path": "case-studies/orders-payments/http/SPEC.md",
+      "sha256": "a524faf4c1aa9282e9caef2274072c9edc8496cb1b165e6ae92f70749d7964ef",
+      "bytes": 19083
+    },
+    {
+      "path": "case-studies/orders-payments/http/fetch_json.py",
+      "sha256": "0bd205ded0c211e0d712c6e298051f31eb227ff2b47dd943b7eb7be8da67241f",
+      "bytes": 1052
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/README.md",
+      "sha256": "ae35fca98c9b6cdd38485b2fd71bbf87c338a078bd1f9e8f13017c508e3f2783",
+      "bytes": 4774
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/build.sh",
+      "sha256": "35a2739bb9715406bdf00ed8a78b8d1639e4b1435550d5405a61aca1787a528e",
+      "bytes": 438
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/run.sh",
+      "sha256": "204be0b2deaec2e25d0ac35b54077a6b38417991f8b56dd1d3844c575b78574a",
+      "bytes": 438
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpCompositionServer.java",
+      "sha256": "b896d8eb857b8cd7643985c74cef00eb716496a09d45392895178de5dbe89962",
+      "bytes": 252
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpProtocol.java",
+      "sha256": "c53c2f2f355267655260218bff8ab0993773c3ebffcbea695a2617d2346d1fa7",
+      "bytes": 11260
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpService.java",
+      "sha256": "c5090009445ed7ef4fc2bfee17b344200da5647df534ae334cca5d95da0ec993",
+      "bytes": 8113
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpTemplateServer.java",
+      "sha256": "100121cf3ca9d54072d4a88bfa9e9135c1fb237eebfafef8f7f3c2900f5dfb8d",
+      "bytes": 255
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpUnitTests.java",
+      "sha256": "e468bc6423b4afc609594e493b6b5ddeff1754126d3c344118d4c5c857562340",
+      "bytes": 7266
+    },
+    {
+      "path": "case-studies/orders-payments/http/regression.py",
+      "sha256": "d8a6fda75979e8101a7499e69561fe4c3275f5602d95d0638c28a4b080387c77",
+      "bytes": 816
+    },
+    {
+      "path": "case-studies/orders-payments/http/regression.sh",
+      "sha256": "96038328927d8d97722cae820c088bec33115956dbb305068e2f81f91f2b49a9",
+      "bytes": 878
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/Cargo.lock",
+      "sha256": "06837c1c3d1a5ae46d3d42fce893109b24d34646a0530b909c255ab10a0125d4",
+      "bytes": 26931
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/Cargo.toml",
+      "sha256": "8b29a41ea3230cfe655a6bfd970984a7d698c0069e2783fb1c1a25c63c2631e6",
+      "bytes": 424
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/README.md",
+      "sha256": "4e0768f89f19600c59773ee0fe0dd3f079d5a11f452e6fa0bfc828d1a5d7e467",
+      "bytes": 4347
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/src/lib.rs",
+      "sha256": "f36b197ea071caeb3b9c7c28c249316ccc45e38eb73ab2d708964f1cbfa78e9a",
+      "bytes": 17051
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/src/main.rs",
+      "sha256": "210966a8fde822d6de1480a6bdc2b1c0844213697e10bd0af5fe4467266937db",
+      "bytes": 9569
+    },
+    {
+      "path": "case-studies/orders-payments/http/schema.sql",
+      "sha256": "fd60ae401283da58abcd6a408dab7db727fb88c26dd208d7377d6b4611542fc4",
+      "bytes": 307
+    },
+    {
+      "path": "case-studies/orders-payments/http/support.py",
+      "sha256": "97fa3f792ba44556109ae8fe9077ee31fa60a3aa9a67b391b35fd55db72bae5a",
+      "bytes": 10422
+    },
+    {
+      "path": "case-studies/orders-payments/http/verify.py",
+      "sha256": "3f67a2421e94e2fc191d5f3902370f00dc56c0c8389ad243ea337384c4a00231",
+      "bytes": 25455
+    },
+    {
+      "path": "case-studies/orders-payments/http/verify.sh",
+      "sha256": "2fb78d5524bf58b191f441fe73a57878623c838eaaffa1d86f834ed388e97f5a",
+      "bytes": 923
+    },
+    {
+      "path": "case-studies/orders-payments/java/README.md",
+      "sha256": "36bc67c3f839a29622aabe391d467af689d71e15a25f304a91e710beb428dadd",
+      "bytes": 3538
+    },
+    {
+      "path": "case-studies/orders-payments/java/build.sh",
+      "sha256": "19808b239329f5df7db7f57a308b8339f563516f8ca64bb9e7c6d70de9acb718",
+      "bytes": 955
+    },
+    {
+      "path": "case-studies/orders-payments/java/negative/OverrideAlgorithm.java",
+      "sha256": "57f884bd9230c08713241f07eeaa0693a84f088092b1f085a1860953bac1de7e",
+      "bytes": 328
+    },
+    {
+      "path": "case-studies/orders-payments/java/negative/PrivateMutation.java",
+      "sha256": "12e71bf377e5ab97d07cb6c756a8765e34cbf0a2fe47a1f879a1aa057f0b773f",
+      "bytes": 187
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/Adapters.java",
+      "sha256": "296ea05e8373ca8547888ad0245abf418326aefd815207e70d6c30d79d2f7f55",
+      "bytes": 5736
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/Application.java",
+      "sha256": "eb1a1c70bfe4cc90e0f46c8e4e28c3cd17df4f0a15a0ed7d1256ab47445982c7",
+      "bytes": 353
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/CompositionApplication.java",
+      "sha256": "e4c1efa776a34fafd0c8cd1b6747121737c334895c13f217255eca0c317e8032",
+      "bytes": 3501
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/CompositionRunner.java",
+      "sha256": "56b2a131eae24f5301c4bc93d9e79c8491bfbd08c2b23f9972d7e8c8fc57e02e",
+      "bytes": 179
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/Domain.java",
+      "sha256": "eae6deb667207ed2b46168ee28f1f9763a887b70a45e61a2a77f6ea741a60665",
+      "bytes": 5673
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/FixtureRunner.java",
+      "sha256": "39ef96884e8989e7be1a80ff96daaab29b55d508ec432a2fa61cebc26490a584",
+      "bytes": 6631
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/InMemoryTemplateApplication.java",
+      "sha256": "d992d5a4428e8771294fff2332c0f33fb8eb40b306d05c0dbba5c27a8d252cee",
+      "bytes": 636
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/TemplateApplication.java",
+      "sha256": "88098632ebfa84940d25abf3e9fef4d68a52a43cc882ab8a95f9f82358ef9869",
+      "bytes": 3494
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/TemplateRunner.java",
+      "sha256": "4d976dbd9f492534d9b5ea5e58bdbe213b9da600bdf83008948224c3e55c0626",
+      "bytes": 172
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/UnitTests.java",
+      "sha256": "d320e6362fa83bef9e8414eb583f7a79a0ed4b86b6b86728dd23076dcbc80874",
+      "bytes": 12266
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/README.md",
+      "sha256": "ae50982619a1c5c4dd9e3ef00532bca636306f7007fee3abae85df00b55fd379",
+      "bytes": 39939
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/SPEC.md",
+      "sha256": "fd2e9566ffda6b384cacef13cec1e92965397636474efbaf3086ac1e369d42f9",
+      "bytes": 13109
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/cluster.py",
+      "sha256": "7a8740d1c92bc9503d0736b2c6794c9ad84cbade7971b6bce617fa8ed8b2c950",
+      "bytes": 7915
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/fetch_jdbc.py",
+      "sha256": "c50b599f1fd3a38175aaeb24ccb2e1293fab3a8b6f3bcc415e0d27298fa598b4",
+      "bytes": 1111
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/README.md",
+      "sha256": "dce838999211fb4ee0cf06a0c32d24f70f2493c45ae259ddebae8c08057722fb",
+      "bytes": 6060
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/build.sh",
+      "sha256": "23a60832b863b752d5f1b2e43d146fcb6b4d15455946037459bf1657176bca6d",
+      "bytes": 955
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/negative/OverrideAlgorithm.java",
+      "sha256": "8104dbfc0d90da92eb25f42a881b1b056d60cadf7347216c892429d602ef347b",
+      "bytes": 195
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/negative/PrivateMutation.java",
+      "sha256": "833c97e1f4118ab4c595c602e67d0530de99ff0ebc090a47c41295c42509bb02",
+      "bytes": 113
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Action.java",
+      "sha256": "b0f0f05049fc0800fa7f420fe181905a67f042262cea3b7795d8d1e9d28777a3",
+      "bytes": 1664
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Application.java",
+      "sha256": "1b263233334a4caad96094b07049e4fa33b4450b241752dbc5bfd4df787635a1",
+      "bytes": 186
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/CompositionApplication.java",
+      "sha256": "d07f17677def64ffbaa2fe8509a4a269358fa682ac35a966e8aafe1609d656d4",
+      "bytes": 1727
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/CompositionRunner.java",
+      "sha256": "9c76637ffd0c6598d6206893442bdc27399e700a1bed5d3ced32b051dc6fece9",
+      "bytes": 172
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Database.java",
+      "sha256": "2710a23899dc1cd7a92dd413a13fcae9b4f760d2d6ff8b1779c3a002ccc14d2f",
+      "bytes": 4623
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Domain.java",
+      "sha256": "fa203795245be53f6185a70c4c3cbece6555079169f5bd0745d381dc43c92f0e",
+      "bytes": 7947
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/JdbcTemplateApplication.java",
+      "sha256": "0dc7927e3a98045caa2526db13c1272338fa6cdeb982549b61adfa4b64a23b08",
+      "bytes": 497
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Provider.java",
+      "sha256": "c7bf8bafdc50c0a000a6aa952aa28705f1688fcf2eb539fe36d6507e9a11a044",
+      "bytes": 4732
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Runner.java",
+      "sha256": "3cd3adb3ff928927e6b3a0a499e7576d9e3d2a619faf68ee9daf9a345cc70607",
+      "bytes": 4530
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Store.java",
+      "sha256": "2b7e68ccaeecabf05bcb65b58707552793a6fa005a7bff0e9df4dc1028e2a644",
+      "bytes": 10608
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/TemplateApplication.java",
+      "sha256": "74d5d2eeb4bb8cc2f80443619253f053d6609da9ec6d1bc7e107e12a2eac27e2",
+      "bytes": 1763
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/TemplateRunner.java",
+      "sha256": "a256d84acd043bc38bb23c75dad21889c70bf83e2180b39266f138765fac02fe",
+      "bytes": 165
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/UnitTests.java",
+      "sha256": "a7d9bd7e7c5fe651a1e4c6c178f7b468c13b0c979594eabfbd8a66a74148478e",
+      "bytes": 6709
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/Cargo.lock",
+      "sha256": "537edd3713849f9ed6b4ca4d702733ad8de1eb9c71f1fe3d2189a3b7a20987e0",
+      "bytes": 19687
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/Cargo.toml",
+      "sha256": "d3d58f8011faa92b278b72ce1a9e388af6ab26410c16907da8c72d71e10866bb",
+      "bytes": 213
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/README.md",
+      "sha256": "7ebc62bba6fcb6a06fe0cb86e13453dba9a0ec9faff72f70a6418722fe7d1163",
+      "bytes": 5419
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/database.rs",
+      "sha256": "aac75772aaef78a2f4a1a10f6595e0e716b1cf84f08a2800ff06f07b06ead923",
+      "bytes": 24181
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/domain.rs",
+      "sha256": "461167ca9afc2f0f9b3e7dba93f8477b5251c3f2846ca6803f53ce14080db53b",
+      "bytes": 10827
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/fixture.rs",
+      "sha256": "a768096e248d9a7fce8b3ff34f4329c2f1a0e15d99e40d9e014cc116d435fc1c",
+      "bytes": 5659
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/lib.rs",
+      "sha256": "d3b43371240a303ec0607b9e2e2a2c4ac7b1922b5b18e5787c7c3d997ac5ac9e",
+      "bytes": 2417
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/main.rs",
+      "sha256": "7349db886881caf3d35b0de30e57af194b88cf351d9e2745e395934fd205cbfe",
+      "bytes": 2905
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/schema.sql",
+      "sha256": "aeb1fe29f382d93f2583a666ded7ef6658d908a56f464e3412cab16c98a2d972",
+      "bytes": 4198
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/verify.py",
+      "sha256": "73269dfa3ddc06b009bd05565b735e8ddc89a4916729fa4c8c79a3f5e37e656b",
+      "bytes": 22347
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/verify.sh",
+      "sha256": "aa23ac8450dae72300200493fb05ce4ce2c292a6e7098a4666d52551fba8f31e",
+      "bytes": 918
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/verify_rust_negative.py",
+      "sha256": "8a9dd51f00c89aec3f64c9b6bb3f75f768b5aab82839a729847831e442d3e654",
+      "bytes": 2924
+    },
+    {
+      "path": "case-studies/orders-payments/rust/Cargo.lock",
+      "sha256": "247e677862e91cb756fa37e9d11b6c2b9aaf3385b63346f64b1c0889c2da86f9",
+      "bytes": 164
+    },
+    {
+      "path": "case-studies/orders-payments/rust/Cargo.toml",
+      "sha256": "ae06aa02d1e9c56c304170e8880c288680c8daa7ae42ecf279c0d5f96bd55e14",
+      "bytes": 231
+    },
+    {
+      "path": "case-studies/orders-payments/rust/README.md",
+      "sha256": "117a591a4fd8791298e01d8aca8aaafe7301e2bb46608217fa7b89bc42fa1e8f",
+      "bytes": 7816
+    },
+    {
+      "path": "case-studies/orders-payments/rust/examples/recovery.rs",
+      "sha256": "0b5bc1e0d7d434c2594e9654ae48169599ee14f460eb42395673d825a9a77484",
+      "bytes": 1693
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/adapters.rs",
+      "sha256": "b08d131cbe5ea22e6cf2647c8633bbd0004e96f7163559444206e7d2c4050a8c",
+      "bytes": 12435
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/application.rs",
+      "sha256": "5e99f372372dab707c9cd199786abdbab74f7e2c5274ef4200aae32829f987fc",
+      "bytes": 17906
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/domain.rs",
+      "sha256": "4574cd88ecd5775e7b7d2507e2989123ccea566deacd14d1f5b08981c16695b6",
+      "bytes": 7794
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/fixture.rs",
+      "sha256": "0c9ccce26129f26bc9e2f8b7413d95a4208ca033fcb4caec922fd038572d7b85",
+      "bytes": 8551
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/lib.rs",
+      "sha256": "fb0fd3ef5f6ee1b1f0deb65541da5d5ec6d68e17737125015c953243ca202fa5",
+      "bytes": 2610
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/main.rs",
+      "sha256": "5bc2e30f1a44d8ff24bba177fe342d3b2b698c8a3414e236c57996743d90b84e",
+      "bytes": 622
+    },
+    {
+      "path": "case-studies/orders-payments/scenarios.tsv",
+      "sha256": "862fc2dff7203dc7204480053bd5ee0588a4227e6a32fe7bb3497cae342b0e4e",
+      "bytes": 3102
+    },
+    {
+      "path": "case-studies/orders-payments/verify.py",
+      "sha256": "e91dfceb6beeb5ae06ef03d2930abeb2a55fc9d41c82ad90a624052e872a80e6",
+      "bytes": 4332
+    },
+    {
+      "path": "case-studies/orders-payments/verify.sh",
+      "sha256": "d9f27b5986353c749dcaa21ee8f7bac9100f2a1fe408f594f34564e1d9756040",
+      "bytes": 889
+    },
+    {
+      "path": "case-studies/orders-payments/verify_rust_negative.py",
+      "sha256": "bfc565f1d2563664bdf752671826aa7e998abf90baf63588c69a483b145c29e8",
+      "bytes": 2758
+    },
+    {
+      "path": "docs/01-foundations.md",
+      "sha256": "4ea399218391e882e27bdf00884200866c3b447c91d08274b8d48813aec9744c",
+      "bytes": 16113
+    },
+    {
+      "path": "docs/02-relationship-design.md",
+      "sha256": "0fcd73bdcd4975ba73db103c2c442d5dd87825b450e7c5b0877423fcc9636cfa",
+      "bytes": 21301
+    },
+    {
+      "path": "docs/03-concept-atlas.md",
+      "sha256": "42281d7280f60b81bf528975680be20d7627dc732a985ff862f0afddbe1bc099",
+      "bytes": 46057
+    },
+    {
+      "path": "docs/04-pattern-catalog.md",
+      "sha256": "bde6947e51f73d6e0e8883eb65493dc59fb7a81624de5e0689d350c594e5e88c",
+      "bytes": 40928
+    },
+    {
+      "path": "docs/05-architecture.md",
+      "sha256": "b854fa979d3e69a1d06a03ec2926d206ba6ac769f9d00f6566f536bdb133cb51",
+      "bytes": 24801
+    },
+    {
+      "path": "docs/06-cross-language.md",
+      "sha256": "cf2ea02080452b3e41007b1e81a7a008b428fc64beab7ec0a26d60cdba30c16a",
+      "bytes": 27781
+    },
+    {
+      "path": "docs/07-learning-path.md",
+      "sha256": "5af9aece20c29b77c49dc5edb059d3f8137de0ad85531419e35b86efa78bd26a",
+      "bytes": 13615
+    },
+    {
+      "path": "docs/08-rust-and-object-design.md",
+      "sha256": "3cf81cf02e7f4b8b33f431236ce6473b2b3da23ed9c082e211558745abaca0ad",
+      "bytes": 65284
+    },
+    {
+      "path": "docs/laboratory.md",
+      "sha256": "0b5425b97eddbe2c7a029358f1e8629a70dbf83bcd3f3e15e62acdd52f8d92a6",
+      "bytes": 7137
+    },
+    {
+      "path": "examples/command_transfer.rs",
+      "sha256": "c8d0b75b92502da3a94961c50ce66ed97b9e3cf51eb2009546f05b06693ffb0d",
+      "bytes": 1456
+    },
+    {
+      "path": "examples/graph_events.rs",
+      "sha256": "dd5c8aa8e7fadc33f8ea41b3de145a9a4c6691c1050e2547fa3f57c267ae32e5",
+      "bytes": 963
+    },
+    {
+      "path": "examples/order_workflow.rs",
+      "sha256": "8707e5f81801842017df93e673e5a29de939c0ea8e9e6eac3b6d6410fa70bf0f",
+      "bytes": 1022
+    },
+    {
+      "path": "research/agenda.md",
+      "sha256": "57decb83a45de1f889fac27395d9c98992b1dbbd2349a96bf6a65f1b62191f43",
+      "bytes": 4222
+    },
+    {
+      "path": "research/candidate-initial.json",
+      "sha256": "29411b345f23d8b0f1de4f91fb0df10f27c3e0fadfb28c7a973c498a6469d9e3",
+      "bytes": 4610
+    },
+    {
+      "path": "research/candidate.json",
+      "sha256": "d4b9671d1b010e1eab44184a1792ebcb4303f4e48508fbba28b98a5e3581f7b1",
+      "bytes": 4869
+    },
+    {
+      "path": "research/guide-assessment.md",
+      "sha256": "37ddc2ee3e4305433c86539eed68d24134e7c1b3e2b966c945d4961a601228ed",
+      "bytes": 12467
+    },
+    {
+      "path": "research/guide-java-snippet-check.json",
+      "sha256": "6f4ce43c5416a2e876e03867f333daff6eb54ad323b38617c2a99a9c68c4bb57",
+      "bytes": 410
+    },
+    {
+      "path": "research/guide-snippet-checks.json",
+      "sha256": "d3229267c7762bd038b514a0bc674faf0d6f91233ce406ea90a067362163c342",
+      "bytes": 4567
+    },
+    {
+      "path": "research/http-candidate-initial.json",
+      "sha256": "6e80fc59cc5446a6687794fe22ab701813635bae98f6ced28e3749a29e188a61",
+      "bytes": 28200
+    },
+    {
+      "path": "research/http-candidate.json",
+      "sha256": "6e80fc59cc5446a6687794fe22ab701813635bae98f6ced28e3749a29e188a61",
+      "bytes": 28200
+    },
+    {
+      "path": "research/http-checks.log",
+      "sha256": "c2ce41fb3c8c1b9bf434e5a385d790707ac59a8e97dd298968fccc665d20d719",
+      "bytes": 3277
+    },
+    {
+      "path": "research/http-environment.json",
+      "sha256": "0c72f35e7f3df07c247d6de573f6779a4174e307026112eb09ae4d7abdc631a7",
+      "bytes": 2852
+    },
+    {
+      "path": "research/http-integration-evidence.json",
+      "sha256": "056ef224e94d977e808d2371f27545adc64dfd4a261709f0e52c7bacc6d1ccd2",
+      "bytes": 25662
+    },
+    {
+      "path": "research/http-postgres-regression-evidence.json",
+      "sha256": "9be25d6ea14baef4e33a737357000f3aecbaf023c6ec5287b4a83a5264f5a3ce",
+      "bytes": 13304
+    },
+    {
+      "path": "research/http-regression.log",
+      "sha256": "23404c513bd16a4a3be6d67bca6f4fe3ebfa2e91b3d057df87fa8eca107b1c74",
+      "bytes": 8686
+    },
+    {
+      "path": "research/http-review.md",
+      "sha256": "d449954760582b8b9b9f466d60c11e67fdaf360497e865c52976645a03a60a6c",
+      "bytes": 5364
+    },
+    {
+      "path": "research/http-run.md",
+      "sha256": "b0c7b2ea765712fd4287a571f6ef0a55faf7b97573a07160a18df0b110331420",
+      "bytes": 9733
+    },
+    {
+      "path": "research/http-security.md",
+      "sha256": "93c0b316e30fe539f5be42ec6965224eff25d7565c633344978e70b85f1141bd",
+      "bytes": 11080
+    },
+    {
+      "path": "research/http-sources.md",
+      "sha256": "ddbeeb0edb33c010af33b7cc3405d4f789d3fc5b1e1e7796bdaed898445ed7e0",
+      "bytes": 12133
+    },
+    {
+      "path": "research/http-validation.md",
+      "sha256": "db53fa7ba10ed4b5ba28244e0ab29cc0d9cfb2d704429a5a6fc35cf042c61392",
+      "bytes": 8585
+    },
+    {
+      "path": "research/literature.md",
+      "sha256": "aa7c60c7de152ced8ab2b1fdb1734955f93e0cbb69c1ba9c29b678fc4c86397f",
+      "bytes": 16924
+    },
+    {
+      "path": "research/orders-payments-candidate-initial.json",
+      "sha256": "a891b7a812fb5204664906a0c2e415d7eda7a438ab9f6cfa8d47c5088bafb4c9",
+      "bytes": 8568
+    },
+    {
+      "path": "research/orders-payments-candidate.json",
+      "sha256": "a891b7a812fb5204664906a0c2e415d7eda7a438ab9f6cfa8d47c5088bafb4c9",
+      "bytes": 8568
+    },
+    {
+      "path": "research/orders-payments-checks.log",
+      "sha256": "3812e92ff7201ed389d02cc531228c5cf57a2cb6cc1e352198e9d3084ca17f09",
+      "bytes": 5355
+    },
+    {
+      "path": "research/orders-payments-negative-evidence.json",
+      "sha256": "757b5a8ccc205c6bc59d7f606b716f35d64e9521b51a82e49b62a4cc66af8b67",
+      "bytes": 1116
+    },
+    {
+      "path": "research/orders-payments-review.md",
+      "sha256": "11d396f1b391c08b3cd715078ddc8dc1726e6424e21d791a278223eac38f7edb",
+      "bytes": 2990
+    },
+    {
+      "path": "research/orders-payments-run.md",
+      "sha256": "476adef5e4f74af16f14d4c1895ada8a968b8c37ddeee076909f905dd0a62c6e",
+      "bytes": 8475
+    },
+    {
+      "path": "research/orders-payments-security.md",
+      "sha256": "6163c7bfeaaa3589f56a4db2fa1bbbf0a859466a75c9c47877a0c898e26e7eb8",
+      "bytes": 1773
+    },
+    {
+      "path": "research/orders-payments-sources.md",
+      "sha256": "ce659395df88c134fc5a0651152796572644ced9044ebc0557c69c4487d04042",
+      "bytes": 12082
+    },
+    {
+      "path": "research/orders-payments-validation.md",
+      "sha256": "f71128390270d8c8279ba63ecde57d82830e9dc5088e0a35538db615bc2d813e",
+      "bytes": 6053
+    },
+    {
+      "path": "research/postgres-boundary-evidence.json",
+      "sha256": "bcee4bd1e0e2e2c0074c3edc00108bce8f50205e6a3b480bc0755cdba38a7b05",
+      "bytes": 124
+    },
+    {
+      "path": "research/postgres-build-portability.log",
+      "sha256": "94f2c187a62cdca80b6b4eb474c0b11569fb7a0d697c5eaf23ded6459f25271c",
+      "bytes": 193
+    },
+    {
+      "path": "research/postgres-candidate-initial.json",
+      "sha256": "c8c0158c63099a01e60d16647294d878318cde91921945875359a08401feec7f",
+      "bytes": 21858
+    },
+    {
+      "path": "research/postgres-candidate.json",
+      "sha256": "c5ed7a3756c640c949a33c843de254b83effdb724f6c2ea48d7d878cada5385b",
+      "bytes": 22268
+    },
+    {
+      "path": "research/postgres-checks.log",
+      "sha256": "f3bf5e15cb79cc61015fa5b620c11133d3c87446233f44baa81caf0d7ba60a2c",
+      "bytes": 3823
+    },
+    {
+      "path": "research/postgres-environment.json",
+      "sha256": "8b3419d6e3ff56bb2ff8550f30a176ea8aba3b4040552e82cd6a3922a208b578",
+      "bytes": 1097
+    },
+    {
+      "path": "research/postgres-integration-evidence.json",
+      "sha256": "9f41177a7e7c02989b1d52ec5c9895a5449e227f670de769603bc8c3f62bfe71",
+      "bytes": 13304
+    },
+    {
+      "path": "research/postgres-regression.log",
+      "sha256": "c46d742982ff7ecade55fd00e1898568fa80b0958a8cf87bcb79ef5421ce1a3c",
+      "bytes": 5355
+    },
+    {
+      "path": "research/postgres-review-initial.md",
+      "sha256": "a63821156902ef45338c35148d0852b4dd559ad94903fb71138f99cddd8b1b4f",
+      "bytes": 2153
+    },
+    {
+      "path": "research/postgres-review.md",
+      "sha256": "121077d94217061d2aa73789517327f7a62089638872ecb38c05a4f4804cd51d",
+      "bytes": 2737
+    },
+    {
+      "path": "research/postgres-run.md",
+      "sha256": "5c1faf478f96aa54f41d6702d9d439a6c684fcbaa49923b21b5c8c5a038ff0c9",
+      "bytes": 7786
+    },
+    {
+      "path": "research/postgres-security.md",
+      "sha256": "83c03622dcb39adeeefa1adc8eff00290bd36cc1903b28cdbab0183d7c7ce440",
+      "bytes": 10514
+    },
+    {
+      "path": "research/postgres-sources.md",
+      "sha256": "951b39d3d5defd6d63fe525d5643a1ef401221e4fadfaff0eafc522bb86347d8",
+      "bytes": 14745
+    },
+    {
+      "path": "research/postgres-validation.md",
+      "sha256": "44199eea9598b90222aa3033eb2f045d9182b15385fd10e93969d10279a4ec1e",
+      "bytes": 7952
+    },
+    {
+      "path": "research/review.md",
+      "sha256": "38fc6cfd8fc83e0df587b09eca5425d738aa8c728ab0b0dc1e7d84a4ae210154",
+      "bytes": 4278
+    },
+    {
+      "path": "research/roo-method-baseline.json",
+      "sha256": "9720b9ccbc51c0d216c7a87f5fc36dffbdb861117eb87f9eff06cd9a0a6e3127",
+      "bytes": 29577
+    },
+    {
+      "path": "research/roo-method-changes.diff",
+      "sha256": "71e6b68b010c957b23755e2a9e184ef6db61efe03086ea89e51b4bca81887654",
+      "bytes": 176262
+    },
+    {
+      "path": "research/roo-method-validation.json",
+      "sha256": "801f1fb0d0f38eb7704f33646d28f71087cce0bd65736c5afc18b7ce39489942",
+      "bytes": 64825
+    },
+    {
+      "path": "research/roo-name-baseline.json",
+      "sha256": "9751470b33b5defa78559fb24a510ac806b6219a7ff6e2176e13ef90b9bbec04",
+      "bytes": 28416
+    },
+    {
+      "path": "research/roo-name-candidate.json",
+      "sha256": "a61e326e3a58f502fa9e75b06ab5d83e939ad7374c28be61ffd64a84f376eee6",
+      "bytes": 29341
+    },
+    {
+      "path": "research/roo-name-changes.json",
+      "sha256": "975d9e199788c1beb4437df4e350bfae70b2e759ffacd07e442c17639f679726",
+      "bytes": 2287
+    },
+    {
+      "path": "research/roo-name-checks.log",
+      "sha256": "2170a60b6456e9f506aab4763aa8cdc424cb480501584f785f248ed92ac61f77",
+      "bytes": 1684
+    },
+    {
+      "path": "research/roo-name-review.md",
+      "sha256": "7212f12afbdb60cfaa89d84c9c5294ab37037039e688e0b3fa600ba5b7e0168a",
+      "bytes": 1403
+    },
+    {
+      "path": "research/roo-name-run.md",
+      "sha256": "6912ac977b05885afeae0624ed2eb48d5cfe5be6c0c6efab10ee3036b84e8f92",
+      "bytes": 6500
+    },
+    {
+      "path": "research/roo-name-validation.json",
+      "sha256": "60559507773dab636053d9b2584266966731f80b25429fd968fa2990999cdeb6",
+      "bytes": 972
+    },
+    {
+      "path": "research/run-ledger.md",
+      "sha256": "0aa84bbd93223cb829e115727243aa677e90e133efa4ee95e20b49c7d5220baf",
+      "bytes": 9157
+    },
+    {
+      "path": "research/sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md",
+      "sha256": "0b1edd27561e84a17777f1bf63a87a928a7d8fe9d603fd9f6b7e13fa504e6dd7",
+      "bytes": 102577
+    },
+    {
+      "path": "research/validation.md",
+      "sha256": "9d641404fce9057e35c0413b3981cfad131212ddc2579e4faec9abe8bb340332",
+      "bytes": 4129
+    },
+    {
+      "path": "src/events.rs",
+      "sha256": "7a8c4e1afdb2b1a0ee58f5158046d74b061d08e0b9374e5c9abb78b3598a32c2",
+      "bytes": 3576
+    },
+    {
+      "path": "src/graph.rs",
+      "sha256": "15a2be2d167ab2c3f58f0c5bb44af6beebf08996e451eaf74f110ec877cab3cd",
+      "bytes": 4854
+    },
+    {
+      "path": "src/lib.rs",
+      "sha256": "fa7049015f374c08b5ddd42933c9152a063b6cc6fa04cfab540216d82a242540",
+      "bytes": 1937
+    },
+    {
+      "path": "src/order.rs",
+      "sha256": "3fe813576bf77e119bc0842363ef537e6d18ed63ba1e53754acd487c37291ac2",
+      "bytes": 4243
+    },
+    {
+      "path": "src/strategy.rs",
+      "sha256": "ba645fc7a9a3828f3c68690787e6afd17978a95b3763bf69f5da7506bab907d8",
+      "bytes": 2234
+    },
+    {
+      "path": "src/typestate.rs",
+      "sha256": "50bf1e8fd8663847cacee410b857793d58c8fe6e6a519c2979c1e582a2020d34",
+      "bytes": 4133
+    },
+    {
+      "path": "src/view.rs",
+      "sha256": "7fb302ff57d7018d50bc45b5b502d1547679c7996f1c01392aeb55f896089bbc",
+      "bytes": 1879
+    },
+    {
+      "path": "templates/architecture-decision.md",
+      "sha256": "5b1f09704a229c51af438a349461954c669f46e6e646b6b9aa42d9e4aec6f75d",
+      "bytes": 2488
+    },
+    {
+      "path": "templates/design-review.md",
+      "sha256": "446351ca48a45f7f3bf2b7b65a00f291ee484443482e10f6b1fbf46f7dcb3534",
+      "bytes": 3570
+    },
+    {
+      "path": "templates/relationship-contract.md",
+      "sha256": "e3770a993e965fe6934af31f5f0274fcb4a6310de72ad3e82dfc8bbbc2c3d8ad",
+      "bytes": 4554
+    }
+  ]
+}

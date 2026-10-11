@@ -1,0 +1,51 @@
+PASS pgJDBC 42.7.14: pinned SHA-256 verified
+PASS Jackson-core 2.22.3: pinned SHA-256 verified
+Java HTTP pure protocol checks: 72
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (case-studies/orders-payments/http/rust/target/debug/deps/roo_http_case-7bb7ba5abdd3adea)
+
+running 5 tests
+test tests::header_policy ... ok
+test tests::rejects_ambiguous_and_non_string_objects ... ok
+test tests::route_and_status_distinctions ... ok
+test tests::preserves_numeric_domain_boundary ... ok
+test tests::controls_and_idempotency_are_narrow ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (case-studies/orders-payments/http/rust/target/debug/deps/roo_http-99de3cc6fd06794f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests roo_http_case
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s
+   Generated /Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/http/rust/target/doc/roo_http_case/index.html and 1 other file
+Owned PostgreSQL cluster started on loopback
+Shared schema applied to owned test database
+PASS Java composition: 42 HTTP oracle rows, 41 rejection cases, 2 negotiation cases, 8 ordinary-mode cases, 4 startup rejections
+PASS Java composition: 16 admitted operations witnessed; request 17 returned Busy; capacity recovered
+PASS Java composition: SIGTERM closed listener and drained the witnessed active request
+PASS Java composition: 7 HTTP concurrent schedules with database lock witnesses
+PASS Java composition: 5 durable-gap and 3 completed-response-loss SIGKILL recoveries through fresh HTTP servers
+PASS Java inheritance: 42 HTTP oracle rows, 41 rejection cases, 2 negotiation cases, 8 ordinary-mode cases, 4 startup rejections
+PASS Java inheritance: 16 admitted operations witnessed; request 17 returned Busy; capacity recovered
+PASS Java inheritance: SIGTERM closed listener and drained the witnessed active request
+PASS Java inheritance: 7 HTTP concurrent schedules with database lock witnesses
+PASS Java inheritance: 5 durable-gap and 3 completed-response-loss SIGKILL recoveries through fresh HTTP servers
+PASS Rust composition: 42 HTTP oracle rows, 41 rejection cases, 2 negotiation cases, 8 ordinary-mode cases, 4 startup rejections
+PASS Rust composition: 16 admitted operations witnessed; request 17 returned Busy; capacity recovered
+PASS Rust composition: SIGTERM closed listener and drained the witnessed active request
+PASS Rust composition: 7 HTTP concurrent schedules with database lock witnesses
+PASS Rust composition: 5 durable-gap and 3 completed-response-loss SIGKILL recoveries through fresh HTTP servers
+PASS PostgreSQL immediate restart: 12 HTTP snapshots preserved/recovered; 3 surviving HTTP servers returned bounded503 then reconnected
+PASS all owned HTTP processes stopped
+Owned PostgreSQL cluster stopped; test data retained

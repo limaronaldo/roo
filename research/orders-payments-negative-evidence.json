@@ -1,0 +1,35 @@
+{
+  "rust": [
+    {
+      "source": "rust/src/lib.rs",
+      "example": 0,
+      "expected": "E0382",
+      "observed": [
+        "E0382"
+      ],
+      "exit_code": 1
+    },
+    {
+      "source": "rust/src/lib.rs",
+      "example": 1,
+      "expected": "E0502",
+      "observed": [
+        "E0502"
+      ],
+      "exit_code": 1
+    },
+    {
+      "source": "rust/src/lib.rs",
+      "example": 2,
+      "expected": "E0624",
+      "observed": [
+        "E0624"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "java": {
+    "PrivateMutation": "negative/PrivateMutation.java:5: error: add(long,long) has private access in Order\n    void bypass(Domain.Order order) { order.add(1, 1); }\n                                           ^\n1 error\n",
+    "OverrideAlgorithm": "negative/OverrideAlgorithm.java:5: error: pay(PaymentId,Mode,Failure) in OverrideAlgorithm cannot override pay(PaymentId,Mode,Failure) in TemplateApplication\n    @Override public Domain.Result pay(Domain.PaymentId id, Adapters.Mode mode, Adapters.Failure failure) {\n                                   ^\n  overridden method is final\n1 error\n"
+  }
+}

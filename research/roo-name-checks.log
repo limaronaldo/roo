@@ -1,0 +1,36 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running unittests src/lib.rs (target/debug/deps/roo-aba6c6e9b720b612)
+
+running 10 tests
+test strategy::tests::trait_implementation_does_not_imply_valid_behavior ... ok
+test order::tests::rejects_business_invalid_values ... ok
+test strategy::tests::built_in_strategies_obey_same_contract ... ok
+test typestate::tests::failed_transition_can_be_retried ... ok
+test graph::tests::reuse_rejects_stale_identity_and_dangling_edge ... ok
+test graph::tests::foreign_handles_are_rejected_even_for_same_slot_and_generation ... ok
+test typestate::tests::invalid_strategy_preserves_nonempty_draft_for_retry ... ok
+test events::tests::unsubscribe_suppresses_pending_delivery_and_preserves_rejected_payload ... ok
+test events::tests::foreign_subscriber_is_rejected ... ok
+test order::tests::rejected_add_preserves_aggregate_and_line ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests roo
+
+running 3 tests
+test src/view.rs - view (line 4) ... ok
+test src/view.rs - view (line 33) ... ok
+test src/typestate.rs - typestate (line 5) ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test src/view.rs - view (line 12) - compile fail ... ok
+test src/view.rs - view (line 23) - compile fail ... ok
+test src/typestate.rs - typestate (line 23) - compile fail ... ok
+test src/typestate.rs - typestate (line 14) - compile fail ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+all doctests ran in 0.65s; merged doctests compilation took 0.40s

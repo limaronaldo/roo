@@ -1,0 +1,15 @@
+[package]
+name = "roo-postgres-case"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.96"
+publish = false
+
+[workspace]
+
+[dependencies]
+postgres = "=0.19.14"
+
+[[bin]]
+name = "roo-postgres"
+path = "src/main.rs"

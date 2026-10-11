@@ -1,0 +1,98 @@
+name: ROO adoption track
+
+on:
+  pull_request:
+    paths:
+      - 'case-studies/orders-payments/**'
+      - 'src/**'
+      - 'examples/**'
+      - 'templates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'compose.yaml'
+      - '.dockerignore'
+      - '.github/workflows/roo-track.yml'
+  push:
+    paths:
+      - 'case-studies/orders-payments/**'
+      - 'src/**'
+      - 'examples/**'
+      - 'templates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'compose.yaml'
+      - '.dockerignore'
+      - '.github/workflows/roo-track.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    name: Java and Rust qualification with isolated PostgreSQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify hosted AMD64 runner and source provenance
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import platform
+          from pathlib import Path
+          import subprocess
+
+          def output(*command):
+              return subprocess.check_output(command, text=True).strip()
+
+          names = ('GITHUB_REPOSITORY', 'GITHUB_WORKFLOW', 'GITHUB_EVENT_NAME',
+                   'GITHUB_REF', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',
+                   'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH')
+          record = {name: os.environ.get(name) for name in names}
+          record['host_machine'] = platform.machine()
+          record['checkout_commit'] = output('git', 'rev-parse', 'HEAD')
+          record['checkout_tree'] = output('git', 'rev-parse', 'HEAD^{tree}')
+          record['docker_architecture'] = output('docker', 'info', '--format', '{{.Architecture}}')
+          paths = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
+          record['source_sha256'] = {
+              path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+              for path in paths if path
+          }
+          record['checks'] = {
+              'github_hosted': record['RUNNER_ENVIRONMENT'] == 'github-hosted',
+              'linux': record['RUNNER_OS'] == 'Linux',
+              'host_amd64': record['RUNNER_ARCH'] == 'X64' and record['host_machine'] == 'x86_64',
+              'docker_amd64': record['docker_architecture'] in ('x86_64', 'amd64'),
+              'checkout_matches_event': record['checkout_commit'] == record['GITHUB_SHA'],
+          }
+          destination = Path('artifacts/roo-track/hosted')
+          destination.mkdir(parents=True, exist_ok=True)
+          (destination / 'provenance.json').write_text(json.dumps(record, indent=2) + '\n')
+          if not all(record['checks'].values()):
+              raise SystemExit('Hosted AMD64 runner or source provenance check failed')
+          print('PASS hosted Linux AMD64 runner, Docker architecture, and checkout provenance')
+          PY
+
+      - name: Build and qualify the adoption track
+        env:
+          ROO_REQUIRE_AMD64_IMAGE: '1'
+        shell: bash
+        run: bash case-studies/orders-payments/track/compose.sh
+
+      - name: Preserve qualification evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: roo-track-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/roo-track/
+          if-no-files-found: warn
+          retention-days: 14
+          include-hidden-files: false

@@ -1,0 +1,913 @@
+{
+  "status": "PASS",
+  "variants": {
+    "java-composition": {
+      "e6": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http82",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:http82:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "new83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:http82:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:http83:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "-",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "inspect"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_response_lost",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "inspect"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_inspected",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "p1",
+              "last_result": "-",
+              "pending_outbox": "1",
+              "requested_payment_id": "pNEW",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:p1:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_response_lost",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "pNEW",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "inspect"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_inspected",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "lost_paid_response",
+          "prefer_persisted_identity",
+          "no_committed_intent",
+          "no_recovery_identity",
+          "lost_line_response",
+          "line_inspected"
+        ],
+        "status": "PASS",
+        "payment": {
+          "scope": "http_50083d4a4ff2_track_lost_payment_7dd3ac",
+          "client_exception": "RemoteDisconnected",
+          "fresh_get": {
+            "scenario": "http_50083d4a4ff2_track_lost_payment_7dd3ac",
+            "state": "Paid",
+            "total": "250",
+            "charge_count": "1",
+            "refund_count": "0",
+            "event_count": "1",
+            "consumer_count": "0",
+            "pending_outbox": "1",
+            "last_result": "-",
+            "payment_id": "p1",
+            "refund_id": "-"
+          },
+          "final": {
+            "scenario": "http_50083d4a4ff2_track_lost_payment_7dd3ac",
+            "state": "Paid",
+            "total": "250",
+            "charge_count": "1",
+            "refund_count": "0",
+            "event_count": "1",
+            "consumer_count": "0",
+            "pending_outbox": "1",
+            "last_result": "-",
+            "payment_id": "p1",
+            "refund_id": "-"
+          },
+          "gate": "http_after_snapshot",
+          "signal": "SIGKILL"
+        },
+        "automatic_line_posts": 0,
+        "line": {
+          "scope": "http_50083d4a4ff2_track_lost_line_9ee844",
+          "client_exception": "RemoteDisconnected",
+          "fresh_get": {
+            "scenario": "http_50083d4a4ff2_track_lost_line_9ee844",
+            "state": "Draft",
+            "total": "300",
+            "charge_count": "0",
+            "refund_count": "0",
+            "event_count": "0",
+            "consumer_count": "0",
+            "pending_outbox": "0",
+            "last_result": "-",
+            "payment_id": "-",
+            "refund_id": "-"
+          },
+          "final": {
+            "scenario": "http_50083d4a4ff2_track_lost_line_9ee844",
+            "state": "Draft",
+            "total": "350",
+            "charge_count": "0",
+            "refund_count": "0",
+            "event_count": "0",
+            "consumer_count": "0",
+            "pending_outbox": "0",
+            "last_result": "-",
+            "payment_id": "-",
+            "refund_id": "-"
+          },
+          "gate": "http_after_snapshot",
+          "signal": "SIGKILL"
+        },
+        "explicit_202_reconcile": {
+          "origin": "explicit harness/caller action, outside learner policy",
+          "before": {
+            "scenario": "http_50083d4a4ff2_track_202_3473ac",
+            "state": "Pending",
+            "total": "250",
+            "charge_count": "1",
+            "refund_count": "0",
+            "event_count": "0",
+            "consumer_count": "0",
+            "pending_outbox": "0",
+            "last_result": "-",
+            "payment_id": "p202",
+            "refund_id": "-"
+          },
+          "action": "reconcile:ok:none",
+          "result": "Approved",
+          "final": {
+            "scenario": "http_50083d4a4ff2_track_202_3473ac",
+            "state": "Paid",
+            "total": "250",
+            "charge_count": "1",
+            "refund_count": "0",
+            "event_count": "1",
+            "consumer_count": "0",
+            "pending_outbox": "1",
+            "last_result": "-",
+            "payment_id": "p202",
+            "refund_id": "-"
+          }
+        },
+        "negative_controls": [
+          {
+            "changed_payment_key": "pNEW",
+            "domain_result": "IntentConflict",
+            "unchanged_snapshot": true
+          },
+          {
+            "injected_action": "add:50:1",
+            "required_action": "inspect",
+            "rejected": true,
+            "diagnostic": "BEHAVIOR e6: expected action inspect, observed add:50:1"
+          },
+          {
+            "injected_action": "add:50:1",
+            "required_action": "stop",
+            "rejected": true,
+            "diagnostic": "BEHAVIOR e6: expected action stop, observed add:50:1"
+          }
+        ]
+      }
+    },
+    "java-inheritance": {
+      "e6": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http82",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:http82:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "new83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:http82:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:http83:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "-",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "inspect"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_response_lost",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "inspect"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_inspected",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "p1",
+              "last_result": "-",
+              "pending_outbox": "1",
+              "requested_payment_id": "pNEW",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:p1:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_response_lost",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "pNEW",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "inspect"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_inspected",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "lost_paid_response",
+          "prefer_persisted_identity",
+          "no_committed_intent",
+          "no_recovery_identity",
+          "lost_line_response",
+          "line_inspected"
+        ],
+        "status": "PASS",
+        "payment": {
+          "scope": "http_50083d4a4ff2_track_lost_payment_dbe9e1",
+          "client_exception": "RemoteDisconnected",
+          "fresh_get": {
+            "scenario": "http_50083d4a4ff2_track_lost_payment_dbe9e1",
+            "state": "Paid",
+            "total": "250",
+            "charge_count": "1",
+            "refund_count": "0",
+            "event_count": "1",
+            "consumer_count": "0",
+            "pending_outbox": "1",
+            "last_result": "-",
+            "payment_id": "p1",
+            "refund_id": "-"
+          },
+          "final": {
+            "scenario": "http_50083d4a4ff2_track_lost_payment_dbe9e1",
+            "state": "Paid",
+            "total": "250",
+            "charge_count": "1",
+            "refund_count": "0",
+            "event_count": "1",
+            "consumer_count": "0",
+            "pending_outbox": "1",
+            "last_result": "-",
+            "payment_id": "p1",
+            "refund_id": "-"
+          },
+          "gate": "http_after_snapshot",
+          "signal": "SIGKILL"
+        },
+        "automatic_line_posts": 0,
+        "line": {
+          "scope": "http_50083d4a4ff2_track_lost_line_f9122d",
+          "client_exception": "RemoteDisconnected",
+          "fresh_get": {
+            "scenario": "http_50083d4a4ff2_track_lost_line_f9122d",
+            "state": "Draft",
+            "total": "300",
+            "charge_count": "0",
+            "refund_count": "0",
+            "event_count": "0",
+            "consumer_count": "0",
+            "pending_outbox": "0",
+            "last_result": "-",
+            "payment_id": "-",
+            "refund_id": "-"
+          },
+          "final": {
+            "scenario": "http_50083d4a4ff2_track_lost_line_f9122d",
+            "state": "Draft",
+            "total": "350",
+            "charge_count": "0",
+            "refund_count": "0",
+            "event_count": "0",
+            "consumer_count": "0",
+            "pending_outbox": "0",
+            "last_result": "-",
+            "payment_id": "-",
+            "refund_id": "-"
+          },
+          "gate": "http_after_snapshot",
+          "signal": "SIGKILL"
+        },
+        "explicit_202_reconcile": {
+          "origin": "explicit harness/caller action, outside learner policy",
+          "before": {
+            "scenario": "http_50083d4a4ff2_track_202_ed60d0",
+            "state": "Pending",
+            "total": "250",
+            "charge_count": "1",
+            "refund_count": "0",
+            "event_count": "0",
+            "consumer_count": "0",
+            "pending_outbox": "0",
+            "last_result": "-",
+            "payment_id": "p202",
+            "refund_id": "-"
+          },
+          "action": "reconcile:ok:none",
+          "result": "Approved",
+          "final": {
+            "scenario": "http_50083d4a4ff2_track_202_ed60d0",
+            "state": "Paid",
+            "total": "250",
+            "charge_count": "1",
+            "refund_count": "0",
+            "event_count": "1",
+            "consumer_count": "0",
+            "pending_outbox": "1",
+            "last_result": "-",
+            "payment_id": "p202",
+            "refund_id": "-"
+          }
+        },
+        "negative_controls": [
+          {
+            "changed_payment_key": "pNEW",
+            "domain_result": "IntentConflict",
+            "unchanged_snapshot": true
+          },
+          {
+            "injected_action": "add:50:1",
+            "required_action": "inspect",
+            "rejected": true,
+            "diagnostic": "BEHAVIOR e6: expected action inspect, observed add:50:1"
+          },
+          {
+            "injected_action": "add:50:1",
+            "required_action": "stop",
+            "rejected": true,
+            "diagnostic": "BEHAVIOR e6: expected action stop, observed add:50:1"
+          }
+        ]
+      }
+    },
+    "rust": {
+      "e6": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http82",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:http82:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "new83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:http82:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:http83:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "-",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "inspect"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_response_lost",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "inspect"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_inspected",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "p1",
+              "last_result": "-",
+              "pending_outbox": "1",
+              "requested_payment_id": "pNEW",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "pay:p1:approve:none"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_response_lost",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "pNEW",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "inspect"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_inspected",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "lost_paid_response",
+          "prefer_persisted_identity",
+          "no_committed_intent",
+          "no_recovery_identity",
+          "lost_line_response",
+          "line_inspected"
+        ],
+        "status": "PASS",
+        "payment": {
+          "scope": "http_50083d4a4ff2_track_lost_payment_30e5b3",
+          "client_exception": "RemoteDisconnected",
+          "fresh_get": {
+            "charge_count": "1",
+            "consumer_count": "0",
+            "event_count": "1",
+            "last_result": "-",
+            "payment_id": "p1",
+            "pending_outbox": "1",
+            "refund_count": "0",
+            "refund_id": "-",
+            "scenario": "http_50083d4a4ff2_track_lost_payment_30e5b3",
+            "state": "Paid",
+            "total": "250"
+          },
+          "final": {
+            "charge_count": "1",
+            "consumer_count": "0",
+            "event_count": "1",
+            "last_result": "-",
+            "payment_id": "p1",
+            "pending_outbox": "1",
+            "refund_count": "0",
+            "refund_id": "-",
+            "scenario": "http_50083d4a4ff2_track_lost_payment_30e5b3",
+            "state": "Paid",
+            "total": "250"
+          },
+          "gate": "http_after_snapshot",
+          "signal": "SIGKILL"
+        },
+        "automatic_line_posts": 0,
+        "line": {
+          "scope": "http_50083d4a4ff2_track_lost_line_953f0b",
+          "client_exception": "RemoteDisconnected",
+          "fresh_get": {
+            "charge_count": "0",
+            "consumer_count": "0",
+            "event_count": "0",
+            "last_result": "-",
+            "payment_id": "-",
+            "pending_outbox": "0",
+            "refund_count": "0",
+            "refund_id": "-",
+            "scenario": "http_50083d4a4ff2_track_lost_line_953f0b",
+            "state": "Draft",
+            "total": "300"
+          },
+          "final": {
+            "charge_count": "0",
+            "consumer_count": "0",
+            "event_count": "0",
+            "last_result": "-",
+            "payment_id": "-",
+            "pending_outbox": "0",
+            "refund_count": "0",
+            "refund_id": "-",
+            "scenario": "http_50083d4a4ff2_track_lost_line_953f0b",
+            "state": "Draft",
+            "total": "350"
+          },
+          "gate": "http_after_snapshot",
+          "signal": "SIGKILL"
+        },
+        "explicit_202_reconcile": {
+          "origin": "explicit harness/caller action, outside learner policy",
+          "before": {
+            "charge_count": "1",
+            "consumer_count": "0",
+            "event_count": "0",
+            "last_result": "-",
+            "payment_id": "p202",
+            "pending_outbox": "0",
+            "refund_count": "0",
+            "refund_id": "-",
+            "scenario": "http_50083d4a4ff2_track_202_e3fdb3",
+            "state": "Pending",
+            "total": "250"
+          },
+          "action": "reconcile:ok:none",
+          "result": "Approved",
+          "final": {
+            "charge_count": "1",
+            "consumer_count": "0",
+            "event_count": "1",
+            "last_result": "-",
+            "payment_id": "p202",
+            "pending_outbox": "1",
+            "refund_count": "0",
+            "refund_id": "-",
+            "scenario": "http_50083d4a4ff2_track_202_e3fdb3",
+            "state": "Paid",
+            "total": "250"
+          }
+        },
+        "negative_controls": [
+          {
+            "changed_payment_key": "pNEW",
+            "domain_result": "IntentConflict",
+            "unchanged_snapshot": true
+          },
+          {
+            "injected_action": "add:50:1",
+            "required_action": "inspect",
+            "rejected": true,
+            "diagnostic": "BEHAVIOR e6: expected action inspect, observed add:50:1"
+          },
+          {
+            "injected_action": "add:50:1",
+            "required_action": "stop",
+            "rejected": true,
+            "diagnostic": "BEHAVIOR e6: expected action stop, observed add:50:1"
+          }
+        ]
+      }
+    }
+  },
+  "errors": [],
+  "qualification": "e6-only completed starter, all other gaps unchanged",
+  "temporary_policy_source_hashes": {
+    "temporary_java_learner": "890cca16a13e9b6348351a7f1fbe3a0e8ebeb1d98be81088fea50400ff90c30c",
+    "temporary_rust_learner": "6af58ce5df30353b433cae612e78e4b4246d822ee107a21459a9895c88e8b91b"
+  },
+  "source": "starter",
+  "selected_exercises": [
+    "e6"
+  ],
+  "source_hashes": {
+    "SPEC.md": "cacd524a92999b117add701ab1e65e7c078d1c2c2fe97e1da8dfab95c2b77eef",
+    "build.sh": "d377dfc4db5f4d0461180e87148345b0e4e937fafeca6fe1c95b0f1972245032",
+    "check_independence.py": "d4fe470cc9cd381a40352216d905fcf6358516a3319bb99bb3bc5ec80d48ea3a",
+    "java/common/roo/payments/TrackInput.java": "782869dd0fde3b37b4d8588a69cad8e48e4f16869e577d6292fee5cf6cd5e979",
+    "java/common/roo/payments/TrackMain.java": "6b87eab37d880b1f6cde3d22aa34d3887635be123f0b3f58630b8689ad363945",
+    "java/common/roo/payments/TrackNative.java": "935b9dcaac7253f461f2c4ffeca5fec5673af53e807219532f7137b92215fe3b",
+    "java/solution/roo/payments/LearnerPolicy.java": "5e0bdad227472de703aed267d0ef3a3718b0adc0760f6f31b94c3cbff1826b7d",
+    "java/starter/roo/payments/LearnerPolicy.java": "56471ca6dce05d34cc4a2e3d1101f980884c7af9b52b0550f9cba53ff6cfef75",
+    "malformed-cases.json": "aa4355b8bd926bb5b624e7a0e098ca32f88918726c9fdfce7b9cfbbc550cb7e6",
+    "policy-cases.tsv": "71bda065580dd9f34067962733664f4754deafce4cded447050fa21c055201f0",
+    "rust/shared.rs": "9f2fb02a50f097879a92c78f6241b15679251b120c79c642d7dc3c05583a7a8b",
+    "rust/solution/Cargo.toml": "b105915b48edf95060a645313d60005f79c3d20c34c94c8427adc34657dee3b4",
+    "rust/solution/src/learner.rs": "9374e978219d25be5625d29947fa64827c3f9ea395b9c8e395e19fdcc31a43da",
+    "rust/solution/src/main.rs": "444845bb518c96fa7def1ddea6a2df8cde77b585d6e8b3705fe78a276f1fbe2f",
+    "rust/starter/Cargo.toml": "5bc7ec2aed505dcb327e0da18a4793e75a25d69dabf48fa2d6b2778195c6eb23",
+    "rust/starter/src/learner.rs": "ebde0492cecbe4d4db8f87143c4a4ca998c4bea18b22b2b7a74f697099c3bb4f",
+    "rust/starter/src/main.rs": "444845bb518c96fa7def1ddea6a2df8cde77b585d6e8b3705fe78a276f1fbe2f",
+    "verify.py": "33b7b5d2037ebbe4b067dfd0bc4633540aabe25db309b1f6ba9ded34bff8ee96",
+    "verify.sh": "3358c6134f164cc30a9e0c5f57923b9f0527697ae071039d6146d9c65adce241"
+  },
+  "qualification_counts": {
+    "java-composition": {
+      "malformed_rejections": 23,
+      "policy_cases": 6,
+      "native_passes": 0
+    },
+    "java-inheritance": {
+      "malformed_rejections": 23,
+      "policy_cases": 6,
+      "native_passes": 0
+    },
+    "rust": {
+      "malformed_rejections": 23,
+      "policy_cases": 6,
+      "native_passes": 0
+    }
+  },
+  "barriers": [
+    {
+      "worker": "http_50083d4a4ff2_worker_972981",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_50083d4a4ff2_worker_972981:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_50083d4a4ff2_worker_b19f7b",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_50083d4a4ff2_worker_b19f7b:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_50083d4a4ff2_worker_57d4a7",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_50083d4a4ff2_worker_57d4a7:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_50083d4a4ff2_worker_246734",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_50083d4a4ff2_worker_246734:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_50083d4a4ff2_worker_ae0209",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_50083d4a4ff2_worker_ae0209:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_50083d4a4ff2_worker_987bfe",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_50083d4a4ff2_worker_987bfe:http_after_snapshot|Lock|advisory"
+    }
+  ],
+  "all_http_processes_stopped": true,
+  "e2_incomplete_verified_for_variants": [
+    "java-composition",
+    "java-inheritance",
+    "rust"
+  ]
+}

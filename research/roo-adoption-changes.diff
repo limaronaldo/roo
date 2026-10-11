@@ -1,0 +1,873 @@
+--- before/README.md
++++ after/README.md
+@@ -53,6 +53,7 @@
+ | [6. Cross-language transfer](docs/06-cross-language.md) | Applying the method in Rust, Java and other languages |
+ | [7. Learning path](docs/07-learning-path.md) | Reading sequence, exercises, assessment and a capstone |
+ | [8. Rust and object-oriented design](docs/08-rust-and-object-design.md) | Improved English edition of the supplied guide, with a 29-topic coverage map |
++| [9. Practical adoption](docs/09-adoption-guide.md) | Adopt ROO through orders and payments, three completed templates, and the same decisions in Java and Rust |
+ | [Orders and payments case](case-studies/orders-payments/README.md) | Java inheritance, Java composition and Rust under one executable failure contract |
+ | [PostgreSQL evolution](case-studies/orders-payments/postgres/README.md) | Durable transactions, competing processes, SIGKILL recovery and PostgreSQL crash restart under the same Java/Rust oracle |
+ | [HTTP APIs](case-studies/orders-payments/http/README.md) | Java and Rust APIs with strict JSON, durable idempotency, bounded concurrency and recovery after lost responses |
+--- before/case-studies/orders-payments/README.md
++++ after/case-studies/orders-payments/README.md
+@@ -46,6 +46,13 @@
+ implementation decision. Neither custody nor possession of an ID grants caller
+ authorization. The frozen specifications define this exercise's behavior; the
+ dated evidence records bound its execution claims.
++
++To adopt the method in an existing project, follow the [practical adoption
++guide](../../docs/09-adoption-guide.md). Its worked artifacts complete the
++[Relationship Contract](adoption/relationship-contract.md),
++[architecture decision](adoption/architecture-decision.md), and
++[design review](adoption/design-review.md) for this case, with the same recovery
++decisions traced into Java and Rust.
+ 
+ ## What this case teaches
+ 
+--- /dev/null
++++ after/docs/09-adoption-guide.md
+@@ -0,0 +1,281 @@
++# Adopt ROO one operation at a time
++
++ROO means **Relationship & Ownership Oriented design**. Use it as a
++language-independent design method: define an operation and its invariant,
++decide the relationships that preserve it, then choose representations and
++enforcement mechanisms. An existing Java or Rust project can adopt this method
++without changing language, framework, or its whole architecture.
++
++This guide follows one decision through the orders/payments case: persist a
++stable payment intent before asking the provider to charge, then recover local
++finalization using that same intent. Read the filled artifacts alongside it:
++
++- [Relationship Contract](../case-studies/orders-payments/adoption/relationship-contract.md)
++- [Architecture decision](../case-studies/orders-payments/adoption/architecture-decision.md)
++- [Design review](../case-studies/orders-payments/adoption/design-review.md)
++
++For your own operation, copy the original [Relationship Contract worksheet](../templates/relationship-contract.md),
++[architecture decision template](../templates/architecture-decision.md), and
++[design review template](../templates/design-review.md). The filled examples
++are a worked decision, not a prescription to build a payment service.
++
++## 1. Choose an operation and a consequential failure
++
++Choose one operation whose partial failure matters to a caller. “Improve our
++object model” is too broad. “Recover a charged order when the final local commit
++fails” gives you participants, observations, and a testable forbidden outcome.
++In another project, this might be reserving inventory or publishing a document.
++
++Use the [shared specification](../case-studies/orders-payments/SPEC.md) and
++the actual `recover_commit` row in [scenarios.tsv](../case-studies/orders-payments/scenarios.tsv):
++
++```text
++add:100:2;add:50:1;pay:p1:approve:commit;reconcile:ok:none
++```
++
++Each row starts fresh with order `O1`, fixed currency `USD`, and independent
++store, provider, outbox, and consumer state. Amounts are integer minor units:
++the two additions total 250, or USD 2.50. `commit` injects failure of the final
++local commit; it does not undo the provider's charge.
++
++Write the behavior before drawing classes:
++
++| Question | Decision for this operation |
++|---|---|
++| Required outcome | Reconciliation reaches Paid using persisted intent `p1`. |
++| Allowed intermediate outcome | Pending with one remote charge and no terminal local event. |
++| Forbidden outcome | A second charge, a changed intent, or a committed Paid order without its terminal event. |
++| Observation boundary | Committed local snapshot and independently retained provider effects; never an uncommitted candidate. |
++| Recovery | Look up the same persisted intent and finalize once. |
++
++Unknown remote work is also a legitimate intermediate outcome. A timeout does
++not establish failure of the effect. Keep `Unknown` separate from an
++authoritative `NotFound`; the simulator can establish absence only because its
++provider map is complete for that fresh scenario.
++
++## 2. Name participants and responsibilities
++
++Name the domain invariant coordinator before choosing an interface or trait.
++Here the application coordinates preparation, remote observation, and local
++finalization. The order's domain transitions enforce state and amount rules;
++the store installs committed snapshots and events together.
++
++| Participant | Responsibility in the selected operation |
++|---|---|
++| Order and lines | Validate positive amounts/quantities, checked totals, and legal transitions; freeze lines after intent preparation. |
++| Application coordinator | Preserve protocol ordering and keep retries bound to the stored intent. |
++| Store | Retain committed order/outbox; reject failed candidate commits without installing either. |
++| Payment intent | Carry immutable PaymentId, OrderId, currency, and amount facts. |
++| Provider | Retain full request fingerprints and terminal results; own its independent effect. |
++| Event/outbox | Retain copied terminal facts identified by `payment:p1`. |
++| Consumer | Apply each unique EventId once. |
++
++Separate four questions that often get collapsed into “ownership”:
++
++- **Custody:** the store retains the committed snapshot; the provider retains
++  charge records. Memory retention and cleanup are local responsibilities.
++- **Identity:** `O1`, `p1`, and `payment:p1` identify different domain concepts.
++  An object reference, memory address, or database connection is not that identity.
++- **Mutation authority:** domain transitions and the coordinator decide legal
++  changes; having a reference to a store must not enable arbitrary status writes.
++- **Authorization:** which customer or operator may request pay or refund is
++  a separate product/security policy. This synthetic case does not implement it.
++
++A request scope or synthetic database scope is not an authorization boundary.
++Record the missing authorization decision explicitly in a real adoption.
++
++## 3. Fill all seven relationship fields
++
++For the relationship **application → persisted payment intent → provider**,
++complete each field with an operational decision. A language keyword is not a
++sufficient answer. Split contracts if relationships have different lifecycles
++or failure rules; order/lines and event/consumer deserve their own analysis.
++
++| Field | Filled decision for payment recovery |
++|---|---|
++| Owner / resource custodian | Store retains the intent with Pending; provider independently retains its complete key record and charge. Coordinator uses both capabilities. |
++| Stable identity | PaymentId `p1` names the operation; request fingerprint includes OrderId `O1`, USD, and 250. EventId is deterministically `payment:p1`. Never substitute a new key during recovery. |
++| Mutation authority | Domain transitions validate changes; application orders preparation and finalization; store commits the local invariant. Provider alone decides and records its effect. Caller authorization remains separate. |
++| Access regime | Work on a detached candidate, read the committed intent, send immutable request facts, and return explicit observations. Callers receive snapshots or read-only values rather than mutable order internals. |
++| Validity horizon | Candidate observations can become stale after a commit. Intent facts stay fixed once prepared. In-memory provider records last for the entire scenario, with no expiry; this is not restart durability or a real provider retention policy. |
++| Execution domain | Base case is one single-threaded scenario. PostgreSQL adds per-order transaction coordination; HTTP adds overlapping requests using that database authority. |
++| Failure boundary | Prepare failure precedes the charge. Final local commit failure preserves Pending and the independent charge. Reconcile or same-key retry repairs local state; event delivery has a later acknowledgement gap. |
++
++Add supporting decisions: who creates and deletes records, how stale or missing
++identities resolve, which facts cross boundaries, and how long records are
++retained. In a live system, key retention and operational handling of unresolved
++intents are requirements, not implementation trivia.
++
++## 4. Compare alternatives before choosing mechanisms
++
++The neutral decision is **persist intent, perform independent effect, finalize
++state plus event, recover by stable identity**. Evaluate alternatives against
++the forbidden outcomes and extension needs.
++
++| Alternative | What must be justified |
++|---|---|
++| Charge first, invent intent later | A lost response can leave an effect with no stable local recovery identity; reject for this contract. |
++| Persist intent, then independent charge and local finalization | Selected: explicitly represents uncertainty and supports same-intent recovery; needs provider idempotency and reconciliation policy. |
++| One transaction around everything | Local state and event can share a transaction; this provider effect and consumer inbox commit independently. A wrapper transaction does not make them atomic together. |
++
++After selecting the relationship policy, compare ways to realize it. These
++code shapes can preserve the same policy; choosing one does not settle the
++provider's retention or recovery contract.
++
++| Realization option | What must be justified |
++|---|---|
++| Constructor-injected composition | Makes adapter selection explicit; implementations must honor detached commit and provider request contracts. |
++| Template Method coordinator | Legitimate reuse when a shared final algorithm varies only stable store/provider hooks; subclasses must obey those hook contracts. |
++| Shared mutable application object | Requires a defined coordination regime; a shared reference alone does not preserve the invariant under overlap. |
++
++Record why the selected policy fits this operation and what would change it.
++For example, provider key expiry may require an operational cutoff and manual
++resolution. A partial-refund requirement changes the bounded domain contract;
++it is not just another adapter implementation.
++
++## 5. Walk the same decision through Java and Rust
++
++Read these symbols in order. Keep the behavioral contract stable while allowing
++the languages to use different type and reuse mechanisms.
++
++| Decision | Java realization | Rust realization |
++|---|---|---|
++| Restrict order mutation | [`Domain.Order`](../case-studies/orders-payments/java/src/roo/payments/Domain.java) has private state/transitions; package-level `Domain.add`, `preparePayment`, and `finish` support coordination. | [`Order`](../case-studies/orders-payments/rust/src/domain.rs) has private fields and crate-scoped transitions such as `prepare_payment` and `finish_payment`. |
++| Distinguish identity and facts | `OrderId`, `PaymentId`, `RefundId`, `EventId`, `PaymentRequest`, and `Event` are distinct records/types in `Domain.java`. | Separate identity newtypes, `PaymentRequest`, and `Event` in `domain.rs` carry owned facts. |
++| Compose capabilities | [`CompositionApplication`](../case-studies/orders-payments/java/src/roo/payments/CompositionApplication.java) injects `StorePort`/`ProviderPort`; final public `add`, `pay`, `refund`, and `reconcile` fix the orchestration. | [`Application<'a>`](../case-studies/orders-payments/rust/src/application.rs) holds exclusive mutable borrows of `Store`, `Provider`, and `Consumer`. |
++| Reuse the algorithm through inheritance | [`TemplateApplication`](../case-studies/orders-payments/java/src/roo/payments/TemplateApplication.java) has final public algorithms, private `finish`, and protected `store()`/`provider()` hooks whose adapters must remain stable. | No matching class hierarchy is needed; the composed coordinator preserves the same invariant. |
++| Commit candidate state | [`Adapters.Store.load` / `commit`](../case-studies/orders-payments/java/src/roo/payments/Adapters.java) detach and install snapshots; failed commit installs neither terminal state nor event. | [`Store::candidate` / `commit`](../case-studies/orders-payments/rust/src/adapters.rs) clone and replace a candidate containing order and outbox. |
++| Use committed intent | `pay` reloads the store after preparation, then calls `ProviderPort.charge` with `persisted.payment()`. | `pay` clones the persisted `PaymentRequest` before `Provider::pay`; no cached mutable Order spans the effect. |
++| Recover and deliver | `reconcile` observes the provider; private `finish` commits state/event; `Store.relay` and `Consumer.accept` handle delivery identity. | `reconcile` and private `finish` do the corresponding work; `Store::relay` and `Consumer::deliver` handle copied event facts and deduplication. |
++
++Java encapsulation and final methods restrict ordinary callers/subclasses;
++they do not establish that every port implementation is correct. Rust borrowing
++checks local access and aliasing for these safe references; it does not decide
++whether a provider charge occurred or make multiple commits atomic.
++
++The same invariants do not require identical type hierarchies. Keep a valid
++Template Method if it supplies needed algorithm reuse and controlled variation;
++choose composition where injected capabilities express the extension point
++more clearly. Do not rewrite an existing Java system into Rust to adopt ROO.
++
++## 6. Trace the failure, including intermediate assertions
++
++The oracle's final row is necessary but insufficient: later success can hide
++an earlier broken state. Trace `recover_commit` at each boundary:
++
++| Boundary | Required local observation | Independent effect / result |
++|---|---|---|
++| After the two adds | Draft; total 250; no payment intent; no events | No charge. |
++| After preparation | Pending; immutable intent `(p1, O1, USD, 250)` committed | Provider has not yet been called. |
++| After provider approval | Local committed state is still Pending | Provider records approval and one charge for `p1`. |
++| After injected final commit failure | Pending; payment ID `p1`; event_count 0; pending_outbox 0 | charge_count 1; result `LocalCommitFailed`. |
++| After `reconcile:ok:none` | Paid; same `p1`; event_count 1; pending_outbox 1 | Still one charge; result `Approved`. |
++
++The terminal event is `PaymentApproved`, ID `payment:p1`, carrying copied
++order/payment/amount facts. Consumer count remains zero because this scenario
++does not relay. Refund count is zero and refund ID is absent (`-`).
++
++Compare the separate `commit_failure` and `recover_commit` rows in
++[expected.tsv](../case-studies/orders-payments/expected.tsv). Inspect
++[`UnitTests.java`](../case-studies/orders-payments/java/src/roo/payments/UnitTests.java)
++and `terminal_commit_failure_keeps_pending_without_candidate_event` in
++[`application.rs`](../case-studies/orders-payments/rust/src/application.rs)
++for assertions at the failure boundary, rather than inferring it from the final
++successful row. The provider's effect survives because it belongs to a separate
++failure boundary. A later refund is compensation with its own intent and event,
++not rollback of the historical charge.
++
++## 7. Extend the reasoning across persistence and HTTP
++
++Move to the [PostgreSQL contract](../case-studies/orders-payments/postgres/SPEC.md)
++when the claim involves overlap, process death, or restart. It uses short app
++transactions with the order row locked/reloaded; releases the app lock before
++provider calls; and revalidates the persisted intent during finalization.
++Provider records and consumer inbox use independent transactions/connections.
++Terminal local state and outbox event share an app transaction. All these
++transactions do not become one transaction because they share a database server.
++
++For a lost connection around COMMIT, distinguish known abort from uncertain
++commit. Reopen and inspect durable state; reconcile or retry the same payment
++identity. Do not replay the whole multi-transaction command. An uncertain add
++needs inspection because it lacks a durable command identity. Recorded process,
++database restart, and WAL recovery checks support only their examined setup;
++they do not prove hardware power-loss survival or a real payment network.
++
++At the [HTTP boundary](../case-studies/orders-payments/http/SPEC.md), each
++request owns validated input and its invocation. Handlers reuse the domain and
++transactional application instead of reproducing payment logic. Database row
++locks coordinate overlap; a global application mutex would conceal the intended
++database schedules. Immutable configuration may be shared; live transactions,
++connections, cursors, and mutable orders are not shared between requests.
++
++Lost responses do not prove rollback. Inspect with GET, retry payments/refunds
++with the **same** operation identity, and explicitly reconcile Pending/Refunding.
++The optional payment/refund `Idempotency-Key` must equal the body ID. It supplies
++natural-key idempotence, not a response cache: retries need not return the same
++outcome or byte-identical JSON. HTTP 202 for domain Unknown/NotFound promises no
++background worker. Missing scope is HTTP 404, a different meaning of not found.
++
++Line POST is deliberately non-idempotent: two successful identical requests
++append twice. After response loss, inspect and make a caller-controlled decision;
++GET total alone is not a command receipt under concurrency. A future replay-safe
++line API needs line, full command fingerprint, and receipt committed atomically.
++
++## 8. Practice with bounded review questions
++
++Answer before reading the relevant source. These are reading/review exercises;
++the listed expectations are contract targets, not reports of new executions.
++
++| Exercise | Inspect | Bounded expected answer |
++|---|---|---|
++| Reject an add after two valid lines. What survives? | Base SPEC, `Order.add`, unit snapshot assertions; `valid_after_invalid` covers the opposite ordering. | Invalid/overflowing candidate preserves all previous lines and total 250. Final TSV totals alone do not prove line preservation. |
++| Explain `recover_commit` without skipping the failure. | Fixture/oracle, both Java coordinators, Rust `pay`/`finish`. | Pending + one charge + zero events after failure; same `p1` reaches Paid + one charge + one `payment:p1` event. |
++| Compare same-key retry, another intent, and changed fingerprint. | `retry_same_key`, `intent_conflict`, `key_conflict`, provider code. | Matching request reuses result/effect; `p2` conflicts with active intent; recorded `p1` with changed amount returns KeyConflict. The direct conflict probe is test-only. |
++| Lose the relay acknowledgement after delivery. | `relay_ack_failure`, `duplicate_delivery`, relay/consumer code. | One consumed event remains pending; redelivery leaves consumer count one and successful acknowledgement clears pending. |
++| Overlap pay/add, or lose the finalization process. | PostgreSQL SPEC and its documented harness/evidence. | Order locking/revalidation controls overlap; a fresh process recovers committed intent/effect. Unknown COMMIT requires inspection, not assumed rollback. |
++| Lose a payment response, then lose a line response. | HTTP SPEC and its documented harness/evidence. | Same payment ID avoids another effect; blindly replaying line POST can append twice. 202 requires explicit caller recovery. |
++
++For your operation, replace each row with a real input, expected intermediate
++state, forbidden observation, and evidence source. Include cancellation only
++with a stated contract: cancellation of a caller does not imply reversal of an
++already committed external effect.
++
++## 9. Review evidence and adopt incrementally
++
++Use the [filled design review](../case-studies/orders-payments/adoption/design-review.md)
++to challenge the decision, then record evidence by class:
++
++| Evidence class | Appropriate claim | Limit |
++|---|---|---|
++| Compiler or static analysis | Intended private-access, final-override, move, or borrow restriction is checked. | Does not prove domain behavior, authorization, durable commits, or remote effects. |
++| Runtime or behavioral scenario | Selected fixture outputs and intermediate assertions match the contract. | Does not establish unobserved failure points or all interleavings. |
++| Database or transaction | Recorded locks, constraints, independent commits, process/restart recovery in the examined setup. | Does not establish real-provider behavior or production readiness. |
++| Protocol or boundary | Observed HTTP validation, response loss, retry and rejection behavior. | Schema or compilation alone does not establish these outcomes. |
++| Human review or operational decision | Named coordinator, retention policy, authorization, and accepted tradeoffs. | A decision is not execution evidence. |
++
++Start with the [base validation record](../research/orders-payments-validation.md)
++and the extension [PostgreSQL README](../case-studies/orders-payments/postgres/README.md)
++and [HTTP README](../case-studies/orders-payments/http/README.md) for their
++verification procedures and evidence links. Those records describe historical
++runs; this guide does not report a new test run. A SPEC states requirements.
++A successful build and an executed scenario are different evidence.
++
++Use this small adoption backlog in an existing project:
++
++1. **Choose:** name one operation, failure, allowed/forbidden outcomes, and
++   observation boundary. Done when a teammate can predict the failure trace.
++2. **Describe:** fill the seven fields and separate custody, identity, mutation
++   authority, and authorization. Done when each has a named responsible party.
++3. **Decide:** compare viable alternatives and map the policy to existing Java,
++   Rust, storage, or protocol mechanisms. Done when extension costs are explicit.
++4. **Constrain:** close one bypass or expose one explicit recovery operation.
++   Done when callers cannot silently violate the selected invariant through it.
++5. **Demonstrate:** add the smallest meaningful scenario and intermediate
++   assertions. Done when the forbidden outcome is checked at the failure point.
++6. **Review:** classify defects, unverified questions, and optional improvements;
++   assign unresolved retention/authorization/operations decisions. Done when the
++   accepted scope and evidence limits are recorded in the decision and review.
++
++Expand to adjacent relationships only when their different identity, lifecycle,
++coordination, or failure rules require it. The useful result is a reviewable
++operation with explicit recovery responsibilities and evidence for its claims.
+--- /dev/null
++++ after/case-studies/orders-payments/adoption/relationship-contract.md
+@@ -0,0 +1,189 @@
++# Relationship Contract worksheet: payment finalization recovery
++
++Filled from the [relationship worksheet](../../../templates/relationship-contract.md).
++Use with the [adoption guide](../../../docs/09-adoption-guide.md),
++[architecture decision](architecture-decision.md), and [design review](design-review.md).
++This is new documentation based on inspected source and existing evidence;
++authoring this worksheet does not execute or requalify the example.
++
++ROO (Relationship & Ownership Oriented design) is language-independent: begin
++with the scenario and invariant before choosing types, APIs, storage, or
++synchronization. Resource custody, domain responsibility, stable identity,
++and authorization are separate decisions throughout this worksheet.
++
++## Context
++
++- Scenario or operation: the shared `recover_commit` row in
++  [scenarios.tsv](../scenarios.tsv):
++  `add:100:2;add:50:1;pay:p1:approve:commit;reconcile:ok:none`.
++  Each in-memory scenario begins with a fresh Draft `O1`, store, provider,
++  outbox, and consumer; the two additions total 250 minor units in USD.
++- Expected outcome, forbidden outcome, and relevant failure: persist payment
++  intent `p1` and Pending before the provider effect. Approval followed by the
++  injected terminal commit failure leaves committed Pending, one independent
++  charge, and zero events (`LocalCommitFailed`). Reconcile the same persisted
++  `p1` to reach Paid, still one charge, and exactly one `payment:p1`
++  PaymentApproved event. Never advertise uncommitted Paid, charge under a new
++  key to recover, or install the candidate event after a failed commit.
++  These are specified/source behaviors and the existing oracle's expected
++  outcomes, not observations produced by this worksheet.
++- Relationship: `Source → Target` (cardinality): a small group governed by this
++  payment invariant: `Coordinator → LocalStore` (one configured capability)
++  and `Coordinator → RemoteProvider` (one configured capability). The affected
++  aggregate relationships are `Order → payment intent/state` (zero or one
++  intent; one current state) and `Order → terminal outbox facts` (zero or more
++  facts, with exactly one fact per terminal intent transition). Relay to
++  consumer/inbox crosses a separate delivery/acknowledgement boundary.
++- State that must agree and the invariant it must preserve: frozen order
++  total and immutable intent agree on `(PaymentId=p1, OrderId=O1, USD, 250)`.
++  Local terminal status and its event install together. Provider approval may
++  exist while local state remains Pending; reconciliation closes that gap
++  without another effect. There is no atomic commit spanning local store and
++  provider, nor spanning outbox acknowledgement and consumer application.
++- Domain responsibility / invariant coordinator: which participant decides changes that must preserve the invariant?
++  The application coordinator orders prepare, provider interaction, and
++  finalization. Domain operations validate legal state changes and create
++  terminal facts; store/provider adapters implement their separate commit and
++  identity contracts. Holding a resource does not authorize arbitrary changes.
++- Value, entity, resource, service, or event; independent lifecycle, if any:
++  Order is an entity; Money and request fingerprints are values; local store
++  and provider are independently retained resources behind services; outbox
++  entries are immutable historical events with separate acknowledgement state.
++  An event can remain after the active coordinator invocation ends.
++
++The [shared specification](../SPEC.md) defines the bounded state machine;
++[expected.tsv](../expected.tsv) retains `commit_failure` and `recover_commit`
++as separate final observations so a successful recovery does not erase the gap.
++
++## Seven fields
++
++| Field | Language-neutral decision | Questions to answer |
++|---|---|---|
++| Owner / resource custodian | The scenario fixture retains the in-memory store, provider, and consumer. The store retains committed Order and outbox/ack state; provider retains its independent complete typed key records and effect counts; consumer retains applied identities/facts. The coordinator uses these capabilities and detached working candidates. PostgreSQL adapters retain records through the database and own/close each short connection/transaction. Custody does not confer domain or caller authority. | Who retains the resource and handles its local lifecycle, release, or cleanup? Custody does not by itself grant authority to change domain state. |
++| Stable identity | Distinct OrderId, PaymentId, RefundId, and EventId concepts are preserved. This recipe uses O1, p1, and payment:p1. A provider key recognizes the full immutable request, including order, currency, amount, and operation kind; refunds additionally bind parent payment. PostgreSQL/HTTP add scope to identity. Matching key with changed fingerprint conflicts; identifiers are not addresses. No replacement payment, key reuse after deletion, expiry, or identity versioning is modeled. Records remain for the fresh in-memory scenario or until explicit persistent-harness cleanup. | Does the target need an identity beyond its current value or lifetime? If so, state its scope, version, reuse, and deletion rules. A reference or storage address is not durable identity. |
++| Mutation authority | Coordinator commands request validated domain transitions, and adapters install committed results. Prepare freezes lines and intent before provider execution; finalization installs terminal state and copied event together. Provider alone records its simulated independent effect; consumer alone applies delivered facts. Public observers cannot arbitrarily replace aggregate state. Permission to request a command is a separate, unmodeled authorization decision. | Which operation changes state, and who is responsible for preserving the invariant at that transition? Record who may request it as a separate authorization decision. |
++| Access regime | Observe committed values/snapshots, create detached candidates, request commits and provider changes, and transfer copied request/event facts. Do not retain mutable aliases to committed state or hold an order view through candidate replacement. The baseline is single-threaded; persistent writers coordinate through locked/revalidated rows rather than sharing mutable order objects. | What interaction is required: observe, resolve, request a change, share state, or transfer facts? Which aliases or overlapping access are allowed? Defer language mechanisms to realization. |
++| Validity horizon | A candidate is valid only for its local operation and cannot represent a failed commit as committed truth. Immutable intent remains meaningful through Pending and recovery; snapshots remain historical observations and need not stay fresh after return. Borrow/reference lifetime is distinct from business state and freshness. The in-memory retention horizon is one scenario, with no restart durability. Persistent scopes survive only within the separately documented database contract/evidence. Cancellation/revocation are outside the case. | When is access valid, stale, or revoked? Distinguish memory lifetime, business lifecycle, freshness, and cancellation. |
++| Execution domain | In-memory coordination is one deterministic thread/process. PostgreSQL prepare and finalize use separate short app transactions with order-row serialization; the provider uses an independent connection/transaction and per-scope advisory exclusion. No app transaction spans its provider call. HTTP handlers own validated input/invocation and use the existing transactional workflow, with bounded admission. Relay deliberately holds the app row lock across its small independent local inbox transaction; this is a separate simulator tradeoff. | Where must overlapping operations be coordinated: one operation, task or thread, process, service, or transaction? |
++| Failure boundary | Failed preparation precedes any effect. Failed finalization discards local candidate state/event while provider approval survives. Unknown does not mean decline or no effect; NotFound is distinct and authoritative only under the simulator's complete retention contract. Recovery reads persisted intent and reuses p1. Outbox send/ack failure leaves independently committed consumer facts available for deduplicated redelivery. HTTP loss or uncertain database COMMIT is not proof of rollback; never blindly replay the whole command. | Which effects may survive failure? Who handles rollback, compensation, retry, cancellation, uncertainty, or redelivery? |
++
++## Supporting decisions
++
++- Authorization: who or what may request each operation, its scope, and how permission is checked or revoked:
++  No user, tenant, permission check, or revocation model is implemented. Fixture
++  validation and loopback/scope restrictions are input/environment constraints,
++  not authorization. A real service needs a separate caller policy.
++- Creation, replacement, deletion, release, and cleanup responsibilities:
++  Fixture setup creates fresh in-memory resources. Store commit replaces only
++  validated detached state on success; failed candidates are discarded.
++  Provider and event records are not evicted within a scenario. Persistent
++  harness setup/cleanup owns synthetic scopes and cluster lifecycle; adapters
++  close short transaction resources. HTTP initialization preserves an existing
++  scope instead of resetting it. Business deletion/retention policy is unmodeled.
++- Reverse navigation: is it needed, and who maintains the relation or index?
++  Recovery follows the order's stored intent to the provider, not a back-pointer
++  to the coordinator. Typed provider maps/records resolve operation identity;
++  the store maintains ordered outbox records/ack flags and consumer maintains
++  deduplication records. No live reverse object relation is required.
++- Identity resolution: behavior for a missing, stale, version-mismatched, or unauthorized target:
++  Missing provider record yields NotFound; unavailable lookup yields Unknown;
++  changed request content yields KeyConflict; a different active payment ID
++  yields IntentConflict. Persistent/HTTP missing scope is a distinct boundary
++  error. Version mismatch and unauthorized lookup have no modeled result.
++- Consistency: which state must agree, and at what observation boundary (local invariant, transaction, eventual agreement, or snapshot)?
++  Order lines/total/state/intent obey local domain checks. Terminal state and
++  outbox fact agree at local commit. Provider/local state and delivery/ack may
++  disagree temporarily and converge only when explicit recovery succeeds.
++  A PostgreSQL snapshot is consistent at its read boundary, yet a response can
++  include another worker's later commit; it is not an atomic command receipt.
++- Boundary crossing: which facts or identities cross a process, persistence, or wire boundary?
++  Immutable payment/refund request fingerprints and copied event facts cross
++  logical adapter boundaries. PostgreSQL persists scoped identities and facts;
++  HTTP carries validated identity/numeric strings and snapshot values, never
++  live Order references. Optional Idempotency-Key equals the body operation ID;
++  it does not create a generic response cache or command receipt.
++- Cancellation and retry: which state and resources remain, and is repetition idempotent?
++  Cancellation is outside scope. Retry/reconcile uses retained p1, never a new
++  intent. Same-key provider requests compare the full immutable fingerprint;
++  local terminal no-ops add no event. Relay redelivery applies no duplicate
++  consumer effect. Line addition is explicitly non-idempotent: HTTP line POST
++  has no durable replay receipt and uncertain completion requires inspection
++  and a caller decision, not automatic replay.
++- Resource budget: queue capacity, retained snapshots, lock duration, allocation, and cleanup limits:
++  Baseline maps/outbox and candidate copies grow with the bounded fixture; no
++  general capacity/eviction policy is claimed. The persistent adapter bounds
++  transaction/connection waits and known-abort retries; app locks end before
++  provider access. HTTP admits at most 16 database-bearing operations; Java
++  has 32 workers and queue capacity 64, Rust at most 16 blocking workers.
++  These configured bounds do not establish production capacity or latency.
++
++## Optional realization and enforcement
++
++Neutral decisions above precede these choices. A database foreign key does not
++determine an in-memory representation, and no Rust representation is required.
++
++| Candidate realization | What it may express | Cost or obligation | Selected? |
++|---|---|---|---|
++| Embedded owned value | Store's committed aggregate and copied immutable request/event facts. | Retain validated total/state together; copy candidate facts without making provider effects part of local ownership. | Yes, within the local aggregate/store boundary. |
++| Temporary shared or exclusive view | Short observation or command access to independently retained capabilities. | End stale views before replacement; coordinate overlapping mutations at the actual execution boundary. | Yes; Java capability calls and Rust borrows realize this differently. |
++| Stable ID and resolver | Persisted p1 identifies recovery independently of a coordinator object's lifetime. | Scope and type the key; compare full immutable fingerprints; define retention and missing/unknown behavior. | Yes, for intent/provider/event recovery. |
++| Independent snapshot or copy | Detached candidate, copied request, immutable event, and returned snapshot. | Allocation/copy cost; a snapshot is not guaranteed fresh and a failed candidate is not committed truth. | Yes, explicitly. |
++| Owned message or command | Copied request/event facts crossing an adapter or delivery boundary. | Retention, deduplication, and send/ack recovery remain explicit; a broker requires a separate contract. | Yes for facts/requests; a message queue is not required or introduced by this recipe. |
++| Explicit shared ownership and coordination | Potential common access to a long-lived capability. | Requires a real alias/synchronization policy; shared retention alone cannot enforce payment invariants. | Not required for baseline resources; HTTP may share immutable configuration/stateless adapters while database locks coordinate state. No Rc/Arc-style shared aggregate is prescribed. |
++
++## Cross-language interpretation
++
++Keep relationship decisions stable while allowing platform-specific mechanisms.
++
++| Language, runtime, store, or protocol | Realization chosen | Enforcement and limits |
++|---|---|---|
++| Java composition | [CompositionApplication](../java/src/roo/payments/CompositionApplication.java) receives final StorePort and ProviderPort references; [Adapters](../java/src/roo/payments/Adapters.java) supply detached load/commit and independent typed-key maps. | [Domain](../java/src/roo/payments/Domain.java) private mutation and immutable records restrict arbitrary updates; coordinator fixes prepare/reload/call/finish ordering. References and encapsulation do not establish restart durability or authorization. |
++| Java Template Method | [TemplateApplication](../java/src/roo/payments/TemplateApplication.java) fixes public final algorithms and private finalization; protected store/provider hooks return stable adapters for the coordinator lifetime. | Subclasses supply capabilities under the same port contracts, without reordering public orchestration. Stable hook behavior is a documented obligation; inheritance does not replace provider or commit contracts. |
++| Rust composition | [Application<'a>](../rust/src/application.rs) temporarily exclusively borrows Store, Provider, and Consumer. It clones persisted request facts before provider mutation; [adapters](../rust/src/adapters.rs) own committed candidates/maps and [domain](../rust/src/domain.rs) owns transition rules. | Borrow checking limits overlapping local access and escape; detached candidates/copies avoid a cached mutable Order across calls. Runtime state/identity checks remain necessary; borrowing cannot roll back a remote effect. |
++| PostgreSQL adapters | [Java coordinator](../postgres/java/src/roo/postgres/CompositionApplication.java), [Store](../postgres/java/src/roo/postgres/Store.java), and [persistent contract](../postgres/SPEC.md) split prepare, provider effect, and finalize into short independent transactions. | Locked fresh rows and full-request revalidation handle concurrent changes; terminal state/outbox commit atomically. Independent provider/inbox records share one database/WAL domain. Snapshot consistency is distinct from freshness and command receipt semantics. |
++| HTTP boundary | [HttpService](../http/java/src/roo/postgres/HttpService.java) validates per-request input and invokes existing application adapters; [HTTP contract](../http/SPEC.md) defines natural-key retry/reconcile and bounded workers. | Transport does not duplicate domain orchestration. Lost responses require same-identity recovery; line POST has no durable receipt. A returned snapshot may include a later worker's commit, and matching retries need not return identical responses. |
++
++## Observed evidence
++
++This worksheet's direct observation is source/document inspection. The dated
++receipts below report earlier integrator runs on 2026-10-11; they are historical
++evidence with their original scope, not a new run or a proof of every schedule.
++
++- Compiler or static analysis: inspected Java private/final boundaries and Rust
++  borrowed capabilities above. Existing [in-memory validation](../../../research/orders-payments-validation.md)
++  and [negative diagnostic receipt](../../../research/orders-payments-negative-evidence.json)
++  report intended compiler restrictions. Those restrictions do not prove effect
++  uniqueness, distributed atomicity, or caller permission.
++- Runtime or behavioral scenario: inspected `recover_commit`, `commit_failure`,
++  and the [oracle](../expected.tsv); [Rust application test source](../rust/src/application.rs)
++  asserts the intermediate Pending/one-charge/zero-event gap and recovery.
++  The dated in-memory validation reports shared oracle execution across three
++  variants; this worksheet has not rerun them.
++- Database or transaction behavior: inspected persistent Store transaction code
++  and the [PostgreSQL specification](../postgres/SPEC.md).
++  [Dated validation](../../../research/postgres-validation.md) and
++  [integration receipt](../../../research/postgres-integration-evidence.json)
++  separately record lock witnesses, process recovery, and PostgreSQL immediate
++  restart/WAL recovery. In-memory retention supplies none of that durability.
++- Protocol or boundary behavior: inspected HTTP dispatch/recovery contracts;
++  [dated HTTP validation](../../../research/http-validation.md) and
++  [integration receipt](../../../research/http-integration-evidence.json)
++  record real loopback response-loss and recovery schedules, including the
++  deliberate second line POST demonstrating the absent replay receipt.
++- Human review or operational decision: this filled worksheet records an
++  adoption decision for one bounded recipe. The sibling architecture decision
++  and design review capture its rationale/questions; the historical
++  [HTTP review](../../../research/http-review.md) is a separate earlier
++  candidate review. No new runtime acceptance or production decision is implied.
++
++## Remaining assumptions and open questions
++
++- Assumptions, unverified claims, and unresolved decisions: provider retention,
++  full-fingerprint comparison, and authoritative NotFound are simulator
++  contracts; external-provider equivalents need independent documentation and
++  evidence. Authorization, cancellation, replacement intents, deletion/expiry,
++  real payment networks, physical power-loss survival, exhaustive interleavings,
++  production throughput, and operational capacity remain outside this recipe.
++  A durable replay-safe line command would need a separate atomic
++  line/fingerprint/receipt design. None of these bounded unknowns prevents
++  using this worksheet to review the existing recovery protocol.
+--- /dev/null
++++ after/case-studies/orders-payments/adoption/architecture-decision.md
+@@ -0,0 +1,171 @@
++# Architecture decision: Preserve payment intent across independent effects and local recovery
++
++Status: proposed. Date: 2026-10-11. Owner: case-study maintainer (role).
++
++This is retrospective documentation of the existing frozen case-study policy.
++It proposes an adoption record, not a new implementation or a historical approval.
++ROO (Relationship & Ownership Oriented design) is language-independent: the
++relationship decision precedes its realization.
++Use the [adoption guide](../../../docs/09-adoption-guide.md) to apply this
++record alongside the [Relationship Contract](relationship-contract.md) and
++[design review](design-review.md).
++
++## Problem and invariant
++
++An application coordinates an order, a local store/outbox, an independent payment
++provider, and a consumer. The provider can approve a charge while local terminal
++finalization fails. Treating that failure as if the charge disappeared can create
++a duplicate charge or expose an uncommitted Paid order.
++
++The shared primary scenario is `recover_commit` in [scenarios.tsv](../scenarios.tsv):
++
++```text
++add:100:2;add:50:1;pay:p1:approve:commit;reconcile:ok:none
++```
++
++The two lines total 250 USD minor units. Before the provider effect, payment
++intent `(p1, O1, USD, 250)` and Pending must commit together. Terminal finalization
++then commits Paid and the immutable `PaymentApproved` event `payment:p1` together.
++The committed store is the local observation boundary; provider effects are
++observed independently. Delivery acknowledgement is a later boundary.
++
++| Observation point | Required observation | Forbidden observation |
++|---|---|---|
++| Failed initial preparation | Draft, no intent, no charge/event | Provider call using an uncommitted intent |
++| Failed terminal commit after approval | Pending, p1, one charge, zero events | Paid from a cached candidate, or loss/replacement of p1 |
++| Successful same-intent reconciliation | Paid, p1, one charge, one `payment:p1` event | A second charge or a second terminal event |
++
++[expected.tsv](../expected.tsv) supplies the independent terminal oracle:
++`commit_failure` records the intermediate failure as its final observation;
++`recover_commit` records the subsequent recovery. The recovery row has one
++pending outbox record and zero consumers because this recipe performs no relay.
++
++## Relationship Contracts
++
++The [filled contract](relationship-contract.md) owns the detailed seven-field
++analysis. This decision covers Order → payment intent → provider record and
++Order → terminal event → consumer fact. An order has at most one payment intent
++and one full refund intent in this bounded model.
++
++| Field | Decision relevant to this invariant |
++|---|---|
++| Owner / resource custodian | Store retains committed order/outbox; provider retains its independent key records; consumer retains applied facts. The coordinator uses these capabilities without merging their custody. |
++| Stable identity | OrderId, PaymentId, RefundId, and EventId are distinct. Preserve p1 and its complete immutable request across uncertainty; `payment:p1` identifies the terminal fact. PostgreSQL additionally scopes identities by scenario scope. |
++| Mutation authority | Domain transitions validate state and money; the application coordinates preparation, provider observation, and finalization; store commits local changes. Permission to request an operation is a separate concern. |
++| Access regime | Observe committed snapshots, submit copied immutable requests, resolve retained provider status, and transfer event facts. Callers cannot arbitrarily replace committed commercial state. |
++| Validity horizon | Freeze lines at preparation; retain the same intent throughout Pending and terminal replay. In-memory records last only for one fresh scenario; persisted extensions retain committed facts across their tested process restarts. |
++| Execution domain | In-memory coordination is single-threaded. PostgreSQL coordinates local writers with short transactions and order row locks; provider calls occur outside the application transaction. |
++| Failure boundary | A provider effect can survive failed local finalization. Retain intent, reload committed state, and reconcile; local rollback cannot undo that independent effect. |
++
++Domain responsibility is the application's invariant-preserving protocol plus
++domain validation. Resource custody, durable recognition, and requester
++authorization do not follow automatically from that responsibility. No
++authentication, authorization policy, tenant permission check, or revocation
++mechanism is modeled; the fixture/HTTP caller is a synthetic requester.
++
++## Alternatives
++
++| Alternative | Invariant preservation | Extensibility | Lifecycle / concurrency | Operational cost |
++|---|---|---|---|---|
++| Selected: coordinator, stable intent, independent provider, atomic local finalization | Preserves request identity and state/event agreement at their stated boundaries | Add adapters without replacing the relationship policy | Retained intent bridges separate lifetimes; database locking coordinates local overlap | Recovery, retention, and delivery obligations remain explicit |
++| One transaction spanning store and provider | Could provide atomic agreement only with an actual shared transaction protocol | Requires participating infrastructure | Such a transaction is unavailable here; the provider commits independently | Adds coordination infrastructure and failure handling beyond this case |
++| New payment identity after an uncertain outcome | Violates the one-intent contract and can produce another charge | Makes every retry a new business attempt | Disconnects recovery from the surviving provider record | Apparent simplicity shifts cost to duplicate-effect investigation |
++| Expose mutable committed state as an escape hatch | Allows bypassing validation and publishing state without its event | Arbitrary edits undermine adapter contracts | Aliases can retain uncommitted or conflicting state | Requires manual repair and forfeits the invariant |
++
++## Decision and reasons
++
++Keep one stable payment intent, prepare it before requesting the independent
++effect, and finalize local state and its event atomically. The application
++coordinates this ordering; the provider recognizes the complete request by its
++typed natural key and rejects changed fingerprints. The caller requests a
++domain operation; the case makes no claim about who would be authorized in a
++real deployment.
++
++Participants exchange identities and immutable facts rather than a shared
++mutable order. A local failure reloads the committed view. Recovery resolves the
++active retained intent and applies a terminal observation once. Unknown is an
++observation, not a fabricated terminal provider record. NotFound remains distinct
++and is authoritative only under the simulator's complete retained-record map.
++
++This policy fits the existing independent-effect boundary and explicit oracle.
++It would need reassessment for key expiry, inconsistent lookup, multiple attempts,
++partial refunds, cancellation, or an actual shared transaction protocol. A new
++provider contract must specify retention, fingerprint comparison, and recovery
++semantics before this policy can be carried into a production slice.
++
++## Optional realization
++
++These are alternative code shapes for the same policy, not competing domain
++decisions. Public operations add a validated line, prepare/retry payment or full
++refund, reconcile an active intent, and relay committed events. Adds affect only
++Draft; payment/refund operations can create independent effects; reconciliation
++looks up rather than creates an effect; relay affects consumer facts and ack state.
++
++| Layer, language, runtime, store, or protocol | Realization | Enforcement or constraint |
++|---|---|---|
++| Java composition | [CompositionApplication](../java/src/roo/payments/CompositionApplication.java) receives StorePort/ProviderPort; [Domain](../java/src/roo/payments/Domain.java) encapsulates transitions and immutable requests | Reloads committed intent before provider use; private mutation and checked arithmetic constrain local changes; adapter contracts remain trusted |
++| Java Template Method | [TemplateApplication](../java/src/roo/payments/TemplateApplication.java) fixes public algorithms as final and exposes narrow store/provider hooks | Subclasses cannot reorder the algorithm; hooks must return stable, conforming capabilities |
++| Rust composition | [Application](../rust/src/application.rs) borrows independent store/provider/consumer resources; cloned requests cross candidate boundaries | Borrow checking governs local access; [adapters](../rust/src/adapters.rs) replace detached candidates only on successful simulated commit |
++| In-memory store/provider | Java [Adapters](../java/src/roo/payments/Adapters.java) and Rust adapters retain separate committed snapshots and provider maps | “Committed” means installed within this scenario; it is not disk durability, restart recovery, or distributed atomicity |
++| PostgreSQL extension | Java [Store](../postgres/java/src/roo/postgres/Store.java), [coordinator](../postgres/java/src/roo/postgres/CompositionApplication.java), and Rust [Database](../postgres/rust/src/database.rs) split prepare/provider/finalize transactions | READ COMMITTED and `FOR UPDATE` serialize local writers; finalization reloads/rechecks; [schema](../postgres/schema.sql) supplies scoped uniqueness and checks. Provider uses independent transactions in the same local database |
++| HTTP extension | Java [protocol](../http/java/src/roo/postgres/HttpProtocol.java) and Rust [protocol](../http/rust/src/lib.rs) translate validated requests to the existing application | Payment/refund IDs provide operation recovery; optional Idempotency-Key must match the body ID. Line POST remains non-idempotent; response loss does not justify whole-command replay |
++
++## Failure and recovery
++
++Rejected lines preserve prior lines/total; empty payment and invalid states reject
++before effects. A different payment/refund identity conflicts with retained intent.
++Malformed fixtures fail structurally; HTTP validates its representation before
++invoking persistence. These are input rules, not requester authorization.
++
++Preparation failure discards the candidate and makes no provider call. Final
++commit failure discards candidate state/event, retains Pending or Refunding,
++and leaves an independently approved effect intact. Same-key retry or status
++reconciliation can finish; successful terminal replay creates no further event.
++Unknown and NotFound leave active intent/state unchanged and produce no event.
++
++Cancellation is outside the bounded model. Resource cleanup closes/releases
++local transaction resources; it must not erase retained intent or provider keys.
++Known-aborted short database transactions may retry under the adapter's bounded
++policy; an uncertain COMMIT requires inspection, not blind replay of the command.
++
++A full refund has its own retained identity and recovery sequence. It is an
++explicit business operation, not automatic rollback or evidence that arbitrary
++external compensation will succeed. No refund is triggered merely by a failed
++payment finalization.
++
++The outbox stores the event atomically with the terminal local transition. Relay
++send failure leaves it pending; acknowledgement failure can leave a delivered
++fact pending for redelivery. Consumer EventId deduplication prevents reapplying
++that fact; PostgreSQL uses an independent inbox commit. Delivery/acknowledgement
++recovery is separate from provider idempotency and payment finalization.
++
++## Evidence and limits
++
++- Compiler or static analysis: the dated [in-memory validation](../../../research/orders-payments-validation.md) and [negative diagnostics](../../../research/orders-payments-negative-evidence.json) report Java private-access/final-method restrictions and Rust move/borrow/private-access restrictions. These constrain local code; they do not prove remote effect uniqueness.
++- Runtime or behavioral evidence: [SPEC](../SPEC.md), shared scenarios, expected rows, and intermediate assertions in Java [UnitTests](../java/src/roo/payments/UnitTests.java) and Rust Application define/check the failure and recovery observations. The 2026-10-11 validation receipt reports all three variants matching 42 oracle rows; this document introduces no new execution evidence.
++- Database constraints, transactions, and durability: the [PostgreSQL contract](../postgres/SPEC.md), schema, and adapter sources explain local transaction/lock boundaries. The dated [PostgreSQL validation](../../../research/postgres-validation.md) and [integration receipt](../../../research/postgres-integration-evidence.json) report bounded concurrency, process-crash, and restart observations, not physical-power-loss or external-provider durability.
++- Protocol, wire, or remote-boundary behavior: the [HTTP contract](../http/SPEC.md) distinguishes payment/refund recovery from line POST, and the dated [HTTP validation](../../../research/http-validation.md) records response-loss and rejection scenarios. The provider remains a simulator in the same PostgreSQL durability domain, not a payment network.
++- Human review and operational assumptions: historical [in-memory review](../../../research/orders-payments-review.md), [PostgreSQL review](../../../research/postgres-review.md), and [HTTP review](../../../research/http-review.md) concern their frozen candidates. They do not accept this new proposed ADR or authorize production migration.
++- Sources and established precedent: [architecture-decision template](../../../templates/architecture-decision.md), [relationship worksheet](../../../templates/relationship-contract.md), and the existing [source ledger](../../../research/orders-payments-sources.md) ground this record. Source-specific provider precedents are not universal provider guarantees.
++- Remaining assumptions, untested properties, and risks: no new tests, builds, network calls, or database work accompany this documentation. Exhaustive interleavings, production scale, authorization, real-provider consistency/retention, and successful external compensation remain unproved. One terminal payment and one full refund per order are teaching restrictions.
++
++## Consequences
++
++The policy makes partial success observable, preserves recovery identity, and
++keeps state/event agreement local. It costs retained intent/provider/event facts,
++recovery paths, and adapter-specific coordination; language access rules do not
++remove these obligations.
++
++Adopt one vertical slice first: document its invariant and seven fields, map its
++actual provider contract, preserve one immutable intent through prepare/effect/
++finalize, and use independent expected observations plus intermediate failure
++checks before considering broader use. The [design review](design-review.md)
++records the review questions; test success alone does not accept the tradeoff.
++
++Documentation rollback can remove or supersede this proposed record without
++changing frozen sources or historical receipts. A future production rollback
++needs its own reviewed plan: stop new effects if necessary, retain committed
++intents and provider/inbox/outbox facts, inspect uncertainty, and route recovery
++through the same identities. Never “roll back” by deleting intents or inventing
++replacement keys. No production migration, deployment, or approval history is
++asserted by this adoption example.
+--- /dev/null
++++ after/case-studies/orders-payments/adoption/design-review.md
+@@ -0,0 +1,194 @@
++# ROO design review: orders and payments
++
++ROO (Relationship & Ownership Oriented design) is a language-independent
++method. This filled review checks relationship decisions before their Java,
++Rust, storage, and protocol realizations.
++
++## Scope and lead case
++
++This review applies the frozen shared [orders-and-payments contract](../SPEC.md) to its Java composition, Java Template Method, and Rust composition implementations. It also reads the separately qualified [PostgreSQL](../postgres/SPEC.md) and [HTTP](../http/SPEC.md) extensions. The bounded review question is whether the relationship decisions that carry one payment intent through an uncertain result remain explicit across those boundaries.
++
++The primary recovery row is `recover_commit` from [the original scenario set](../scenarios.tsv):
++
++```text
++add:100:2;add:50:1;pay:p1:approve:commit;reconcile:ok:none
++```
++
++The two additions total 250 USD minor units ($2.50). The application commits payment intent `p1` and Pending before calling the provider. The provider approves and records one charge; the injected terminal local commit fails, leaving Pending with one charge and no event. Reconciliation looks up the persisted `p1` request and commits Paid plus event `payment:p1`, without another charge. The [expected TSV](../expected.tsv) records the final row as Paid, 250, one charge, one event, zero consumed events, one pending outbox event, Approved, and payment ID `p1`.
++
++The fixture's final row cannot by itself show the intermediate failure state. The [historical validation record](../../../research/orders-payments-validation.md) reports the original 42-row oracle comparison and intermediate unit assertions. Those records are prior execution evidence; this review did not rerun them. The root case is single-threaded and in-memory. Database and HTTP evidence below belongs to separate extensions.
++
++## Evidence key
++
++- **[SRC]** Direct source or contract inspection. It establishes the written design, not execution.
++- **[RUN]** Historical root execution record for the in-memory case, dated 2026-10-11.
++- **[PG]** Historical local PostgreSQL integration receipt, dated 2026-10-11.
++- **[HTTP]** Historical local HTTP qualification receipt, dated 2026-10-11.
++- **[REVIEW]** Prior independent review disposition for the named bounded candidate.
++- **[OPEN]** Unverified question outside the evidence inspected here.
++- **[OPTIONAL]** Possible future product or protocol improvement, not a case defect.
++
++## Review questions
++
++| Review question | Evidence to inspect | Answer / finding |
++|---|---|---|
++| What scenario, invariant, allowed outcome, forbidden outcome, and failure case define this review? | Use case, relationship decisions, and expected results | **[SRC]** The lead case is `recover_commit`: persist `p1` before the effect; a failed terminal commit keeps Pending and emits no event; reconciliation of the same intent reaches Paid with one charge and event `payment:p1`. **[RUN]** The root report records all 42 original rows checked against the independent oracle and intermediate assertions. Historical, not freshly executed here. Links: [SPEC](../SPEC.md), [expected row](../expected.tsv), [validation](../../../research/orders-payments-validation.md). |
++| What behavior must a boundary provide to its callers? | Requests, results, state changes, error behavior, and retry or idempotency rules | **[SRC]** The application prepares an immutable request, commits intent before the provider call, distinguishes Unknown from NotFound, and finalizes state with one event. A retry/reconcile uses the persisted ID and full request. **[PG]/[HTTP]** The extensions use short local transactions and preserve natural payment/refund identity across recovery; this is bounded to their recorded local contracts. Links: [Java coordinator](../java/src/roo/payments/CompositionApplication.java), [Rust coordinator](../rust/src/application.rs), [PostgreSQL contract](../postgres/SPEC.md), [HTTP contract](../http/SPEC.md). |
++| Does each important relationship name its resource custodian and domain invariant coordinator separately? | Relationship Contract and data flow | **[SRC]** The seven-field contract separates Order's custody of intent, Store's custody of committed order/outbox, Provider's independent records/effects, Consumer's event deduplication, and Application's coordination. Custody and orchestration are not collapsed into one owner. See the [seven-field contract](../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract), [Java adapters](../java/src/roo/payments/Adapters.java), and [Rust adapters](../rust/src/adapters.rs). |
++| Does a target need durable identity beyond a current value or object lifetime? | Identity scope, version, reuse, deletion, and lookup rules | **[SRC]** PaymentId and RefundId are distinct typed identities retained for one in-memory scenario; provider records last for that fresh scenario. This does not survive process restart. PostgreSQL persists scope-qualified records until harness cleanup. **[OPEN]** Real-provider key retention and lookup consistency are not established. Links: [Java guide](../java/README.md), [Rust guide](../rust/README.md), [PostgreSQL contract](../postgres/SPEC.md). |
++| Are mutation authority and business authorization explicit? | API, permissions, storage model, and use case | **[SRC]** Domain mutation is routed through coordinator operations and private transitions. A PaymentId or HTTP scope is an identity/correlation value, not permission. The HTTP scope is expressly not a tenant authorization boundary; no caller authentication or authorization policy is modeled. **[OPEN]** Production principal, tenant, and refund authorization remain unverified. Links: [Java domain](../java/src/roo/payments/Domain.java), [Rust domain](../rust/src/domain.rs), [PostgreSQL contract](../postgres/SPEC.md), [HTTP contract](../http/SPEC.md). |
++| Are access, aliasing, validity, and transfer decisions clear before choosing language mechanisms? | Relationship Contract and boundary crossings | **[SRC]** Java composition holds injected ports; its template variant uses stable adapter hooks. Rust Application<'a> retains exclusive mutable borrows of Store, Provider, and Consumer for its active lifetime, potentially across calls; the caller regains access after last use or drop. HTTP handlers validate owned request values and call database adapters with short transactions. These choices describe local access and lifetime; they do not confer authorization. Links: [Java composition](../java/src/roo/payments/CompositionApplication.java), [Java template](../java/src/roo/payments/TemplateApplication.java), [Rust application](../rust/src/application.rs), [HTTP contract](../http/SPEC.md). |
++| Can callers bypass an invariant through fields, mutable views, setters, or reconstruction? | Visibility, mutation operations, and scenario evidence | **[SRC]** Java keeps aggregate state private and exposes snapshots; Rust keeps mutation transitions crate-private and returns shared observations. The coordinator reloads committed state after a failed candidate commit. **[RUN]** Historical Java access diagnostics and Rust E0382/E0502/E0624 checks support only their named compile-time restrictions; runtime assertions are separate. Links: [Java domain](../java/src/roo/payments/Domain.java), [Rust domain](../rust/src/domain.rs), [validation](../../../research/orders-payments-validation.md). |
++| Does the execution boundary preserve the whole invariant under overlap? | Coordination, transaction, or serialization boundary and concurrent scenario | **[SRC]** The original case makes no overlap claim. PostgreSQL mutations lock the order row; provider writes use an independent transaction/advisory lock; finalization commits state and outbox together. **[PG]/[HTTP]** Historical records report seven witnessed competing schedules per variant, with HTTP adding request-level schedules. They do not prove every interleaving. Links: [Java store](../postgres/java/src/roo/postgres/Store.java), [Rust database adapter](../postgres/rust/src/database.rs), [PostgreSQL validation](../../../research/postgres-validation.md), [HTTP validation](../../../research/http-validation.md). |
++| What happens on stale lookup, invalid input, cancellation, or partial external failure? | Negative behavior, recovery path, and observed results | **[SRC]** Invalid state/identity outcomes are closed; Unknown and simulator NotFound remain distinct. A post-effect local commit failure leaves the active intent recoverable by the same ID. **[RUN]** The historical report covers those bounded scenarios. **[OPEN]** Real request cancellation, provider lookup consistency, and production retry budgets are not evidenced. Links: [SPEC](../SPEC.md), [validation](../../../research/orders-payments-validation.md), [HTTP validation](../../../research/http-validation.md). |
++| After the behavior is defined, do traits or interfaces expose the needed operations, and do implementations preserve their shared contract? | Port contract, implementations, and shared behavioral checks | **[SRC]** Java composition uses StorePort/ProviderPort; the Java template coordinator fixes the algorithm and finalization while exposing stable hooks. Rust uses concrete composed adapters with exclusive borrows and needs no hierarchy. **[RUN]** The prior shared oracle report records matching outcomes for the three in-memory runners. This demonstrates those recorded scenarios, not arbitrary adapter honesty. Links: [Java composition](../java/src/roo/payments/CompositionApplication.java), [Java template](../java/src/roo/payments/TemplateApplication.java), [Rust application](../rust/src/application.rs), [validation](../../../research/orders-payments-validation.md). |
++| Does a hierarchy provide needed reuse, substitutability, or variation? | Alternatives and concrete extension scenario | **[SRC]** Java Template Method is a legitimate alternative: final public algorithms and private finalization own ordering; subclasses provide stable StorePort/ProviderPort hooks. A separate injected-port composition implementation is also present. Rust composition expresses the same coordination without inheritance. No finding requires a hierarchy in Rust. Links: [Java template](../java/src/roo/payments/TemplateApplication.java), [template adapter](../java/src/roo/payments/InMemoryTemplateApplication.java), [composition](../java/src/roo/payments/CompositionApplication.java), [Rust application](../rust/src/application.rs). |
++| Can another language preserve the same relationship decisions with its own mechanisms? | Neutral contract and per-language enforcement limits | **[SRC]/[RUN]** The frozen contract is shared across Java composition, Java Template Method, and Rust composition. Historical fixture comparison reports the same 42-row output for each; Java visibility/final methods and Rust ownership/borrows contribute different local evidence. The observations do not establish universal language equivalence, production durability, or identical implementation mechanisms. Links: [SPEC](../SPEC.md), [Java guide](../java/README.md), [Rust guide](../rust/README.md), [validation](../../../research/orders-payments-validation.md). |
++
++## Seven-field relationship map
++
++The [ROO Relationship Contract](../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract) keeps these statements separate. In particular, identity and access capability do not imply business authorization.
++
++| Field | Case decision |
++|---|---|
++| Owner / resource custodian | Order holds its payment/refund intent; Store owns committed order and outbox facts; Provider and Consumer retain independent records. Application coordinates calls but does not own those resources. |
++| Stable identity | PaymentId and RefundId are distinct typed IDs correlated to OrderId. The in-memory horizon is one scenario; PostgreSQL uses a scope plus operation identity through harness cleanup. |
++| Mutation authority | Application operations and private domain transitions validate state changes. Provider effects follow persisted intent. The case defines no authenticated caller or production refund policy. |
++| Access regime | Java uses injected ports or stable template hooks. Rust uses exclusive mutable borrows of concrete adapters; committed observations are snapshots/shared reads. |
++| Validity horizon | Intent remains fixed from preparation through terminal state and recovery. Simulated provider records do not expire during a scenario; real retention is unknown. |
++| Execution domain | Root fixture runner is deterministic and single-threaded. PostgreSQL and HTTP records cover selected local concurrent schedules, not all interleavings. |
++| Failure boundary | Prepare, provider effect, final local commit, outbox delivery, and acknowledgement have distinct outcomes. Durable claims apply only to the separately tested synthetic PostgreSQL setup. |
++
++## Evidence classes
++
++Treat these sources separately; evidence in one class does not establish claims in another.
++
++| Evidence class | What it can support | Limit to record | Case evidence and bounded status |
++|---|---|---|---|
++| Compiler or static analysis | Checked type, visibility, or access properties of the analyzed program | Does not establish domain correctness, authorization, runtime behavior, or external effects | **[RUN]** The in-memory report records Java private/final negative diagnostics and Rust E0382/E0502/E0624 examples. This supports only those checked restrictions. [Validation record](../../../research/orders-payments-validation.md). |
++| Runtime or behavioral evidence | Observed outcomes for the executed scenarios and conditions | Does not cover unobserved states or prove every interleaving | **[RUN]** Historical record reports 42 oracle rows and 10 malformed fixtures for each in-memory runner; it names intermediate assertions. The expected `recover_commit` result is one charge and one event. No fresh run was done for this review. [Validation](../../../research/orders-payments-validation.md), [check log](../../../research/orders-payments-checks.log). |
++| Database or transaction evidence | Constraints, isolation, atomicity, and durability in the examined database setup | Does not establish end-to-end behavior across an unexamined service or provider | **[PG]** The local receipt reports row-lock witnesses, independent app/provider/inbox transactions, SIGKILL recovery, and PostgreSQL immediate-restart snapshots. It is synthetic loopback evidence within one PostgreSQL/WAL domain; not external-provider or production proof. [PostgreSQL validation](../../../research/postgres-validation.md). |
++| Protocol or boundary evidence | Encoded inputs and outputs, rejection behavior, and tested delivery semantics | A schema alone does not prove domain correctness or durable effects | **[HTTP]** The local HTTP receipt reports request/recovery cases across three variants. Payment/refund replay uses the same identity. A separate lost-response check shows line POST can append again because it has no durable command receipt; this is additional HTTP evidence, not an original 42-row oracle case. [HTTP contract](../http/SPEC.md), [HTTP validation](../../../research/http-validation.md). |
++| Human review or operational decision | Explicit assumptions, policy choices, and reviewed tradeoffs | Is not execution evidence for behavior or infrastructure guarantees | **[REVIEW]** Earlier bounded reviews accepted their named frozen educational candidates. Those receipts do not authorize production use or verify this document's claims by themselves. [Base review](../../../research/orders-payments-review.md), [PostgreSQL review](../../../research/postgres-review.md), [HTTP review](../../../research/http-review.md). |
++
++## Findings and remaining questions
++
++**Demonstrated defects:** none newly demonstrated by this source inspection. The review confirms the documented split between resource custody, domain coordination, stable identity, and language mechanisms within the stated cases.
++
++**Unverified production questions:** caller authentication and tenant authorization; a real provider's idempotency scope, retention, and lookup consistency; cancellation and end-to-end retry budgets; real external effects and failure behavior; and interleavings beyond the recorded schedules. These are outside the local contracts and receipts.
++
++**Optional improvement:** a durable command receipt for line POST could make uncertain add responses replay-safe. The HTTP contract deliberately leaves line POST non-idempotent and requires inspection plus a caller-controlled decision after response loss. Adding such a receipt is a future protocol choice, not a demonstrated defect in this case.
++
++## Related originals and siblings
++
++- Start with the [original case walkthrough](../README.md), its [frozen specification](../SPEC.md), and the [template used for this review](../../../templates/design-review.md).
++- Compare the [Java implementation guide](../java/README.md) and [Rust implementation guide](../rust/README.md) with their cited coordinators and adapters.
++- Read the separate [PostgreSQL guide](../postgres/README.md), [contract](../postgres/SPEC.md), and [historical validation](../../../research/postgres-validation.md).
++- Read the separate [HTTP guide](../http/README.md), [contract](../http/SPEC.md), and [historical validation](../../../research/http-validation.md).
++- Consult the [seven-field ROO relationship contract](../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract) and the [adoption guide](../../../docs/09-adoption-guide.md).
++
++## Boundary trace
++
++1. **Prepare locally.** The coordinator validates a Draft order and persists an
++   immutable payment request with Pending. A failed prepare returns before the
++   provider is called. The request carries PaymentId, OrderId, currency, and
++   amount as typed values.
++2. **Observe the provider.** The simulator retains its record independently of
++   local state and compares the complete request on a repeated key. A timeout
++   after approval returns Unknown to the caller while retaining one charge.
++   Unknown describes the observation, not an absent or declined remote effect.
++3. **Finalize locally.** Approval changes a detached candidate to Paid and adds
++   one stable event in the same local commit. If that commit fails, the store
++   keeps Pending and the provider's charge remains. No candidate event is
++   installed.
++4. **Recover with identity.** Reconciliation uses the persisted request and
++   provider lookup. An unavailable lookup remains Unknown; simulator NotFound
++   is a separate result. A terminal observation commits once as `payment:p1`; a same-key provider replay does not create a second charge.
++5. **Observe the outbox.** After recovery, the expected final row has one
++   committed charge, one event, zero consumer deliveries, and one pending
++   outbox record. Delivery is a separate operation; the recovery fixture does
++   not imply that the event was consumed.
++
++This trace follows the [frozen state-machine contract](../SPEC.md), the Java
++[composition coordinator](../java/src/roo/payments/CompositionApplication.java),
++and Rust [application](../rust/src/application.rs) and
++[adapter](../rust/src/adapters.rs) sources. The executable receipt is linked
++separately in the evidence-class table.
++
++## Language mechanisms in the inspected sources
++
++**Java composition** receives StorePort and ProviderPort in its constructor.
++Add validates and commits a candidate; pay/refund prepare or reuse persisted
++intents before provider calls and privately finalize terminal results. Reconcile
++looks up the active intent and uses that finalization path. The [adapter source](../java/src/roo/payments/Adapters.java)
++supplies detached snapshots and an independent provider. Its contract is trusted
++by the coordinator; Java does not prove the provider's honesty.
++
++**Java Template Method** fixes add, payment, refund, reconciliation, and private
++finalization in final methods. Protected hooks return stable store/provider
++adapters. The separate [in-memory subclass](../java/src/roo/payments/InMemoryTemplateApplication.java)
++only supplies those capabilities. This is a concrete inheritance variation
++point, not a hierarchy required by the domain.
++
++**Rust composition** creates Application<'a> with exclusive mutable borrows of
++Store, Provider, and Consumer for the coordinator's active lifetime, which can
++span multiple method calls. The caller regains direct access after the
++coordinator's last use or drop. The [domain](../rust/src/domain.rs) keeps
++transition methods crate-private. These checks constrain local movement and
++aliasing; provider idempotency and candidate replacement remain adapter
++contracts.
++
++## Extension boundaries
++
++**PostgreSQL** changes the persistence evidence. Its store locks the scope's
++order row with `FOR UPDATE`; prepare, provider effect, and finalization use
++separate transactions, and terminal state plus outbox share one transaction.
++The [Java Provider](../postgres/java/src/roo/postgres/Provider.java) and Rust [database adapter](../postgres/rust/src/database.rs)
++use independent provider transactions with advisory locks. See the [Java store](../postgres/java/src/roo/postgres/Store.java)
++and [coordinator](../postgres/java/src/roo/postgres/CompositionApplication.java). The [historical database receipt](../../../research/postgres-validation.md)
++reports the selected schedules and restart evidence; it does not turn the synthetic provider into an external service.
++
++**HTTP** reuses those database application operations behind a loopback
++listener. A validated scope selects a synthetic data scope, not an authenticated
++tenant. Payment and refund retries carry their existing operation identity.
++Line POST has no durable command receipt, so an uncertain response may follow a
++committed addition and an identical second request adds another line. The
++[HTTP contract](../http/SPEC.md), [Java service](../http/java/src/roo/postgres/HttpService.java),
++[Java protocol boundary](../http/java/src/roo/postgres/HttpProtocol.java), and
++[Rust server](../http/rust/src/main.rs) make that choice explicit. The recorded
++lost-line-response schedule is extra HTTP evidence, not a row in the original
++42-scenario oracle.
++
++## Historical receipt inventory
++
++- **In-memory:** [orders-payments-validation.md](../../../research/orders-payments-validation.md)
++  records the 2026-10-11 run. It reports Java's 280 explicit assertions and
++  intended negative diagnostics, Rust's 20 unit tests and compile-fail checks,
++  and 42 oracle rows plus ten malformed fixtures per runner. These were
++  deterministic in-memory checks.
++- **PostgreSQL:** [postgres-validation.md](../../../research/postgres-validation.md)
++  records 42 oracle rows, seven witnessed concurrency schedules, five
++  process-kill recoveries, four durable scopes per variant, five SQL probes,
++  and twelve snapshots across an actual local server restart. It describes the
++  owned synthetic loopback cluster and its specific durability domain.
++- **HTTP:** [http-validation.md](../../../research/http-validation.md) records
++  42 oracle rows, 41 invalid requests, seven competing schedules, eight
++  process-kill schedules, sixteen simultaneous admission waits per variant,
++  and request recovery through real local listeners. It also records the
++  extra lost-response behavior for payment, refund, and line addition.
++- **Prior reviews:** the [base](../../../research/orders-payments-review.md),
++  [PostgreSQL](../../../research/postgres-review.md), and
++  [HTTP](../../../research/http-review.md) reports accepted their named
++  educational candidates. Their dispositions are historical and bounded; this
++  design review adds no production approval.
++
++## Questions left open by this evidence
++
++| Question | What the case establishes | What remains unverified |
++|---|---|---|
++| Who may charge, reconcile, or refund? | Typed IDs and domain operations constrain simulator calls. | Authenticated principal, tenant isolation, and business refund authorization. |
++| How long can a provider safely replay a key? | The simulator retains complete records for a scenario; PostgreSQL retains them until harness cleanup. | Real provider key scope, retention expiry, lookup consistency, and operational retry limits. |
++| What if a caller cancels during a real network effect? | Selected timeout and response-loss schedules preserve operation identity. | Cancellation propagation, provider outcome, and bounded end-to-end deadlines in production. |
++| Which schedules are guaranteed? | Historical receipts witness the listed lock waits and tested recoveries. | Unobserved interleavings, deployment failure modes, and production load behavior. |
++| Does a committed database transaction survive every hardware failure? | The PG receipt records local immediate restart and WAL redo with configured durability settings. | Physical power-loss guarantees and storage hardware behavior. |
++

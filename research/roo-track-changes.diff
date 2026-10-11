@@ -1,0 +1,2768 @@
+--- before/.gitignore
++++ after/.gitignore
+@@ -12,3 +12,7 @@
+ case-studies/orders-payments/http/.deps/
+ case-studies/orders-payments/http/java/build/
+ case-studies/orders-payments/http/rust/target/
++case-studies/orders-payments/track/.runtime/
++case-studies/orders-payments/track/java/build/
++case-studies/orders-payments/track/rust/starter/target/
++case-studies/orders-payments/track/rust/solution/target/
+--- before/README.md
++++ after/README.md
+@@ -54,6 +54,7 @@
+ | [7. Learning path](docs/07-learning-path.md) | Reading sequence, exercises, assessment and a capstone |
+ | [8. Rust and object-oriented design](docs/08-rust-and-object-design.md) | Improved English edition of the supplied guide, with a 29-topic coverage map |
+ | [9. Practical adoption](docs/09-adoption-guide.md) | Adopt ROO through orders and payments, three completed templates, and the same decisions in Java and Rust |
++| [Executable adoption track](case-studies/orders-payments/track/README.md) | Six progressive exercises with Java/Rust starters, solutions, shared tests, PostgreSQL restart and HTTP response-loss recovery |
+ | [Orders and payments case](case-studies/orders-payments/README.md) | Java inheritance, Java composition and Rust under one executable failure contract |
+ | [PostgreSQL evolution](case-studies/orders-payments/postgres/README.md) | Durable transactions, competing processes, SIGKILL recovery and PostgreSQL crash restart under the same Java/Rust oracle |
+ | [HTTP APIs](case-studies/orders-payments/http/README.md) | Java and Rust APIs with strict JSON, durable idempotency, bounded concurrency and recovery after lost responses |
+--- before/case-studies/orders-payments/README.md
++++ after/case-studies/orders-payments/README.md
+@@ -46,6 +46,10 @@
+ implementation decision. Neither custody nor possession of an ID grants caller
+ authorization. The frozen specifications define this exercise's behavior; the
+ dated evidence records bound its execution claims.
++
++Practice the six adoption exercises in the [executable track](track/README.md),
++with separate Java/Rust starters and solutions, common policy cases, native
++state assertions, and real PostgreSQL/HTTP recovery checks.
+ 
+ To adopt the method in an existing project, follow the [practical adoption
+ guide](../../docs/09-adoption-guide.md). Its worked artifacts complete the
+--- before/docs/09-adoption-guide.md
++++ after/docs/09-adoption-guide.md
+@@ -225,6 +225,12 @@
+ 
+ Answer before reading the relevant source. These are reading/review exercises;
+ the listed expectations are contract targets, not reports of new executions.
++
++Implement these decisions in the [executable adoption track](../case-studies/orders-payments/track/README.md).
++It supplies separate Java/Rust starter and solution policies, equivalent tests
++for all six groups, and real local PostgreSQL/HTTP failure boundaries. Follow
++the [exercise instructions](../case-studies/orders-payments/track/EXERCISES.md)
++to progress from an expected behavioral failure to a verified solution.
+ 
+ | Exercise | Inspect | Bounded expected answer |
+ |---|---|---|
+--- /dev/null
++++ after/case-studies/orders-payments/track/EXERCISES.md
+@@ -0,0 +1,180 @@
++# ROO policy exercises
++
++Work from the repository root and edit only the starter policy files:
++
++- Java: [`java/starter/roo/payments/LearnerPolicy.java`](java/starter/roo/payments/LearnerPolicy.java)
++- Rust: [`rust/starter/src/learner.rs`](rust/starter/src/learner.rs)
++
++The shared input parser and runner are in [`java/common/roo/payments/`](java/common/roo/payments/)
++and [`rust/shared.rs`](rust/shared.rs). Read them to understand the boundary;
++leave the shared parser, adapters, scenarios, and verifier unchanged. The
++completed examples are separate files under [`java/solution/`](java/solution/)
++and [`rust/solution/`](rust/solution/). Do each exercise independently and use
++the observed inputs rather than a fixture label or an expected answer.
++
++The starter compiles but returns `stop` for all six gaps. For the first check,
++`--expect-incomplete` lets the evaluator require that specific behavioral red.
++Remove the flag after implementing the selected group. A `BEHAVIOR eN:` failure
++means the learner action or its resulting state is wrong. Invalid arguments,
++malformed policy output, compiler errors, unavailable dependencies, database
++errors, server startup failures, or a missing observed barrier are separate
++failures; do not count them as the expected starter red.
++
++## e1: Forward a line and let the domain validate it
++
++**Learning objective:** keep policy decisions separate from domain validation,
++and preserve a caller's requested values even when the domain must reject them.
++
++For phase `add`, return `add:UNIT:QUANTITY` using the supplied `unit` and
++`quantity`. Do not filter zero, negative, or overflowing requests in the
++policy. The existing application must decide whether a line is valid and keep
++the exact committed order unchanged after rejection. The native checks cover
++invalid quantity, invalid unit price, multiplication overflow, and sum
++overflow. They also vary valid starting lines and a valid requested addition.
++
++**Hint:** do not calculate a replacement total or hardcode the example total.
++Forward both caller values unchanged. The test observes line facts, state,
++total, and effects after the domain action.
++
++## e2: Recover a persisted pending payment
++
++**Learning objective:** distinguish a stable operation identity from the
++latest result string, then resolve the same intent through the caller's lookup
++availability.
++
++For phase `recover`, request `reconcile:LOOKUP:none` only when the latest
++observation is Pending and includes a persisted `payment_id`. Otherwise return
++`inspect`. A successful lookup can finalize the already approved effect using
++that identity. An unavailable lookup stays Unknown and leaves Pending, the
++identity, charge count, and event count unchanged.
++
++**Hint:** the evaluator first establishes Pending, a committed intent, one
++provider effect, and no terminal event. It then invokes the policy. The native
++cases vary the identity and amount and include an unavailable lookup. Use the
++`lookup` field; do not assume that a previous result such as
++`LocalCommitFailed` proves the provider has no effect.
++
++## e3: Retry without replacing the active identity
++
++**Learning objective:** keep a retry attached to the operation the caller
++requested and let the domain enforce intent and provider fingerprint rules.
++
++For phase `retry`, return `pay:REQUESTED_ID:approve:none` when
++`requested_payment_id` is present. If it is `-`, return `inspect`. After a
++timeout following provider approval, a retry with the same ID can finalize the
++existing effect. A changed ID while Pending must reach the existing domain and
++be rejected as an intent conflict without changing the saved intent or charge.
++A separate probe checks that a changed request fingerprint is rejected as a
++key conflict; it does not add a new public policy action.
++
++**Hint:** pass through the requested ID. Do not substitute the persisted ID,
++invent a new ID, or make a policy decision from the example amount. The policy
++chooses the caller's next action; the application and provider adapters enforce
++the identity contract.
++
++## e4: Redeliver a pending outbox fact
++
++**Learning objective:** treat event delivery and acknowledgement as a separate
++failure boundary, and rely on the consumer's event identity for safe
++redelivery.
++
++For phase `redeliver`, return `relay:ok` when `pending_outbox` is positive and
++`stop` when it is zero. The exercise first commits a payment event, delivers
++its fact to the consumer, and loses the acknowledgement. Redelivery must clear
++the pending count without applying a second consumer fact or changing the
++event's identity and contents.
++
++**Hint:** the consumer already owns deduplication. Do not create a second event
++or try to synthesize event facts in the learner policy. Rust's shared exercise
++contract checks the public ID deduplication guarantee.
++
++## e5: Inspect uncertainty, then recover after process and database failure
++
++**Learning objective:** separate the caller's uncertain observation from
++committed database facts, and recover a stable intent across process death and
++a bounded PostgreSQL restart.
++
++There are two policy phases. In `uncertain_commit`, return `inspect`; do not
++replay payment or line work. After the evaluator obtains a fresh snapshot, in
++phase `recover` request `reconcile:LOOKUP:none` only if that snapshot is Pending
++with a persisted payment ID. Otherwise return `inspect`.
++
++The PostgreSQL exercise also witnesses actual overlap: a pay operation holds
++the order row while a competing add waits, then the add is rejected after pay
++commits. At the `after_effect` gate, the provider transaction has committed
++but the final application transaction has not started. The harness sends
++SIGKILL to that pay process. A fresh process must then observe Pending with the
++same `p1`, one charge, and no event. Inspection is a separate observation; the
++exercise does not inject an actually uncertain PostgreSQL COMMIT.
++
++With `--variant all`, the harness keeps one synthetic scope for each of the
++three implementations, then performs one immediate PostgreSQL stop and restart
++for all three. It checks a changed server start time, WAL redo, and unchanged
++normalized snapshots. The restarted runners then obtain fresh Pending
++observations and use the recovery decision. With one selected variant, the same
++bounded sequence runs for that variant. This is evidence for the observed local
++PostgreSQL setup and recovery scope, not physical power loss or an external
++payment system.
++
++**Hint:** the pay/add check uses an observed lock wait, not a sleep. The
++`after_effect` gate names exactly what has committed before the process is
++killed. Preserve the identity from the fresh snapshot; do not infer database
++state from the old process or the action result.
++
++## e6: Recover a lost HTTP response by identity or inspection
++
++**Learning objective:** choose recovery according to operation semantics: a
++payment has a stable replay identity, while line addition has no durable replay
++receipt.
++
++For `payment_response_lost`, use the persisted `payment_id` when present, or
++`requested_payment_id` when no intent exists. Return the same-ID
++`pay:ID:approve:none`; if neither ID exists, return `inspect`. The server has
++already committed the payment and a snapshot when it is killed before sending
++response headers. A fresh server sees Paid, and replay with the same identity
++returns `AlreadyApplied` without a second charge. A changed payment ID conflicts
++with the retained intent.
++
++For `line_response_lost`, return `inspect`. The fresh GET shows the committed
++Draft total of 300. At `line_inspected`, return `stop`; the policy transcript
++must not automatically send another line POST. The harness makes a separate,
++explicit caller action afterward to demonstrate that a second `add:50:1`
++reaches 350 because the line endpoint has no durable replay receipt. That
++separate action demonstrates the boundary; it is not a retry selected by the
++learner policy.
++
++The HTTP exercise also includes a timeout after provider approval. HTTP 202
++does not start a background worker. A separate explicit harness/caller action
++requests reconciliation of the persisted intent and verifies Paid with one
++charge and one event. This supplementary demonstration does not invoke e2's
++learner policy: implementing e6 requires only its three phases above.
++
++**Hint:** the response is lost after action and snapshot but before headers.
++Connection loss alone says nothing about rollback. Preserve payment identity;
++inspect line state before a human or other caller explicitly decides whether
++to append again.
++
++## Compare the completed examples
++
++Read the implementations only after trying each decision. The same neutral
++policy appears in three realizations:
++
++| Concern | Java composition | Java Template Method | Rust composition |
++|---|---|---|---|
++| Learner decisions | [`LearnerPolicy.java`](java/solution/roo/payments/LearnerPolicy.java) | Same policy source, exercised through the inherited application | [`learner.rs`](rust/solution/src/learner.rs) |
++| Reuse shape | Constructor supplied store and provider capabilities | Final public workflow and finalization are reused; subclasses provide stable store and provider hooks | Concrete adapters are composed; there is no implementation inheritance |
++| Local access rule | Encapsulated objects and port contracts | Hook implementations must keep the shared workflow contract | The application holds exclusive mutable borrows of its adapters for its active lifetime |
++| What still owns correctness | Domain, application, and adapters validate transitions and effects | Domain and adapters still own the same invariants; inheritance only controls workflow reuse | Domain and adapters still own the same invariants; borrowing restricts local access and aliasing |
++
++Template Method is a legitimate choice when a shared final workflow should be
++reused and only stable capabilities vary. It does not make provider behavior
++honest or replace a transaction contract. Rust borrowing gives the composed
++application a different local access guarantee; it does not provide rollback
++for a remote effect. The policy outcome can match across these variants without
++requiring identical class or type structures.
++
++For the neutral reasoning behind these choices, return to the [seven-field
++worksheet](../../../templates/relationship-contract.md) and the [filled case
++contract](../adoption/relationship-contract.md). The comparison is limited to
++the checked exercises. Matching outputs do not establish universal equivalence
++or a production guarantee.
+--- /dev/null
++++ after/case-studies/orders-payments/track/README.md
+@@ -0,0 +1,241 @@
++# ROO executable learning track
++
++ROO means **Relationship & Ownership Oriented design**. Start with an operation
++and the invariant it must preserve, make the relationship decisions, and then
++choose how Java, Rust, a database, or a protocol will enforce them. This track
++turns that method into six small caller policy exercises around the existing
++orders and payments case.
++
++The learner edits recovery decisions. The existing domain, application,
++database, and HTTP adapters still validate and execute those decisions. The
++policy cannot set state, report an expected snapshot, or run shell text. The
++evaluator applies an allowed action and reads state independently.
++
++Start with the [track contract](SPEC.md) and the [original case walkthrough](../README.md).
++The [ROO adoption guide](../../../docs/09-adoption-guide.md) explains how to
++apply this method to an existing project. Its [filled relationship contract](../adoption/relationship-contract.md),
++[architecture decision](../adoption/architecture-decision.md), and [design review](../adoption/design-review.md)
++show the full payment recovery decision. Blank worksheets are in
++[`templates/`](../../../templates/).
++
++## A first neutral trace
++
++Consider a fresh order with two valid lines totaling 250 USD minor units
++($2.50). Payment `p1` is prepared and persisted as Pending. The provider
++approves once, but local finalization fails. A caller now observes Pending and
++the persisted identity `p1`; the provider effect is independent of that local
++snapshot.
++
++| Step | What happens |
++|---|---|
++| Observation | Pending, payment ID `p1`, lookup `ok` |
++| Policy decision | `reconcile:ok:none` |
++| Effect owner | The existing application and adapters perform reconciliation; the learner policy does not mutate an order or provider |
++| Independent observation | The evaluator reads the resulting state, event, and charge count |
++
++The caller never supplies the expected result. In particular, the fixture's
++`case_id` and expected oracle column are not policy inputs. `last_result` is an
++observation from the preceding action, not a test answer or proof that an
++independent effect did or did not occur.
++
++## Work through the track
++
++Run commands from the repository root. First compile the track and its existing
++Java and Rust PostgreSQL and HTTP targets:
++
++```sh
++bash case-studies/orders-payments/track/build.sh
++```
++
++For a first look, qualify one unmodified starter exercise. The starter compiles
++and returns `stop` at every exercise gap, so the expected learner failure is a
++behavioral red for `e1`:
++
++```sh
++python3 case-studies/orders-payments/track/verify.py --source starter --exercise e1 --variant java-composition --expect-incomplete
++```
++
++`--expect-incomplete` is for starter qualification only. It recognizes the
++specified missing learner behavior; it does not turn compiler, dependency,
++database, server startup, or missing barrier errors into a pass. After editing
++the starter, rebuild it before verifying it. Otherwise `verify.py` would run
++the previously compiled policy:
++
++```sh
++bash case-studies/orders-payments/track/build.sh starter
++python3 case-studies/orders-payments/track/verify.py --source starter --exercise e1 --variant java-composition
++```
++
++Repeat an individual exercise with `--variant java-inheritance` or
++`--variant rust`. Java exercises run against both composition and Template
++Method applications; Rust uses composition. After solving the exercises, run
++each rebuilt source matrix separately:
++
++```sh
++bash case-studies/orders-payments/track/build.sh starter
++python3 case-studies/orders-payments/track/verify.py --source starter --exercise all --variant all
++bash case-studies/orders-payments/track/build.sh solution
++python3 case-studies/orders-payments/track/verify.py --source solution --exercise all --variant all
++```
++
++The repository qualification entry point is for the untouched starter. It
++builds first, requires every starter group to show its expected behavioral
++failure, then checks all completed solution groups. It also compiles temporary
++learners with only e6 completed and verifies real HTTP recovery while e2 still
++returns `stop`; your starter files are not edited:
++
++```sh
++bash case-studies/orders-payments/track/verify.sh
++```
++
++After solving any starter group, this entry point is no longer the right check:
++it deliberately expects those starter failures. Use `build.sh starter` and
++`verify.py --source starter` to check your work, then build and check the
++solution source separately. Exercises `e1` to `e4` use the in-memory adapters
++and need no database at runtime. The build still compiles the configured
++PostgreSQL and HTTP targets. Exercises `e5` and `e6` use the existing marked
++loopback PostgreSQL cluster and real local HTTP servers.
++
++The build runs targets serially. It needs Python 3, Bash, JDK 21 or newer,
++Rust/Cargo 1.96, and PostgreSQL 18 server tools for the integrated boundary
++checks. It verifies the pinned JDBC and Jackson jars through the existing
++fetch helpers, and the Rust boundary builds run offline. If the dependency
++cache is cold, prime the pinned Java artifacts and locked Rust dependencies
++first:
++
++```sh
++python3 case-studies/orders-payments/postgres/fetch_jdbc.py
++python3 case-studies/orders-payments/http/fetch_json.py
++cargo fetch --locked --manifest-path case-studies/orders-payments/postgres/rust/Cargo.toml
++cargo fetch --locked --manifest-path case-studies/orders-payments/http/rust/Cargo.toml
++```
++
++The Java helpers reuse an existing verified jar and fetch a missing one. Cargo
++fetch may use the network to fill a cold cache; the later boundary builds use
++the exact locked dependency graphs offline. The local PostgreSQL checks also
++need the case's documented server tools and supported runtime versions.
++
++The integrated database checks require that marked cluster to be stopped when
++they begin. The runner refuses an already running cluster, starts its own
++marked cluster, applies the schema, and stops only that cluster at normal
++cleanup. It retains its test data. Do not treat a refusal or missing lock
++witness as an exercise failure; those are environment or harness failures to
++resolve before judging the policy.
++
++## The policy boundary
++
++Each policy process receives `policy` followed by exactly eleven fields, in
++this order:
++
++| Field | Meaning |
++|---|---|
++| `exercise` | `e1` through `e6` |
++| `phase` | The permitted point in the exercise |
++| `state` | Latest observed order state |
++| `total` | Latest observed total in signed 64 bit USD minor units |
++| `payment_id` | Persisted payment identity or `-` |
++| `last_result` | Result of the preceding action or `-` |
++| `pending_outbox` | Latest observed number of unacknowledged events |
++| `requested_payment_id` | Caller supplied payment identity or `-` |
++| `unit` | Caller supplied line price in minor units |
++| `quantity` | Caller supplied line quantity |
++| `lookup` | `ok` or `unavailable` |
++
++All fields are validated, including fields a particular decision does not use.
++The policy returns one LF terminated action and writes no other text to stdout.
++The available actions are `add:UNIT:QUANTITY`,
++`pay:ID:approve:none`, `reconcile:LOOKUP:none`, `relay:ok`, `inspect`, and
++`stop`. It must not hardcode the example ID `p1`, the example total `250`, or
++an expected snapshot. For e1, forward the caller's line values even when they
++are invalid: domain validation owns rejection and preservation of prior lines.
++
++The policy owns **which next action to request**. Existing domain transitions,
++application ordering, and adapters own **whether that action preserves their
++invariants**. PostgreSQL owns committed rows and transaction boundaries; the
++HTTP handler owns transport validation and response behavior. No language type
++can replace those runtime contracts.
++
++The process boundary is visible in [Java's `TrackInput`](java/common/roo/payments/TrackInput.java)
++and the [Rust shared runner](rust/shared.rs); native checks that exercise the
++existing in-memory applications live in [Java's `TrackNative`](java/common/roo/payments/TrackNative.java)
++and the same Rust runner.
++
++## Keep the seven fields neutral
++
++Before thinking about Java or Rust syntax, answer the seven Relationship
++Contract fields for the operation. The filled contract linked above gives the
++case answers; use the blank worksheet when applying ROO elsewhere.
++
++| Field | Question to answer |
++|---|---|
++| Owner / resource custodian | Who retains this resource and handles its local lifecycle? |
++| Stable identity | What identity lets the operation be recognized after a retry or process restart? |
++| Mutation authority | Which operation may change state, and who preserves the invariant? |
++| Access regime | Are callers observing a snapshot, transferring facts, or sharing mutable access? |
++| Validity horizon | When can an observation become stale, or an intent cease to be valid? |
++| Execution domain | Where must overlapping operations coordinate: call, process, service, or transaction? |
++| Failure boundary | Which effects may survive a failure, and who owns inspection, retry, or recovery? |
++
++For this case, `p1` is the stable payment operation identity, while the order,
++provider effect, and outbox fact have different custodians and lifetimes. The
++same neutral decision can be expressed with different language mechanisms.
++
++## Read the implementation differences
++
++The [Java composition implementation](../java/src/roo/payments/CompositionApplication.java)
++injects store and provider capabilities. The [Java Template Method implementation](../java/src/roo/payments/TemplateApplication.java)
++is a real reuse option: its final public workflows keep the orchestration
++fixed while subclasses supply stable store and provider hooks. It is useful
++when those are the intended variation points and each hook implementation
++honors the same contract. Both delegate domain checks and state installation to
++the [Java domain](../java/src/roo/payments/Domain.java) and
++[adapters](../java/src/roo/payments/Adapters.java).
++
++Rust uses composed adapters and an application that holds exclusive mutable
++borrows while it coordinates them. Those borrows constrain local aliasing and
++access lifetime. They do not decide whether a provider effect happened, make
++separate commits atomic, or define caller authorization. See the [Rust application](../rust/src/application.rs)
++and [adapter implementation](../rust/src/adapters.rs). Compare the bounded
++implementations in [`java/`](java/) and [`rust/`](rust/); the exercises point
++directly to the starter and completed policy files.
++
++## What each result can establish
++
++Compilation establishes that the selected source builds. A starter behavioral
++red establishes that its decision is still missing. Passing a selected
++exercise establishes only the checked behavior in that scenario and variant.
++Matching Java and Rust outcomes demonstrates parity for this bounded policy
++contract, not universal equivalence between the languages or implementations.
++
++The PostgreSQL exercise uses the existing application and actual local database
++transactions. It witnesses selected concurrency, kills a process after the
++provider effect commits, inspects the surviving Pending intent, then performs
++an immediate PostgreSQL restart and checks WAL redo and normalized snapshots.
++That is bounded evidence for this marked local database and its durability
++settings, not hardware power loss or a production payment provider. The
++[PostgreSQL contract](../postgres/SPEC.md), [Java store](../postgres/java/src/roo/postgres/Store.java),
++and [Rust database adapter](../postgres/rust/src/database.rs) show those
++transaction and row lock boundaries.
++
++Each `verify.py` run writes its current receipt to the ignored
++`.runtime/last-run.json`; `verify.sh` also keeps separate starter and solution
++receipts there, plus `.runtime/e6-independent-last-run.json` for the temporary
++learner regression. These run artifacts and a successful source build are not a
++substitute for a qualification record. This guide records the workflow and
++evidence limits; it does not claim a fresh runtime pass.
++
++The separate [2026-10-11 qualification record](../../../research/roo-track-validation.md)
++reports the executed starter and solution matrix, observed database restart,
++HTTP response losses, cleanup, and proof limits.
++
++The HTTP exercise loses the response after the action and snapshot but before
++headers reach the client. Recovery uses a fresh server and the existing
++database. A payment retry keeps the same identity; a lost line response requires
++inspection because line POST has no durable replay receipt. These checks do not
++prove arbitrary network behavior, every interleaving, or production readiness.
++The [HTTP contract](../http/SPEC.md), [Java service](../http/java/src/roo/postgres/HttpService.java),
++[Java protocol](../http/java/src/roo/postgres/HttpProtocol.java), and [Rust server](../http/rust/src/main.rs)
++make the response boundary explicit; the [Rust protocol](../http/rust/src/lib.rs)
++defines request and status handling.
++
++Read [EXERCISES.md](EXERCISES.md) for the six tasks and their recovery hints.
+--- /dev/null
++++ after/case-studies/orders-payments/track/SPEC.md
+@@ -0,0 +1,138 @@
++# Executable ROO adoption track contract
++
++ROO means Relationship & Ownership Oriented design. This track implements
++caller recovery decisions around the unchanged orders/payments applications.
++Students edit a policy, not the existing domain or transaction implementation.
++The same observations and obligations apply to Java composition, Java Template
++Method, and Rust composition. All amounts are signed 64-bit USD minor units.
++
++## Policy process protocol
++
++Build separate starter and solution executables. Each accepts `policy` followed
++by exactly these eleven arguments, in order:
++
++`exercise phase state total payment_id last_result pending_outbox requested_payment_id unit quantity lookup`
++
++The caller supplies observations and requested input, never expected results.
++Return exactly one LF-terminated action on stdout, exit zero, with no logging
++on stdout. Permitted actions are the existing `add:UNIT:QUANTITY`,
++`pay:ID:approve:none`, `reconcile:LOOKUP:none`, `relay:ok`, plus caller decisions
++`inspect` and `stop`. The evaluator validates actions before executing them,
++obtains snapshots independently, and observes again after each action.
++It never executes shell text or accepts learner-provided state as evidence.
++
++Reject malformed input before policy evaluation: wrong arity, unknown exercise
++or phase, invalid state/outcome, invalid identity, invalid integer, negative
++total/pending count, or invalid lookup. Exit 2, no stdout, generic English
++diagnostic. Payment identities are ASCII `[A-Za-z0-9]{1,64}` or `-` for absence,
++matching the bounded in-memory domain. PostgreSQL scope names are separate.
++Integers use optional ASCII minus plus one or more ASCII digits, within i64;
++no plus sign, whitespace, decimal, Unicode digit, or overflow. States are
++Draft, Pending, Paid, Declined, Refunding, Refunded. Outcomes are `-` or the
++existing base Domain.Result/Outcome names. Lookup is `ok` or `unavailable`.
++Validate the entire input even when an exercise does not use every field.
++
++| Exercise | Allowed phase | Completed next action |
++|---|---|---|
++| e1 | add | `add:unit:quantity`, including invalid domain inputs; domain rejection must be observed, not filtered away. |
++| e2 | recover | Pending with a persisted payment ID: `reconcile:lookup:none`; otherwise `inspect`. |
++| e3 | retry | `pay:requested_payment_id:approve:none`; absent requested ID: `inspect`. Use the caller's identity so a changed identity is rejected by the domain. |
++| e4 | redeliver | Positive pending count: `relay:ok`; zero: `stop`. |
++| e5 | uncertain_commit, recover | uncertain_commit: `inspect`; recover Pending with a persisted payment ID: `reconcile:lookup:none`; otherwise `inspect`. |
++| e6 | payment_response_lost, line_response_lost, line_inspected | payment loss: retry `pay` using persisted ID, or requested ID if no intent exists; if neither exists, `inspect`. Line loss: `inspect`. After inspection: `stop`; a separate explicit caller decision may append again. |
++
++The starter compiles and returns `stop` at each of the six exercise gaps.
++Implement each decision separately. Do not hardcode p1, 250, expected snapshots,
++or exercise pass flags. Native tests and common policy cases use varied inputs.
++The full solution is a distinct source implementation, not a runtime answer mode.
++
++## Native exercises e1–e4
++
++Each executable also accepts `native EXERCISE VARIANT`. Java VARIANT is
++`composition` or `inheritance`; Rust VARIANT is `composition`. Test one exercise
++independently. A missing/wrong learner decision fails exit 1 with stderr prefix
++`BEHAVIOR eN:`. Infrastructure/argument errors are not behavioral failures.
++Successful checks print an English PASS line and exit zero. Do not catch all
++exceptions/panics as successful starter failures.
++
++- e1: seed two valid lines totaling 250. Use the learner action for invalid
++  quantity, invalid price, multiplication overflow, and sum overflow. Check
++  exact preserved order/line facts, total, Draft, no effect/event after each.
++  Also vary valid input and verify the requested addition actually occurs.
++- e2: seed 250, pay using p1 with an approved provider and failed terminal
++  commit. Assert LocalCommitFailed, Pending, p1, one charge, zero events before
++  consulting the learner. Execute recovery and assert Paid, same p1, one
++  charge, exactly one PaymentApproved event with ID payment:p1. Repeat with
++  a different ID and amount. An unavailable lookup must preserve Pending.
++- e3: after timeout-after approval, execute same-ID retry from the learner;
++  verify one effect and finalization. Exercise a changed caller ID while
++  Pending and expect IntentConflict with unchanged intent/effect. Invoke the
++  existing fixture's test-only conflict action to verify KeyConflict for a
++  changed amount; do not widen private provider APIs.
++- e4: approve a payment, relay with acknowledgement failure, and assert one
++  consumer fact, one event still pending. Execute learner redelivery and
++  assert one applied fact, no pending event; zero pending selects stop.
++  Check delivery identity/content through the public observers available in
++  each language; Rust's common guarantee is ID deduplication.
++
++## PostgreSQL exercise e5
++
++Reuse the existing marked loopback-only cluster, schema, protected persistent
++runners, and PostgreSQL barrier helpers. Never reset/drop existing test data.
++Use fresh random synthetic scopes. Require a stopped cluster at entry before
++assuming lifecycle ownership; refuse an already running cluster so another
++test's database is never restarted or stopped. Start/apply schema; always
++terminate owned workers/servers and stop only this marked cluster on exit.
++
++For each Java realization and Rust:
++
++1. Witness pay-before-add row locking and the contender's wait. Release the
++   barrier, assert Approved/InvalidState and a single 250-minor charge/event.
++2. Kill a pay process at the observed after_effect gate. A fresh process must
++   read Pending, persisted p1, one charge, zero events. Keep the snapshot.
++3. The learner's uncertain_commit decision must select inspection, not replay.
++   This checks recovery policy; an actually uncertain COMMIT is not injected.
++4. Immediately stop/restart PostgreSQL once for all three retained scopes.
++   Verify a changed server start time, WAL redo, and byte-equivalent normalized
++   snapshots after restart. Invoke learner recovery using the fresh observed
++   Pending snapshot; assert Paid, same identity, one charge, one event.
++
++Known SIGKILL windows and immediate server recovery are bounded observations,
++not hardware power-loss, arbitrary network failure, or exhaustive interleaving
++proof. Provider and inbox transactions remain independent but share one server.
++
++## HTTP exercise e6
++
++Use the actual existing Java/Rust servers and retained PostgreSQL. For each
++variant, gate after action and snapshot but before response headers, kill the
++server, and require the client's connection-loss exception. Recover through a
++fresh server and GET. Invoke learner decisions on those observations:
++
++- Lost payment response: Paid, one charge/event; same-ID replay must return
++  AlreadyApplied and preserve effects and identity. Include a separate Pending
++  timeout-after case: HTTP 202 starts no worker; explicitly reconcile.
++- Lost line response: inspect the committed Draft total 300, then select stop.
++  Assert the policy transcript sent no automatic line POST and total stayed
++  300. An explicitly authorized second caller action adds 50 to reach 350,
++  demonstrating that line POST has no durable replay receipt.
++
++Reject wrong boundary policies (new payment ID, blind line replay, skipped
++reconciliation) with specific action or state assertions. Do not classify a
++missing dependency, compilation failure, database error, server startup failure,
++or missing lock witness as expected learner failure.
++
++## Qualification and evidence
++
++The root evaluator owns common policy cases/oracles and integrated checks.
++Compile both starters successfully; require specific independent behavioral
++failures for all six groups in all three realizations. Require solved native
++e1–e4, policy parity including malformed input, PostgreSQL e5, and HTTP e6 to
++pass. Build/compiler/format checks and runtime evidence are separate.
++
++Record current run evidence under this track's runtime directory or new
++research files. Do not overwrite existing historical validation receipts.
++Keep source, fixtures, dependencies, identifiers, schemas, original templates,
++and previous research records unchanged. Navigation and new ignore entries
++are permitted. Document progressive commands, student edit locations,
++comparison with solutions, architecture translation, and evidence limits in
++English. No publication is part of this track.
+--- /dev/null
++++ after/case-studies/orders-payments/track/build.sh
+@@ -0,0 +1,34 @@
++#!/usr/bin/env bash
++# Serial compilation; cached dependency helpers verify pinned artifacts.
++set -euo pipefail
++TRACK="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
++CASE="$TRACK/.."
++if [[ "${1:-}" == "--help" ]]; then
++    echo "Usage: build.sh [starter|solution|all] (default: all)"
++    echo "Build track executables and existing PostgreSQL/HTTP boundary runners serially."
++    exit 0
++fi
++source_set="${1:-all}"
++if [[ "$#" -gt 1 || ! "$source_set" =~ ^(starter|solution|all)$ ]]; then
++    echo "Usage: build.sh [starter|solution|all]" >&2
++    exit 2
++fi
++sources=(starter solution)
++if [[ "$source_set" != all ]]; then sources=("$source_set"); fi
++for source in "${sources[@]}"; do
++    classes="$TRACK/java/build/$source/classes"
++    mkdir -p "$classes"
++    files=()
++    while IFS= read -r file; do files+=("$file"); done < <(
++        find "$CASE/java/src" "$TRACK/java/common" "$TRACK/java/$source" -name '*.java' -type f -print | sort
++    )
++    javac --release 21 -Xlint:all -Werror -d "$classes" "${files[@]}"
++    cargo build --manifest-path "$TRACK/rust/$source/Cargo.toml" --offline
++ done
++python3 "$CASE/postgres/fetch_jdbc.py"
++python3 "$CASE/http/fetch_json.py"
++bash "$CASE/postgres/java/build.sh"
++cargo build --manifest-path "$CASE/postgres/rust/Cargo.toml" --locked --offline
++bash "$CASE/http/java/build.sh"
++cargo build --manifest-path "$CASE/http/rust/Cargo.toml" --locked --offline
++echo "PASS serial track and boundary builds"
+--- /dev/null
++++ after/case-studies/orders-payments/track/check_independence.py
+@@ -0,0 +1,112 @@
++#!/usr/bin/env python3
++"""Compile an e6-only learner and qualify real HTTP recovery with e2 incomplete."""
++
++import hashlib
++import importlib.util
++import json
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++
++TRACK = Path(__file__).resolve().parent
++CASE = TRACK.parent
++
++
++def method(source, signature):
++    """Copy one complete method body without changing any other exercise."""
++    start = source.index(signature)
++    brace = source.index("{", start)
++    depth = 1
++    cursor = brace + 1
++    while depth and cursor < len(source):
++        depth += (source[cursor] == "{") - (source[cursor] == "}")
++        cursor += 1
++    if depth:
++        raise ValueError("Incomplete learner method")
++    return source[start:cursor]
++
++
++def checked(command):
++    result = subprocess.run(command, capture_output=True, text=True, timeout=60)
++    if result.returncode:
++        raise RuntimeError(f"Temporary learner build failed: {result.stderr.strip()}")
++
++
++def compile_learners(directory):
++    java_starter = (TRACK / "java/starter/roo/payments/LearnerPolicy.java").read_text()
++    java_solution = (TRACK / "java/solution/roo/payments/LearnerPolicy.java").read_text()
++    signature = "private static String lostResponse(TrackInput input)"
++    java = java_starter.replace(method(java_starter, signature), method(java_solution, signature))
++    helper = method(java_solution, "private static String payOrInspect(String identity)")
++    java = java[:java.rindex("}")] + "    " + helper + "\n}\n"
++    java_file = directory / "java/LearnerPolicy.java"
++    java_file.parent.mkdir()
++    java_file.write_text(java)
++    classes = directory / "java/classes"
++    classes.mkdir()
++    sources = sorted(str(p) for folder in (CASE / "java/src", TRACK / "java/common")
++                     for p in folder.rglob("*.java"))
++    checked(["javac", "--release", "21", "-Xlint:all", "-Werror", "-d", str(classes),
++             *sources, str(java_file)])
++
++    rust_starter = (TRACK / "rust/starter/src/learner.rs").read_text()
++    rust_solution = (TRACK / "rust/solution/src/learner.rs").read_text()
++    rust = rust_starter.replace(method(rust_starter, "fn response_lost("),
++                               method(rust_solution, "fn response_lost("))
++    rust_dir = directory / "rust"
++    (rust_dir / "src").mkdir(parents=True)
++    (rust_dir / "src/learner.rs").write_text(rust)
++    (rust_dir / "src/main.rs").write_text(
++        "#[path = " + json.dumps(str(TRACK / "rust/shared.rs")) + "]\nmod shared;\n"
++        "mod learner;\nfn main() { std::process::exit(shared::run(learner::decide)); }\n")
++    (rust_dir / "Cargo.toml").write_text(
++        '[package]\nname = "roo-track-e6-only"\nversion = "0.1.0"\n'
++        'edition = "2024"\nrust-version = "1.96"\npublish = false\n'
++        '[workspace]\n[dependencies]\norders-payments-case = { path = '
++        + json.dumps(str(CASE / "rust")) + ' }\n[lints.rust]\nunsafe_code = "forbid"\n')
++    checked(["cargo", "build", "--manifest-path", str(rust_dir / "Cargo.toml"), "--offline"])
++    commands = {"rust": [str(rust_dir / "target/debug/roo-track-e6-only")]}
++    for variant in ("java-composition", "java-inheritance"):
++        commands[variant] = ["java", "-cp", str(classes), "roo.payments.TrackMain"]
++    hashes = {"temporary_java_learner": hashlib.sha256(java.encode()).hexdigest(),
++              "temporary_rust_learner": hashlib.sha256(rust.encode()).hexdigest()}
++    return commands, hashes
++
++
++def main():
++    spec = importlib.util.spec_from_file_location("roo_track_independence", TRACK / "verify.py")
++    verifier = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(verifier)
++    receipt = verifier.EVIDENCE
++    runtime = TRACK / ".runtime"
++    runtime.mkdir(exist_ok=True)
++    try:
++        with tempfile.TemporaryDirectory(prefix="roo-e6-only-") as temporary:
++            commands, hashes = compile_learners(Path(temporary))
++            receipt.update(qualification="e6-only completed starter, all other gaps unchanged",
++                           temporary_policy_source_hashes=hashes)
++            # These are actual compiled Java/Rust policies, not a fake HTTP client.
++            for variant, command in commands.items():
++                result = verifier.invoke(command, "policy", "e2", "recover", "Pending",
++                                         "250", "p1", "LocalCommitFailed", "0", "p1", "0", "0", "ok")
++                if result.returncode or result.stdout != "stop\n":
++                    raise AssertionError(f"{variant}: e2 must remain incomplete")
++            verifier.command = lambda source, variant: commands[variant]
++            sys.argv = [str(TRACK / "verify.py"), "--source", "starter", "--exercise", "e6", "--variant", "all"]
++            verifier.main()
++            if any(item["observation"]["exercise"] != "e6"
++                   for groups in receipt["variants"].values()
++                   for item in groups["e6"]["transcript"]):
++                raise AssertionError("Another learner exercise was invoked")
++            receipt["e2_incomplete_verified_for_variants"] = sorted(commands)
++            print("PASS e6 independently with e2 incomplete in Java and Rust", flush=True)
++    except Exception as error:
++        receipt.update(status="FAIL", errors=[{"type": type(error).__name__, "message": str(error)}])
++        raise
++    finally:
++        (runtime / "e6-independent-last-run.json").write_text(json.dumps(receipt, indent=2) + "\n")
++
++
++if __name__ == "__main__":
++    main()
+--- /dev/null
++++ after/case-studies/orders-payments/track/java/common/roo/payments/TrackInput.java
+@@ -0,0 +1,52 @@
++package roo.payments;
++
++import java.util.Arrays;
++import java.util.Set;
++
++/** Validated caller observations; policy evaluation never trusts these as test evidence. */
++public record TrackInput(String exercise, String phase, Domain.State state, long total,
++        String paymentId, String lastResult, long pendingOutbox, String requestedPaymentId,
++        long unit, long quantity, String lookup) {
++    private static final Set<String> LOOKUPS = Set.of("ok", "unavailable");
++
++    public static TrackInput parse(String[] fields) {
++        if (fields.length != 11) throw new IllegalArgumentException();
++        String exercise = fields[0];
++        String phase = fields[1];
++        boolean allowed = switch (exercise) {
++            case "e1" -> phase.equals("add");
++            case "e2" -> phase.equals("recover");
++            case "e3" -> phase.equals("retry");
++            case "e4" -> phase.equals("redeliver");
++            case "e5" -> Set.of("uncertain_commit", "recover").contains(phase);
++            case "e6" -> Set.of("payment_response_lost", "line_response_lost", "line_inspected").contains(phase);
++            default -> false;
++        };
++        if (!allowed) throw new IllegalArgumentException();
++        Domain.State state = Domain.State.valueOf(fields[2]);
++        long total = integer(fields[3]);
++        identity(fields[4]);
++        if (!fields[5].equals("-")) Domain.Result.valueOf(fields[5]);
++        long pending = integer(fields[6]);
++        identity(fields[7]);
++        long unit = integer(fields[8]);
++        long quantity = integer(fields[9]);
++        if (total < 0 || pending < 0 || !LOOKUPS.contains(fields[10])) throw new IllegalArgumentException();
++        return new TrackInput(exercise, phase, state, total, fields[4], fields[5], pending,
++                fields[7], unit, quantity, fields[10]);
++    }
++
++    public static TrackInput parsePolicyArguments(String[] args) {
++        if (args.length != 12 || !args[0].equals("policy")) throw new IllegalArgumentException();
++        return parse(Arrays.copyOfRange(args, 1, args.length));
++    }
++
++    static long integer(String text) {
++        if (!text.matches("-?[0-9]+")) throw new IllegalArgumentException();
++        return Long.parseLong(text);
++    }
++
++    static void identity(String text) {
++        if (!text.equals("-") && !text.matches("[A-Za-z0-9]{1,64}")) throw new IllegalArgumentException();
++    }
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/java/common/roo/payments/TrackMain.java
+@@ -0,0 +1,34 @@
++package roo.payments;
++
++/** Shared command protocol for independently compiled starter and completed policies. */
++public final class TrackMain {
++    private TrackMain() { }
++
++    public static void main(String[] args) {
++        if (args.length > 0 && args[0].equals("policy")) {
++            final TrackInput input;
++            try { input = TrackInput.parsePolicyArguments(args); }
++            catch (IllegalArgumentException invalid) { invalidArguments(); return; }
++            System.out.print(LearnerPolicy.decide(input) + "\n");
++            return;
++        }
++        if (args.length == 3 && args[0].equals("native")
++                && args[1].matches("e[1-4]")
++                && (args[2].equals("composition") || args[2].equals("inheritance"))) {
++            try {
++                TrackNative.run(args[1], args[2].equals("inheritance"));
++                System.out.println("PASS " + args[1] + " " + args[2]);
++            } catch (TrackNative.BehaviorFailure failure) {
++                System.err.println("BEHAVIOR " + args[1] + ": " + failure.getMessage());
++                System.exit(1);
++            }
++            return;
++        }
++        invalidArguments();
++    }
++
++    private static void invalidArguments() {
++        System.err.println("Invalid track arguments");
++        System.exit(2);
++    }
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/java/common/roo/payments/TrackNative.java
+@@ -0,0 +1,218 @@
++package roo.payments;
++
++import java.util.List;
++import static roo.payments.Adapters.*;
++import static roo.payments.Domain.*;
++
++/** Native checks obtain facts directly from the unchanged applications and adapters. */
++public final class TrackNative {
++    private TrackNative() { }
++
++    static final class BehaviorFailure extends RuntimeException {
++        private static final long serialVersionUID = 1L;
++        BehaviorFailure(String message) { super(message); }
++    }
++
++    private static final class World {
++        final Store store = new Store();
++        final Provider provider = new Provider();
++        final Consumer consumer = new Consumer();
++        final Application app;
++        World(boolean inheritance) {
++            app = inheritance ? new InMemoryTemplateApplication(store, provider)
++                    : new CompositionApplication(store, provider);
++        }
++    }
++
++    public static void run(String exercise, boolean inheritance) {
++        switch (exercise) {
++            case "e1" -> lines(inheritance);
++            case "e2" -> recovery(inheritance);
++            case "e3" -> retry(inheritance);
++            case "e4" -> redelivery(inheritance);
++            default -> throw new IllegalArgumentException("Unknown native exercise");
++        }
++    }
++
++    private static World seeded(boolean inheritance, long unit, long quantity, long extra) {
++        World world = new World(inheritance);
++        require(world.app.add(unit, quantity) == Result.Added, "Could not seed first line");
++        require(world.app.add(extra, 1) == Result.Added, "Could not seed second line");
++        return world;
++    }
++
++    private static void lines(boolean inheritance) {
++        World world = seeded(inheritance, 100, 2, 50);
++        Order before = world.store.load();
++        require(before.total() == 250 && before.lines().equals(List.of(
++                new Line(new Money(100, "USD"), 2), new Line(new Money(50, "USD"), 1))),
++                "Invalid line setup");
++        long[][] invalid = { {13, 0}, {0, 7}, {Long.MAX_VALUE, 2}, {Long.MAX_VALUE, 1} };
++        Result[] expected = {Result.InvalidLine, Result.InvalidLine, Result.Overflow, Result.Overflow};
++        for (int index = 0; index < invalid.length; index++) {
++            long unit = invalid[index][0];
++            long quantity = invalid[index][1];
++            TrackInput input = observe(world, "e1", "add", null, "-", unit, quantity, "ok");
++            Result result = execute(world, action(input, "add:" + unit + ":" + quantity));
++            check(result == expected[index], "Domain rejection was not observed for requested line");
++            check(sameOrder(before, world.store.load()), "Rejected line changed exact order facts");
++            check(world.provider.requests() == 0 && world.provider.chargeCount() == 0
++                    && world.store.events().isEmpty(), "Rejected line produced an effect or event");
++        }
++        World varied = seeded(inheritance, 73, 3, 19);
++        Order variedBefore = varied.store.load();
++        TrackInput input = observe(varied, "e1", "add", Result.Added, "-", 41, 5, "ok");
++        check(execute(varied, action(input, "add:" + input.unit() + ":" + input.quantity())) == Result.Added,
++                "Valid requested line was not added");
++        Order after = varied.store.load();
++        check(after.id().equals(variedBefore.id()) && after.state() == State.Draft
++                && after.total() == variedBefore.total() + input.unit() * input.quantity()
++                && after.lines().size() == variedBefore.lines().size() + 1
++                && after.lines().subList(0, variedBefore.lines().size()).equals(variedBefore.lines())
++                && after.lines().getLast().equals(new Line(new Money(input.unit(), "USD"), input.quantity()))
++                && after.payment() == null && after.refund() == null,
++                "Valid addition did not preserve prior facts and append requested line");
++        check(varied.provider.requests() == 0 && varied.store.events().isEmpty(),
++                "Valid line addition produced a payment effect or event");
++    }
++
++    private static void recovery(boolean inheritance) {
++        recoverOne(inheritance, "p1", 100, 2, 50);
++        recoverOne(inheritance, "Recover27", 211, 3, 5);
++        World unavailable = seeded(inheritance, 47, 7, 9);
++        PaymentId id = new PaymentId("Lookup9");
++        require(unavailable.app.pay(id, Mode.approve, Failure.commit) == Result.LocalCommitFailed,
++                "Failed commit setup did not fail");
++        assertPending(unavailable, id, false);
++        Order before = unavailable.store.load();
++        TrackInput input = observe(unavailable, "e2", "recover", Result.LocalCommitFailed, "-", 0, 0,
++                "unavailable");
++        check(execute(unavailable, action(input, "reconcile:" + input.lookup() + ":none")) == Result.Unknown,
++                "Unavailable lookup was not observed");
++        check(sameOrder(before, unavailable.store.load()) && unavailable.provider.chargeCount() == 1
++                && unavailable.store.events().isEmpty(), "Unavailable lookup changed Pending facts");
++    }
++
++    private static void recoverOne(boolean inheritance, String identity, long unit, long quantity, long extra) {
++        World world = seeded(inheritance, unit, quantity, extra);
++        PaymentId id = new PaymentId(identity);
++        require(world.app.pay(id, Mode.approve, Failure.commit) == Result.LocalCommitFailed,
++                "Failed commit setup did not fail");
++        assertPending(world, id, false);
++        TrackInput input = observe(world, "e2", "recover", Result.LocalCommitFailed, "-", 0, 0, "ok");
++        check(execute(world, action(input, "reconcile:" + input.lookup() + ":none")) == Result.Approved,
++                "Recovery did not finalize approved payment");
++        assertPaid(world, id);
++    }
++
++    private static void retry(boolean inheritance) {
++        World world = seeded(inheritance, 137, 2, 31);
++        PaymentId id = new PaymentId("Retry42");
++        require(world.app.pay(id, Mode.timeout_after, Failure.none) == Result.Unknown,
++                "Timeout-after setup did not return Unknown");
++        assertPending(world, id, false);
++        Order before = world.store.load();
++        TrackInput changed = observe(world, "e3", "retry", Result.Unknown, "Changed43", 0, 0, "ok");
++        check(execute(world, action(changed, "pay:" + changed.requestedPaymentId() + ":approve:none"))
++                == Result.IntentConflict, "Changed caller identity did not conflict");
++        check(sameOrder(before, world.store.load()) && world.provider.chargeCount() == 1
++                && world.store.events().isEmpty(), "Changed identity altered intent or effect");
++        TrackInput same = observe(world, "e3", "retry", Result.IntentConflict, id.value(), 0, 0, "ok");
++        check(execute(world, action(same, "pay:" + same.requestedPaymentId() + ":approve:none"))
++                == Result.Approved, "Same identity retry did not finalize");
++        assertPaid(world, id);
++        PaymentRequest recorded = world.provider.recorded(id);
++        check(FixtureRunner.conflict(world.provider, id, Long.toString(recorded.amount().minor() + 1))
++                == Result.KeyConflict, "Changed fingerprint did not produce KeyConflict");
++        check(world.provider.recorded(id).equals(recorded) && world.provider.chargeCount() == 1,
++                "Fingerprint conflict changed provider effect");
++        assertPaid(world, id);
++    }
++
++    private static void redelivery(boolean inheritance) {
++        World world = seeded(inheritance, 83, 4, 17);
++        PaymentId id = new PaymentId("Relay58");
++        require(world.app.pay(id, Mode.approve, Failure.none) == Result.Approved,
++                "Payment setup did not approve");
++        require(world.store.relay(world.consumer, Relay.ack_fail) == Result.RelayAckFailed,
++                "Acknowledgement failure setup did not fail");
++        require(world.consumer.count() == 1 && world.store.pending() == 1,
++                "Acknowledgement failure did not preserve pending event");
++        Event before = world.store.events().getFirst();
++        require(paymentEvent(world, id, before), "Invalid initial event facts");
++        TrackInput input = observe(world, "e4", "redeliver", Result.RelayAckFailed, "-", 0, 0, "ok");
++        check(execute(world, action(input, "relay:ok")) == Result.RelayOk, "Redelivery did not succeed");
++        check(world.consumer.count() == 1 && world.store.pending() == 0
++                && world.store.events().equals(List.of(before)) && paymentEvent(world, id, before),
++                "Redelivery duplicated consumer fact or changed event identity/content");
++        TrackInput empty = observe(world, "e4", "redeliver", Result.RelayOk, "-", 0, 0, "ok");
++        action(empty, "stop");
++        check(world.consumer.count() == 1 && world.store.pending() == 0,
++                "Empty outbox decision changed delivery facts");
++    }
++
++    private static TrackInput observe(World world, String exercise, String phase, Result last,
++            String requested, long unit, long quantity, String lookup) {
++        Order order = world.store.load();
++        return TrackInput.parse(new String[] {exercise, phase, order.state().name(), Long.toString(order.total()),
++                order.payment() == null ? "-" : order.payment().id().value(), last == null ? "-" : last.name(),
++                Integer.toString(world.store.pending()), requested, Long.toString(unit), Long.toString(quantity), lookup});
++    }
++
++    private static String action(TrackInput input, String required) {
++        String actual = LearnerPolicy.decide(input);
++        check(required.equals(actual), "Expected decision " + required + ", received " + actual);
++        return actual;
++    }
++
++    private static Result execute(World world, String action) {
++        String[] fields = action.split(":", -1);
++        return switch (fields[0]) {
++            case "add" -> world.app.add(TrackInput.integer(fields[1]), TrackInput.integer(fields[2]));
++            case "pay" -> world.app.pay(new PaymentId(fields[1]), Mode.valueOf(fields[2]), Failure.valueOf(fields[3]));
++            case "reconcile" -> world.app.reconcile(fields[1].equals("unavailable"), Failure.valueOf(fields[2]));
++            case "relay" -> world.store.relay(world.consumer, Relay.valueOf(fields[1]));
++            default -> throw new IllegalStateException("Decision does not execute a domain action");
++        };
++    }
++
++    private static void assertPending(World world, PaymentId id, boolean behavioral) {
++        Order order = world.store.load();
++        boolean valid = order.state() == State.Pending && order.payment() != null
++                && order.payment().id().equals(id) && order.payment().amount().minor() == order.total()
++                && world.provider.chargeCount() == 1 && world.store.events().isEmpty()
++                && world.provider.recorded(id).equals(order.payment());
++        if (behavioral) check(valid, "Pending intent/effect facts changed");
++        else require(valid, "Invalid Pending setup facts");
++    }
++
++    private static void assertPaid(World world, PaymentId id) {
++        Order order = world.store.load();
++        check(order.state() == State.Paid && order.payment() != null && order.payment().id().equals(id)
++                && order.payment().amount().minor() == order.total() && world.provider.chargeCount() == 1
++                && world.provider.recorded(id).equals(order.payment()) && world.store.events().size() == 1,
++                "Final payment state, identity, amount, effect, or event count is wrong");
++        check(paymentEvent(world, id, world.store.events().getFirst()), "Final event identity or content is wrong");
++    }
++
++    private static boolean paymentEvent(World world, PaymentId id, Event event) {
++        Order order = world.store.load();
++        return event.id().value().equals("payment:" + id.value()) && event.kind().equals("PaymentApproved")
++                && event.order().equals(order.id()) && event.payment().equals(id) && event.refund() == null
++                && event.amount().equals(order.payment().amount());
++    }
++
++    private static boolean sameOrder(Order left, Order right) {
++        return left.id().equals(right.id()) && left.lines().equals(right.lines()) && left.total() == right.total()
++                && left.state() == right.state() && java.util.Objects.equals(left.payment(), right.payment())
++                && java.util.Objects.equals(left.refund(), right.refund());
++    }
++
++    private static void require(boolean valid, String message) {
++        if (!valid) throw new IllegalStateException(message);
++    }
++
++    private static void check(boolean valid, String message) {
++        if (!valid) throw new BehaviorFailure(message);
++    }
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/java/solution/roo/payments/LearnerPolicy.java
+@@ -0,0 +1,53 @@
++package roo.payments;
++
++/** Completed caller decisions use only observations and requested input. */
++public final class LearnerPolicy {
++    private LearnerPolicy() { }
++
++    public static String decide(TrackInput input) {
++        return switch (input.exercise()) {
++            case "e1" -> add(input);
++            case "e2" -> recover(input);
++            case "e3" -> retry(input);
++            case "e4" -> redeliver(input);
++            case "e5" -> uncertainCommit(input);
++            case "e6" -> lostResponse(input);
++            default -> throw new IllegalArgumentException("Unknown exercise");
++        };
++    }
++
++    private static String add(TrackInput input) {
++        return "add:" + input.unit() + ":" + input.quantity();
++    }
++
++    private static String recover(TrackInput input) {
++        return input.state() == Domain.State.Pending && !input.paymentId().equals("-")
++                ? "reconcile:" + input.lookup() + ":none" : "inspect";
++    }
++
++    private static String retry(TrackInput input) {
++        return payOrInspect(input.requestedPaymentId());
++    }
++
++    private static String redeliver(TrackInput input) {
++        return input.pendingOutbox() > 0 ? "relay:ok" : "stop";
++    }
++
++    private static String uncertainCommit(TrackInput input) {
++        return input.phase().equals("uncertain_commit") ? "inspect" : recover(input);
++    }
++
++    private static String lostResponse(TrackInput input) {
++        return switch (input.phase()) {
++            case "payment_response_lost" -> payOrInspect(input.paymentId().equals("-")
++                    ? input.requestedPaymentId() : input.paymentId());
++            case "line_response_lost" -> "inspect";
++            case "line_inspected" -> "stop";
++            default -> throw new IllegalArgumentException("Unknown phase");
++        };
++    }
++
++    private static String payOrInspect(String identity) {
++        return identity.equals("-") ? "inspect" : "pay:" + identity + ":approve:none";
++    }
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/java/starter/roo/payments/LearnerPolicy.java
+@@ -0,0 +1,48 @@
++package roo.payments;
++
++/** Edit these six decisions, then rebuild the starter and run one exercise at a time. */
++public final class LearnerPolicy {
++    private LearnerPolicy() { }
++
++    public static String decide(TrackInput input) {
++        return switch (input.exercise()) {
++            case "e1" -> add(input);
++            case "e2" -> recover(input);
++            case "e3" -> retry(input);
++            case "e4" -> redeliver(input);
++            case "e5" -> uncertainCommit(input);
++            case "e6" -> lostResponse(input);
++            default -> throw new IllegalArgumentException("Unknown exercise");
++        };
++    }
++
++    private static String add(TrackInput input) {
++        // TODO: Forward the caller's unit and quantity, including invalid domain inputs.
++        return "stop";
++    }
++
++    private static String recover(TrackInput input) {
++        // TODO: Reconcile an observed Pending intent using the caller's lookup availability.
++        return "stop";
++    }
++
++    private static String retry(TrackInput input) {
++        // TODO: Retry the requested identity; let the domain detect changed intent identity.
++        return "stop";
++    }
++
++    private static String redeliver(TrackInput input) {
++        // TODO: Relay pending events; stop when the observed outbox is empty.
++        return "stop";
++    }
++
++    private static String uncertainCommit(TrackInput input) {
++        // TODO: Inspect uncertainty first, then recover an observed persisted Pending intent.
++        return "stop";
++    }
++
++    private static String lostResponse(TrackInput input) {
++        // TODO: Replay payment identity safely; inspect lost line responses and stop after inspection.
++        return "stop";
++    }
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/malformed-cases.json
+@@ -0,0 +1,370 @@
++[
++  {
++    "case_id": "missing_argument",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0"
++    ]
++  },
++  {
++    "case_id": "extra_argument",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok",
++      "extra"
++    ]
++  },
++  {
++    "case_id": "unknown_exercise",
++    "args": [
++      "e7",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "unknown_phase",
++    "args": [
++      "e1",
++      "unknown",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "wrong_phase_for_exercise",
++    "args": [
++      "e1",
++      "recover",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "unknown_state",
++    "args": [
++      "e1",
++      "add",
++      "Charging",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "unknown_result",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "Success",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "empty_identity",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "punctuated_identity",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "p-1",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "underscore_identity",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "p_1",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "unicode_identity",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "pá",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "long_identity",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "integer_plus",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "+1",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "integer_space",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      " 1",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "integer_decimal",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "1.0",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "integer_unicode",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "１２",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "integer_empty",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "integer_overflow",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "9223372036854775808",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "integer_underflow",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "-9223372036854775809",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "negative_total",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "-1",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "negative_pending",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "-1",
++      "p1",
++      "50",
++      "0",
++      "ok"
++    ]
++  },
++  {
++    "case_id": "bad_lookup",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "p1",
++      "50",
++      "0",
++      "missing"
++    ]
++  },
++  {
++    "case_id": "unused_field_invalid",
++    "args": [
++      "e1",
++      "add",
++      "Draft",
++      "250",
++      "-",
++      "-",
++      "0",
++      "bad/id",
++      "50",
++      "0",
++      "ok"
++    ]
++  }
++]
+--- /dev/null
++++ after/case-studies/orders-payments/track/policy-cases.tsv
+@@ -0,0 +1,32 @@
++case_id	exercise	phase	state	total	payment_id	last_result	pending_outbox	requested_payment_id	unit	quantity	lookup	expected_action
++invalid_quantity	e1	add	Draft	250	-	-	0	p1	50	0	ok	add:50:0
++invalid_price	e1	add	Draft	250	-	-	0	p1	0	3	ok	add:0:3
++product_overflow	e1	add	Draft	250	-	-	0	p1	9223372036854775807	2	ok	add:9223372036854775807:2
++sum_overflow	e1	add	Draft	250	-	-	0	p1	9223372036854775807	1	ok	add:9223372036854775807:1
++varied_valid_add	e1	add	Draft	250	-	-	0	p1	37	3	ok	add:37:3
++negative_input	e1	add	Draft	250	-	-	0	p1	-7	-2	ok	add:-7:-2
++numeric_normalization	e1	add	Draft	250	-	-	0	p1	0007	-0	ok	add:7:0
++recover_pending	e2	recover	Pending	250	pay77	LocalCommitFailed	0	p1	50	1	ok	reconcile:ok:none
++lookup_unavailable	e2	recover	Pending	250	pay77	Unknown	0	p1	50	1	unavailable	reconcile:unavailable:none
++paid_needs_inspection	e2	recover	Paid	250	pay77	Approved	0	p1	50	1	ok	inspect
++draft_needs_inspection	e2	recover	Draft	250	-	-	0	p1	50	1	ok	inspect
++missing_pending_identity	e2	recover	Pending	250	-	-	0	p1	50	1	ok	inspect
++same_key_retry	e3	retry	Pending	250	stable78	Unknown	0	stable78	50	1	ok	pay:stable78:approve:none
++different_intent_probe	e3	retry	Pending	250	stable78	-	0	other79	50	1	ok	pay:other79:approve:none
++missing_requested_identity	e3	retry	Draft	250	-	-	0	-	50	1	ok	inspect
++terminal_retry	e3	retry	Paid	250	stable78	-	0	stable78	50	1	ok	pay:stable78:approve:none
++redeliver_one	e4	redeliver	Paid	250	-	RelayAckFailed	1	p1	50	1	ok	relay:ok
++redeliver_many	e4	redeliver	Refunded	250	-	-	5	p1	50	1	ok	relay:ok
++nothing_to_deliver	e4	redeliver	Paid	250	-	-	0	p1	50	1	ok	stop
++uncertain_pending_commit	e5	uncertain_commit	Pending	250	db81	-	0	p1	50	1	ok	inspect
++uncertain_paid_commit	e5	uncertain_commit	Paid	250	db81	-	0	p1	50	1	ok	inspect
++restart_recovery	e5	recover	Pending	250	db81	-	0	p1	50	1	ok	reconcile:ok:none
++restart_unavailable	e5	recover	Pending	250	db81	-	0	p1	50	1	unavailable	reconcile:unavailable:none
++restart_paid	e5	recover	Paid	250	db81	-	0	p1	50	1	ok	inspect
++restart_draft	e5	recover	Draft	250	-	-	0	p1	50	1	ok	inspect
++lost_paid_response	e6	payment_response_lost	Paid	250	http82	-	0	http82	50	1	ok	pay:http82:approve:none
++prefer_persisted_identity	e6	payment_response_lost	Pending	250	http82	Unknown	0	new83	50	1	ok	pay:http82:approve:none
++no_committed_intent	e6	payment_response_lost	Draft	250	-	-	0	http83	50	1	ok	pay:http83:approve:none
++no_recovery_identity	e6	payment_response_lost	Draft	250	-	-	0	-	50	1	ok	inspect
++lost_line_response	e6	line_response_lost	Draft	300	-	-	0	p1	50	1	ok	inspect
++line_inspected	e6	line_inspected	Draft	300	-	-	0	p1	50	1	ok	stop
+--- /dev/null
++++ after/case-studies/orders-payments/track/rust/shared.rs
+@@ -0,0 +1,476 @@
++//! Validated process boundary and native scenarios shared by the two policies.
++use orders_payments_case::*;
++
++#[allow(dead_code)]
++#[derive(Debug)]
++pub struct Input {
++    pub exercise: String,
++    pub phase: String,
++    pub state: String,
++    pub total: i64,
++    pub payment_id: String,
++    pub last_result: String,
++    pub pending_outbox: i64,
++    pub requested_payment_id: String,
++    pub unit: i64,
++    pub quantity: i64,
++    pub lookup: String,
++}
++
++fn integer(text: &str) -> Result<i64, ()> {
++    let digits = text.strip_prefix('-').unwrap_or(text);
++    if digits.is_empty() || !digits.bytes().all(|b| b.is_ascii_digit()) {
++        return Err(());
++    }
++    text.parse().map_err(|_| ())
++}
++
++fn identity(text: &str) -> bool {
++    text == "-"
++        || ((1..=64).contains(&text.len()) && text.bytes().all(|b| b.is_ascii_alphanumeric()))
++}
++
++fn parse(fields: &[String]) -> Result<Input, ()> {
++    let [
++        exercise,
++        phase,
++        state,
++        total,
++        payment_id,
++        last_result,
++        pending,
++        requested,
++        unit,
++        quantity,
++        lookup,
++    ] = fields
++    else {
++        return Err(());
++    };
++    let valid_phase = match exercise.as_str() {
++        "e1" => phase == "add",
++        "e2" => phase == "recover",
++        "e3" => phase == "retry",
++        "e4" => phase == "redeliver",
++        "e5" => matches!(phase.as_str(), "uncertain_commit" | "recover"),
++        "e6" => matches!(
++            phase.as_str(),
++            "payment_response_lost" | "line_response_lost" | "line_inspected"
++        ),
++        _ => false,
++    };
++    if !valid_phase
++        || !matches!(
++            state.as_str(),
++            "Draft" | "Pending" | "Paid" | "Declined" | "Refunding" | "Refunded"
++        )
++        || !identity(payment_id)
++        || !identity(requested)
++        || !matches!(
++            last_result.as_str(),
++            "-" | "Added"
++                | "InvalidLine"
++                | "Overflow"
++                | "InvalidOrder"
++                | "InvalidState"
++                | "IntentConflict"
++                | "Approved"
++                | "Declined"
++                | "Unknown"
++                | "NotFound"
++                | "AlreadyApplied"
++                | "AlreadyDeclined"
++                | "LocalPrepareFailed"
++                | "LocalCommitFailed"
++                | "KeyConflict"
++                | "RelayOk"
++                | "RelaySendFailed"
++                | "RelayAckFailed"
++        )
++        || !matches!(lookup.as_str(), "ok" | "unavailable")
++    {
++        return Err(());
++    }
++    let total = integer(total)?;
++    let pending_outbox = integer(pending)?;
++    let unit = integer(unit)?;
++    let quantity = integer(quantity)?;
++    if total < 0 || pending_outbox < 0 {
++        return Err(());
++    }
++    Ok(Input {
++        exercise: exercise.clone(),
++        phase: phase.clone(),
++        state: state.clone(),
++        total,
++        payment_id: payment_id.clone(),
++        last_result: last_result.clone(),
++        pending_outbox,
++        requested_payment_id: requested.clone(),
++        unit,
++        quantity,
++        lookup: lookup.clone(),
++    })
++}
++
++pub fn run(decide: fn(&Input) -> String) -> i32 {
++    let arguments: Vec<String> = std::env::args().skip(1).collect();
++    match arguments.first().map(String::as_str) {
++        Some("policy") => match parse(&arguments[1..]) {
++            Ok(input) => {
++                println!("{}", decide(&input));
++                0
++            }
++            Err(()) => {
++                eprintln!("Invalid input.");
++                2
++            }
++        },
++        Some("native") if arguments.len() == 3 && arguments[2] == "composition" => {
++            match native(&arguments[1], decide) {
++                Ok(()) => {
++                    println!("PASS {} composition", arguments[1]);
++                    0
++                }
++                Err(CheckError::Behavior(message)) => {
++                    eprintln!("BEHAVIOR {}: {message}", arguments[1]);
++                    1
++                }
++                Err(CheckError::Infrastructure(message)) => {
++                    eprintln!("Infrastructure error: {message}");
++                    2
++                }
++            }
++        }
++        _ => {
++            eprintln!("Invalid input.");
++            2
++        }
++    }
++}
++
++enum CheckError {
++    Behavior(String),
++    Infrastructure(String),
++}
++type Check = Result<(), CheckError>;
++fn baseline(ok: bool, message: &str) -> Check {
++    if ok {
++        Ok(())
++    } else {
++        Err(CheckError::Infrastructure(message.to_owned()))
++    }
++}
++fn verify(ok: bool, message: &str) -> Check {
++    if ok {
++        Ok(())
++    } else {
++        Err(CheckError::Behavior(message.to_owned()))
++    }
++}
++
++struct Lab {
++    store: Store,
++    provider: Provider,
++    consumer: Consumer,
++}
++impl Lab {
++    fn new() -> Self {
++        Self {
++            store: Store::new(Order::new(
++                OrderId::new("O1").expect("valid fixed order identity"),
++            )),
++            provider: Provider::default(),
++            consumer: Consumer::default(),
++        }
++    }
++    fn app(&mut self) -> Application<'_> {
++        Application::new(&mut self.store, &mut self.provider, &mut self.consumer)
++    }
++    fn seed(&mut self, unit: i64, quantity: i64, extra: i64) -> Check {
++        let total = unit * quantity + extra;
++        baseline(
++            self.app().add(unit, quantity) == Outcome::Added,
++            "first seed line",
++        )?;
++        baseline(
++            self.app().add(extra, 1) == Outcome::Added,
++            "second seed line",
++        )?;
++        baseline(
++            self.store.order().total() == total && self.store.order().line_count() == 2,
++            "seed snapshot",
++        )
++    }
++    fn pay(&mut self, id: &str, mode: Mode, failure: Failure) -> Outcome {
++        self.app().pay(
++            PaymentId::new(id).expect("valid scenario identity"),
++            mode,
++            failure,
++        )
++    }
++    fn observe(
++        &self,
++        exercise: &str,
++        phase: &str,
++        requested: &str,
++        line: (i64, i64),
++        lookup: &str,
++        last: &str,
++    ) -> Input {
++        let (unit, quantity) = line;
++        let order = self.store.order();
++        Input {
++            exercise: exercise.to_owned(),
++            phase: phase.to_owned(),
++            state: format!("{:?}", order.state()),
++            total: order.total(),
++            payment_id: order.payment_id().map_or("-", PaymentId::as_str).to_owned(),
++            last_result: last.to_owned(),
++            pending_outbox: self.store.pending_outbox() as i64,
++            requested_payment_id: requested.to_owned(),
++            unit,
++            quantity,
++            lookup: lookup.to_owned(),
++        }
++    }
++}
++
++fn decision(decide: fn(&Input) -> String, input: &Input, expected: &str) -> Check {
++    verify(
++        decide(input) == expected,
++        "learner selected the wrong next action",
++    )
++}
++
++// Validate the learner action before executing its actual arguments.
++fn perform(
++    lab: &mut Lab,
++    decide: fn(&Input) -> String,
++    input: &Input,
++    expected: &str,
++) -> Result<Outcome, CheckError> {
++    let action = decide(input);
++    verify(action == expected, "learner selected the wrong next action")?;
++    let fields: Vec<_> = action.split(':').collect();
++    let invalid = || CheckError::Behavior("learner returned an invalid action".to_owned());
++    match fields.as_slice() {
++        ["add", unit, quantity] => {
++            let unit = integer(unit).map_err(|_| invalid())?;
++            let quantity = integer(quantity).map_err(|_| invalid())?;
++            Ok(lab.app().add(unit, quantity))
++        }
++        ["pay", id, "approve", "none"] => {
++            let id = PaymentId::new(id).map_err(|_| invalid())?;
++            Ok(lab.app().pay(id, Mode::Approve, Failure::None))
++        }
++        ["reconcile", lookup, "none"] => {
++            let lookup = match *lookup {
++                "ok" => Lookup::Ok,
++                "unavailable" => Lookup::Unavailable,
++                _ => return Err(invalid()),
++            };
++            Ok(lab.app().reconcile(lookup, Failure::None))
++        }
++        ["relay", "ok"] => Ok(lab.app().relay(RelayMode::Ok)),
++        _ => Err(invalid()),
++    }
++}
++
++fn native(exercise: &str, decide: fn(&Input) -> String) -> Check {
++    match exercise {
++        "e1" => native_add(decide),
++        "e2" => native_recover(decide),
++        "e3" => native_retry(decide),
++        "e4" => native_relay(decide),
++        _ => Err(CheckError::Infrastructure(
++            "invalid native exercise".to_owned(),
++        )),
++    }
++}
++
++fn native_add(decide: fn(&Input) -> String) -> Check {
++    let mut lab = Lab::new();
++    lab.seed(100, 2, 50)?;
++    for (unit, quantity, outcome) in [
++        (13, 0, Outcome::InvalidLine),
++        (0, 7, Outcome::InvalidLine),
++        (i64::MAX, 2, Outcome::Overflow),
++        (i64::MAX, 1, Outcome::Overflow),
++    ] {
++        let before = lab.store.order().clone();
++        let input = lab.observe("e1", "add", "-", (unit, quantity), "ok", "-");
++        let actual = perform(&mut lab, decide, &input, &format!("add:{unit}:{quantity}"))?;
++        verify(actual == outcome, "expected domain rejection")?;
++        verify(
++            lab.store.order() == &before
++                && lab.store.order().state() == State::Draft
++                && lab.provider.charge_count() == 0
++                && lab.store.event_count() == 0,
++            "rejected line changed committed facts",
++        )?;
++    }
++    let mut lab = Lab::new();
++    lab.seed(73, 3, 19)?;
++    {
++        let (unit, quantity) = (41, 5);
++        let before = lab.store.order().clone();
++        let mut expected = Lab::new();
++        expected.seed(73, 3, 19)?;
++        baseline(
++            expected.app().add(unit, quantity) == Outcome::Added,
++            "valid line reference setup",
++        )?;
++        let input = lab.observe("e1", "add", "-", (unit, quantity), "ok", "Added");
++        let actual = perform(&mut lab, decide, &input, &format!("add:{unit}:{quantity}"))?;
++        verify(
++            actual == Outcome::Added,
++            "valid requested line was not added",
++        )?;
++        verify(
++            lab.store.order() == expected.store.order()
++                && lab.store.order().total() == before.total() + unit * quantity
++                && lab.store.order().line_count() == before.line_count() + 1
++                && lab.store.order().state() == State::Draft
++                && lab.store.event_count() == 0
++                && lab.provider.charge_count() == 0,
++            "valid line facts differ",
++        )?;
++    }
++    Ok(())
++}
++
++fn pending(lab: &Lab, id: &str, total: i64) -> bool {
++    lab.store.order().state() == State::Pending
++        && lab.store.order().total() == total
++        && lab.store.order().payment_id().map(PaymentId::as_str) == Some(id)
++        && lab.provider.charge_count() == 1
++        && lab.store.event_count() == 0
++}
++fn paid(lab: &Lab, id: &str, total: i64) -> bool {
++    if lab.store.order().state() != State::Paid
++        || lab.store.order().total() != total
++        || lab.store.order().payment_id().map(PaymentId::as_str) != Some(id)
++        || lab.provider.charge_count() != 1
++        || lab.store.event_count() != 1
++    {
++        return false;
++    }
++    lab.store.events().next().is_some_and(|fact| {
++        fact.id().as_str() == format!("payment:{id}")
++            && fact.kind() == EventKind::PaymentApproved
++            && fact.payment_id().as_str() == id
++            && fact.order_id().as_str() == "O1"
++            && fact.amount().minor() == total
++            && fact.currency() == "USD"
++            && fact.refund_id().is_none()
++    })
++}
++
++fn native_recover(decide: fn(&Input) -> String) -> Check {
++    for (id, unit, quantity, extra) in [("p1", 100, 2, 50), ("Recover27", 211, 3, 5)] {
++        let total = unit * quantity + extra;
++        let mut lab = Lab::new();
++        lab.seed(unit, quantity, extra)?;
++        baseline(
++            lab.pay(id, Mode::Approve, Failure::Commit) == Outcome::LocalCommitFailed,
++            "terminal commit failure result",
++        )?;
++        baseline(pending(&lab, id, total), "terminal commit failure snapshot")?;
++        let input = lab.observe("e2", "recover", "-", (0, 0), "ok", "LocalCommitFailed");
++        let actual = perform(&mut lab, decide, &input, "reconcile:ok:none")?;
++        verify(
++            actual == Outcome::Approved && paid(&lab, id, total),
++            "recovery did not finalize the existing effect",
++        )?;
++    }
++    let mut lab = Lab::new();
++    lab.seed(47, 7, 9)?;
++    baseline(
++        lab.pay("Lookup9", Mode::Approve, Failure::Commit) == Outcome::LocalCommitFailed,
++        "unavailable lookup setup result",
++    )?;
++    baseline(
++        pending(&lab, "Lookup9", 338),
++        "unavailable lookup setup snapshot",
++    )?;
++    let before = lab.store.order().clone();
++    let input = lab.observe(
++        "e2",
++        "recover",
++        "-",
++        (0, 0),
++        "unavailable",
++        "LocalCommitFailed",
++    );
++    let actual = perform(&mut lab, decide, &input, "reconcile:unavailable:none")?;
++    verify(
++        actual == Outcome::Unknown && lab.store.order() == &before && pending(&lab, "Lookup9", 338),
++        "unavailable lookup changed pending intent",
++    )
++}
++
++fn native_retry(decide: fn(&Input) -> String) -> Check {
++    let mut lab = Lab::new();
++    lab.seed(137, 2, 31)?;
++    baseline(
++        lab.pay("Retry42", Mode::TimeoutAfter, Failure::None) == Outcome::Unknown
++            && pending(&lab, "Retry42", 305),
++        "timeout-after snapshot",
++    )?;
++    let before = lab.store.order().clone();
++    let changed = lab.observe("e3", "retry", "Changed43", (0, 0), "ok", "Unknown");
++    let actual = perform(&mut lab, decide, &changed, "pay:Changed43:approve:none")?;
++    verify(
++        actual == Outcome::IntentConflict
++            && lab.store.order() == &before
++            && pending(&lab, "Retry42", 305),
++        "changed caller identity replaced intent",
++    )?;
++    let retry = lab.observe("e3", "retry", "Retry42", (0, 0), "ok", "IntentConflict");
++    let actual = perform(&mut lab, decide, &retry, "pay:Retry42:approve:none")?;
++    verify(
++        actual == Outcome::Approved && paid(&lab, "Retry42", 305),
++        "same identity did not finalize once",
++    )?;
++    let fixture = fixture::run("scenario\tsteps\nchanged\tadd:137:2;add:31:1;pay:Retry42:timeout_after:none;pay:Retry42:approve:none;conflict:Retry42:306\n")
++        .map_err(|_| CheckError::Infrastructure("fingerprint fixture failed".to_owned()))?;
++    verify(
++        fixture.lines().nth(1)
++            == Some("changed\tPaid\t305\t1\t0\t1\t0\t1\tKeyConflict\tRetry42\t-"),
++        "changed fingerprint did not preserve the original effect",
++    )
++}
++
++fn native_relay(decide: fn(&Input) -> String) -> Check {
++    let mut lab = Lab::new();
++    lab.seed(83, 4, 17)?;
++    baseline(
++        lab.pay("Relay58", Mode::Approve, Failure::None) == Outcome::Approved
++            && paid(&lab, "Relay58", 349),
++        "approved relay seed",
++    )?;
++    baseline(
++        lab.app().relay(RelayMode::AckFail) == Outcome::RelayAckFailed
++            && lab.consumer.count() == 1
++            && lab.store.pending_outbox() == 1,
++        "acknowledgement failure snapshot",
++    )?;
++    let fact = lab.consumer.facts()[0].clone();
++    baseline(
++        lab.store.events().next() == Some(&fact),
++        "delivered fact content",
++    )?;
++    let input = lab.observe("e4", "redeliver", "-", (0, 0), "ok", "RelayAckFailed");
++    let actual = perform(&mut lab, decide, &input, "relay:ok")?;
++    verify(
++        actual == Outcome::RelayOk
++            && lab.consumer.facts() == [fact.clone()]
++            && lab.store.pending_outbox() == 0
++            && lab.store.events().next() == Some(&fact)
++            && paid(&lab, "Relay58", 349),
++        "redelivery duplicated or changed a fact",
++    )?;
++    let input = lab.observe("e4", "redeliver", "-", (0, 0), "ok", "RelayOk");
++    decision(decide, &input, "stop")
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/rust/solution/Cargo.lock
+@@ -0,0 +1,14 @@
++# This file is automatically @generated by Cargo.
++# It is not intended for manual editing.
++version = 4
++
++[[package]]
++name = "orders-payments-case"
++version = "0.1.0"
++
++[[package]]
++name = "roo-track-solution"
++version = "0.1.0"
++dependencies = [
++ "orders-payments-case",
++]
+--- /dev/null
++++ after/case-studies/orders-payments/track/rust/solution/Cargo.toml
+@@ -0,0 +1,14 @@
++[package]
++name = "roo-track-solution"
++version = "0.1.0"
++edition = "2024"
++rust-version = "1.96"
++publish = false
++
++[workspace]
++
++[dependencies]
++orders-payments-case = { path = "../../../rust" }
++
++[lints.rust]
++unsafe_code = "forbid"
+--- /dev/null
++++ after/case-studies/orders-payments/track/rust/solution/src/learner.rs
+@@ -0,0 +1,70 @@
++//! Edit the six caller decisions independently; domain behavior stays in the base crate.
++use crate::shared::Input;
++
++pub fn decide(input: &Input) -> String {
++    match input.exercise.as_str() {
++        "e1" => add(input),
++        "e2" => recover(input),
++        "e3" => retry(input),
++        "e4" => redeliver(input),
++        "e5" => uncertain_commit(input),
++        "e6" => response_lost(input),
++        _ => unreachable!("input has already been validated"),
++    }
++}
++
++fn add(input: &Input) -> String {
++    format!("add:{}:{}", input.unit, input.quantity)
++}
++
++fn recover(input: &Input) -> String {
++    if input.state == "Pending" && input.payment_id != "-" {
++        format!("reconcile:{}:none", input.lookup)
++    } else {
++        "inspect".to_owned()
++    }
++}
++
++fn retry(input: &Input) -> String {
++    if input.requested_payment_id == "-" {
++        "inspect".to_owned()
++    } else {
++        format!("pay:{}:approve:none", input.requested_payment_id)
++    }
++}
++
++fn redeliver(input: &Input) -> String {
++    if input.pending_outbox > 0 {
++        "relay:ok".to_owned()
++    } else {
++        "stop".to_owned()
++    }
++}
++
++fn uncertain_commit(input: &Input) -> String {
++    if input.phase == "uncertain_commit" {
++        "inspect".to_owned()
++    } else {
++        recover(input)
++    }
++}
++
++fn response_lost(input: &Input) -> String {
++    match input.phase.as_str() {
++        "payment_response_lost" => {
++            let id = if input.payment_id != "-" {
++                &input.payment_id
++            } else {
++                &input.requested_payment_id
++            };
++            if id == "-" {
++                "inspect".to_owned()
++            } else {
++                format!("pay:{id}:approve:none")
++            }
++        }
++        "line_response_lost" => "inspect".to_owned(),
++        "line_inspected" => "stop".to_owned(),
++        _ => unreachable!("validated phase"),
++    }
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/rust/solution/src/main.rs
+@@ -0,0 +1,8 @@
++#![forbid(unsafe_code)]
++mod learner;
++#[path = "../../shared.rs"]
++mod shared;
++
++fn main() {
++    std::process::exit(shared::run(learner::decide));
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/rust/starter/Cargo.lock
+@@ -0,0 +1,14 @@
++# This file is automatically @generated by Cargo.
++# It is not intended for manual editing.
++version = 4
++
++[[package]]
++name = "orders-payments-case"
++version = "0.1.0"
++
++[[package]]
++name = "roo-track-starter"
++version = "0.1.0"
++dependencies = [
++ "orders-payments-case",
++]
+--- /dev/null
++++ after/case-studies/orders-payments/track/rust/starter/Cargo.toml
+@@ -0,0 +1,14 @@
++[package]
++name = "roo-track-starter"
++version = "0.1.0"
++edition = "2024"
++rust-version = "1.96"
++publish = false
++
++[workspace]
++
++[dependencies]
++orders-payments-case = { path = "../../../rust" }
++
++[lints.rust]
++unsafe_code = "forbid"
+--- /dev/null
++++ after/case-studies/orders-payments/track/rust/starter/src/learner.rs
+@@ -0,0 +1,44 @@
++//! Edit the six caller decisions independently; domain behavior stays in the base crate.
++use crate::shared::Input;
++
++pub fn decide(input: &Input) -> String {
++    match input.exercise.as_str() {
++        "e1" => add(input),
++        "e2" => recover(input),
++        "e3" => retry(input),
++        "e4" => redeliver(input),
++        "e5" => uncertain_commit(input),
++        "e6" => response_lost(input),
++        _ => unreachable!("input has already been validated"),
++    }
++}
++
++fn add(_input: &Input) -> String {
++    // TODO: Forward the requested line, including domain-invalid values.
++    "stop".to_owned()
++}
++
++fn recover(_input: &Input) -> String {
++    // TODO: Recover a persisted pending payment through lookup.
++    "stop".to_owned()
++}
++
++fn retry(_input: &Input) -> String {
++    // TODO: Retry the caller payment identity, leaving conflict detection to the domain.
++    "stop".to_owned()
++}
++
++fn redeliver(_input: &Input) -> String {
++    // TODO: Redeliver a pending immutable fact, then stop when clear.
++    "stop".to_owned()
++}
++
++fn uncertain_commit(_input: &Input) -> String {
++    // TODO: Inspect uncertainty before recovering the observed persisted intent.
++    "stop".to_owned()
++}
++
++fn response_lost(_input: &Input) -> String {
++    // TODO: Distinguish payment identity replay from an unreceipted line append.
++    "stop".to_owned()
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/rust/starter/src/main.rs
+@@ -0,0 +1,8 @@
++#![forbid(unsafe_code)]
++mod learner;
++#[path = "../../shared.rs"]
++mod shared;
++
++fn main() {
++    std::process::exit(shared::run(learner::decide));
++}
+--- /dev/null
++++ after/case-studies/orders-payments/track/verify.py
+@@ -0,0 +1,375 @@
++#!/usr/bin/env python3
++"""Independent learner-policy evaluator; real durable and HTTP recovery boundaries."""
++import argparse
++from concurrent.futures import ThreadPoolExecutor
++import csv
++import hashlib
++import http.client
++import importlib.util
++import json
++import os
++from pathlib import Path
++import re
++import subprocess
++import sys
++import traceback
++
++TRACK = Path(__file__).resolve().parent
++CASE = TRACK.parent
++VARIANTS = {"java-composition": "Java composition", "java-inheritance": "Java inheritance", "rust": "Rust composition"}
++FIELDS = "exercise phase state total payment_id last_result pending_outbox requested_payment_id unit quantity lookup".split()
++EXERCISES = [f"e{i}" for i in range(1, 7)]
++EVIDENCE = {"status": "RUNNING", "variants": {}, "errors": []}
++
++
++class Behavior(AssertionError):
++    pass
++
++
++def load(name, path):
++    spec = importlib.util.spec_from_file_location(name, path)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++def command(source, variant):
++    if variant == "rust":
++        return [str(TRACK / "rust" / source / "target/debug" / ("roo-track-" + source))]
++    return ["java", "-cp", str(TRACK / "java/build" / source / "classes"), "roo.payments.TrackMain"]
++
++
++def invoke(cmd, *args):
++    return subprocess.run([*cmd, *args], capture_output=True, text=True, timeout=45,
++                          env={k: v for k, v in os.environ.items() if not k.upper().startswith("PG")})
++
++
++def valid_action(action):
++    identity = r"[A-Za-z0-9]{1,64}"
++    number = r"-?[0-9]+"
++    if action in ("inspect", "stop", "relay:ok", "reconcile:ok:none", "reconcile:unavailable:none"):
++        return True
++    if re.fullmatch(r"pay:" + identity + r":approve:none", action):
++        return True
++    if re.fullmatch(r"add:" + number + ":" + number, action):
++        return all(-(2**63) <= int(x) < 2**63 for x in action.split(":")[1:])
++    return False
++
++
++def policy(cmd, args, transcript):
++    result = invoke(cmd, "policy", *args)
++    if result.returncode != 0:
++        raise RuntimeError(f"Policy process failed ({result.returncode}): {result.stderr.strip()}")
++    action = result.stdout.removesuffix("\n")
++    if result.stdout != action + "\n" or "\n" in action or not valid_action(action):
++        raise RuntimeError("Policy returned invalid action protocol")
++    transcript.append({"observation": dict(zip(FIELDS, args)), "action": action})
++    return action
++
++
++def observed(cmd, exercise, phase, row, transcript, requested="p1", unit="50", quantity="1", lookup="ok"):
++    return policy(cmd, [exercise, phase, row["state"], row["total"], row["payment_id"],
++                        row["last_result"], row["pending_outbox"], requested, unit, quantity, lookup], transcript)
++
++
++def expect_action(action, expected, exercise):
++    if action != expected:
++        raise Behavior(f"BEHAVIOR {exercise}: expected action {expected}, observed {action}")
++
++
++def negative_control(action, expected, exercise):
++    try:
++        expect_action(action, expected, exercise)
++    except Behavior as failure:
++        if not str(failure).startswith(f"BEHAVIOR {exercise}:"):
++            raise AssertionError("Negative control lacks specific behavioral diagnosis")
++        return {"injected_action": action, "required_action": expected, "rejected": True, "diagnostic": str(failure)}
++    raise AssertionError("Boundary negative control unexpectedly accepted")
++
++
++def inputs():
++    with (TRACK / "policy-cases.tsv").open() as stream:
++        reader = csv.DictReader(stream, delimiter="\t")
++        if reader.fieldnames != ["case_id", *FIELDS, "expected_action"]:
++            raise ValueError("Independent policy oracle header mismatch")
++        rows = list(reader)
++    if not rows or len({r["case_id"] for r in rows}) != len(rows):
++        raise ValueError("Independent oracle is empty or has duplicate cases")
++    if any(set(r) != {"case_id", *FIELDS, "expected_action"} or None in r.values() for r in rows):
++        raise ValueError("Malformed independent oracle row")
++    malformed = json.loads((TRACK / "malformed-cases.json").read_text())
++    if not isinstance(malformed, list) or not malformed:
++        raise ValueError("Malformed-input oracle must be a nonempty list")
++    return rows, malformed
++
++
++def malformed_check(cmd, cases):
++    for case in cases:
++        result = invoke(cmd, "policy", *case["args"])
++        if result.returncode != 2 or result.stdout or not result.stderr.strip():
++            raise RuntimeError(f"Malformed input {case['case_id']} was not rejected with exit 2 and empty stdout")
++
++
++def native(cmd, exercise, variant):
++    result = invoke(cmd, "native", exercise, "composition" if variant != "java-inheritance" else "inheritance")
++    if result.returncode == 1 and result.stderr.startswith(f"BEHAVIOR {exercise}:"):
++        raise Behavior(result.stderr.strip())
++    if result.returncode or not result.stdout.startswith("PASS"):
++        raise RuntimeError(f"Native {exercise} failed outside behavioral contract: {result.returncode} {result.stderr.strip()}")
++    return result.stdout.strip()
++
++
++def pg_runner(pg, variant):
++    name = VARIANTS[variant]
++    if variant == "rust":
++        cmd = [str(CASE / "postgres/rust/target/debug/roo-postgres")]
++    else:
++        entry = "CompositionRunner" if variant == "java-composition" else "TemplateRunner"
++        cp = os.pathsep.join([str(CASE / "postgres/java/build/classes"), str(CASE / "postgres/.deps/postgresql-42.7.14.jar")])
++        cmd = ["java", "-cp", cp, "roo.postgres." + entry]
++    runner = pg.Runner(name, cmd)
++    runner.env = {**pg.cluster.utility_environment(), **pg.cluster.environment()}
++    for name in ("ROO_GATE_POINT", "ROO_GATE_LOCK", "ROO_WORKER_ID", "ROO_RUN_ID"):
++        runner.env.pop(name, None)
++    return runner
++
++
++def prepare_e5(pg, variant, cmd, record):
++    runner = pg_runner(pg, variant)
++    scope = pg.race(runner, "track_pay_before_add", "Draft", "pay:p1:approve:none", "add:50:1",
++                    "inside_prepare", "Approved", "InvalidState")
++    pg.state(runner, scope, "Paid")
++    amount = pg.cluster.sql(f"SELECT amount FROM roo_provider.records WHERE scope='{scope}'").strip()
++    if amount != "250":
++        raise AssertionError("Pay-before-add provider amount differs from locked order total")
++    record["row_lock_scope"] = scope
++    retained = runner.seed("track_effect")
++    worker = None
++    try:
++        with pg.Barrier() as barrier:
++            worker, identity = runner.spawn(retained, "pay:p1:approve:none", point="after_effect", key=barrier.key)
++            pg.witnessed(identity, "after_effect", worker)
++            pg.kill(worker)
++        before = pg.state(runner, retained, "Pending", events=0)
++        action = observed(cmd, "e5", "uncertain_commit", before, record["transcript"])
++        expect_action(action, "inspect", "e5")
++        # Inspection is a separate fresh process, never learner-provided state.
++        if runner.row("snapshot", retained) != before:
++            raise AssertionError("Inspection changed retained Pending snapshot")
++        record.update(scope=retained, before_restart=before, kill="SIGKILL", gate="after_effect")
++        return runner, retained, before, cmd, record
++    finally:
++        if worker is not None and worker.poll() is None:
++            pg.kill(worker)
++
++
++def restart_e5(pg, retained):
++    cluster = pg.cluster
++    before = cluster.sql("SELECT pg_postmaster_start_time()").strip()
++    offset = (cluster.RUNTIME / "server.log").stat().st_size
++    cluster.stop("immediate")
++    cluster.start()
++    after = cluster.sql("SELECT pg_postmaster_start_time()").strip()
++    with (cluster.RUNTIME / "server.log").open("rb") as stream:
++        stream.seek(offset)
++        lines = stream.read().decode(errors="replace").splitlines()
++    wal = [line for line in lines if any(word in line for word in ("redo", "interrupted", "not properly shut down", "ready to accept"))]
++    if before == after or not any("redo" in line for line in wal):
++        raise AssertionError("Immediate restart lacks changed start time or WAL redo")
++    EVIDENCE["restart"] = {"before": before, "after": after, "mode": "immediate", "wal": wal, "scopes": len(retained)}
++    for runner, scope, snapshot, cmd, record in retained:
++        fresh = runner.row("snapshot", scope)
++        if fresh != snapshot:
++            raise AssertionError("Normalized retained snapshot differs after restart")
++        record["after_restart"] = fresh
++        record["negative_controls"] = [
++            negative_control("pay:pNEW:approve:none", "inspect", "e5"),
++            negative_control("stop", "reconcile:ok:none", "e5")]
++        action = observed(cmd, "e5", "recover", fresh, record["transcript"])
++        expect_action(action, "reconcile:ok:none", "e5")
++        runner.step(scope, action, "Approved")
++        record["final"] = pg.state(runner, scope, "Paid")
++        record["status"] = "PASS"
++
++
++def lost_response(future):
++    try:
++        future.result(timeout=15)
++    except (http.client.RemoteDisconnected, ConnectionResetError, BrokenPipeError) as error:
++        return type(error).__name__
++    raise AssertionError("Killed server did not produce connection loss before response headers")
++
++
++def e6(http, variant, cmd, record):
++    server = http.Server(VARIANTS[variant])
++    try:
++        for kind, action, phase in (("payment", "pay:p1:approve:none", "payment_response_lost"),
++                                    ("line", "add:50:1", "line_response_lost")):
++            scope = server.seed("track_lost_" + kind)
++            gated = fresh = None
++            try:
++                with http.pg_verify.Barrier() as barrier:
++                    gated = http.Server(VARIANTS[variant], http_key=barrier.key)
++                    with ThreadPoolExecutor(max_workers=1) as pool:
++                        future = pool.submit(gated.step, scope, action)
++                        http.pg_verify.witnessed(gated.worker, "http_after_snapshot", gated.process)
++                        gated.stop(crash=True)
++                        loss = lost_response(future)
++                fresh = http.Server(VARIANTS[variant])
++                snapshot = http.state(fresh, scope, "Paid") if kind == "payment" else http.state(fresh, scope, "Draft", total=300, charges=0, events=0, payment="-")
++                selected = observed(cmd, "e6", phase, snapshot, record["transcript"], requested="pNEW")
++                if kind == "payment":
++                    # A different caller key cannot replace a persisted intent.
++                    expect_action(selected, "pay:p1:approve:none", "e6")
++                    fresh.step(scope, selected, "AlreadyApplied")
++                    final = http.state(fresh, scope, "Paid")
++                    fresh.step(scope, "pay:pNEW:approve:none", "IntentConflict")
++                    if fresh.get(scope) != final:
++                        raise AssertionError("Changed-key negative control mutated committed payment")
++                else:
++                    expect_action(selected, "inspect", "e6")
++                    inspected = fresh.get(scope)
++                    selected = observed(cmd, "e6", "line_inspected", inspected, record["transcript"])
++                    expect_action(selected, "stop", "e6")
++                    if fresh.get(scope) != snapshot:
++                        raise AssertionError("Line recovery automatically replayed a non-idempotent addition")
++                    record["automatic_line_posts"] = 0
++                    # Explicit second caller action demonstrates absence of a line receipt.
++                    fresh.step(scope, "add:50:1", "Added")
++                    final = http.state(fresh, scope, "Draft", total=350, charges=0, events=0, payment="-")
++                record[kind] = {"scope": scope, "client_exception": loss, "fresh_get": snapshot, "final": final,
++                                "gate": "http_after_snapshot", "signal": "SIGKILL"}
++            finally:
++                if gated is not None: gated.stop()
++                if fresh is not None: fresh.stop()
++        scope = server.seed("track_202")
++        server.step(scope, "pay:p202:timeout_after:none", "Unknown")
++        pending = http.state(server, scope, "Pending", events=0, payment="p202")
++        # GET is observational: HTTP 202 schedules no hidden reconciliation.
++        if server.get(scope) != pending:
++            raise AssertionError("202 unexpectedly started recovery work")
++        # This supplementary caller action demonstrates 202 recovery without
++        # requiring the learner to implement another exercise's policy.
++        selected = "reconcile:ok:none"
++        server.step(scope, selected, "Approved")
++        record["explicit_202_reconcile"] = {
++            "origin": "explicit harness/caller action, outside learner policy",
++            "before": pending, "action": selected, "result": "Approved",
++            "final": http.state(server, scope, "Paid", payment="p202")}
++        if any(item["observation"]["exercise"] != "e6" for item in record["transcript"]):
++            raise AssertionError("e6 invoked another exercise's learner policy")
++        record["negative_controls"] = [
++            {"changed_payment_key": "pNEW", "domain_result": "IntentConflict", "unchanged_snapshot": True},
++            negative_control("add:50:1", "inspect", "e6"),
++            negative_control("add:50:1", "stop", "e6")]
++        record["status"] = "PASS"
++    finally:
++        server.stop()
++
++
++def source_hashes():
++    files = list(TRACK.glob("java/**/*.java")) + list(TRACK.glob("rust/*/src/**/*.rs")) + list(TRACK.glob("rust/*.rs"))
++    files += list(TRACK.glob("rust/*/Cargo.toml")) + [TRACK / "build.sh", TRACK / "verify.sh", TRACK / "check_independence.py"]
++    files += [TRACK / "SPEC.md", TRACK / "policy-cases.tsv", TRACK / "malformed-cases.json", Path(__file__)]
++    return {str(path.relative_to(TRACK)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(files)}
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--source", choices=("starter", "solution"), default="starter")
++    parser.add_argument("--exercise", choices=(*EXERCISES, "all"), default="all")
++    parser.add_argument("--variant", choices=(*VARIANTS, "all"), default="all")
++    parser.add_argument("--expect-incomplete", action="store_true")
++    options = parser.parse_args()
++    if options.expect_incomplete and options.source != "starter":
++        parser.error("--expect-incomplete is only valid for starter")
++    variants = list(VARIANTS) if options.variant == "all" else [options.variant]
++    exercises = EXERCISES if options.exercise == "all" else [options.exercise]
++    EVIDENCE.update(source=options.source, selected_exercises=exercises, source_hashes=source_hashes())
++    rows, malformed = inputs()
++    qualified = []
++    failures = []
++    # All protocol/malformed validation precedes any database ownership or RED claim.
++    for variant in variants:
++        cmd = command(options.source, variant)
++        malformed_check(cmd, malformed)
++        counts = EVIDENCE.setdefault("qualification_counts", {})[variant] = {
++            "malformed_rejections": len(malformed), "policy_cases": 0, "native_passes": 0}
++        records = EVIDENCE["variants"][variant] = {}
++        for exercise in exercises:
++            record = records[exercise] = {"transcript": [], "cases": [], "status": "RUNNING"}
++            mismatches = []
++            selected = [row for row in rows if row["exercise"] == exercise]
++            if not selected:
++                raise ValueError(f"Independent oracle has no {exercise} cases")
++            for row in selected:
++                action = policy(cmd, [row[field] for field in FIELDS], record["transcript"])
++                record["cases"].append(row["case_id"])
++                counts["policy_cases"] += 1
++                if action != row["expected_action"]:
++                    mismatches.append(f"{row['case_id']}: expected {row['expected_action']}, observed {action}")
++            try:
++                if exercise in EXERCISES[:4]:
++                    record["native"] = native(cmd, exercise, variant)
++                    counts["native_passes"] += 1
++                if mismatches:
++                    raise Behavior(f"BEHAVIOR {exercise}: " + mismatches[0])
++                qualified.append((variant, exercise, cmd, record))
++            except Behavior as failure:
++                record.update(status="RED", failure=str(failure))
++                failures.append((variant, exercise))
++                print(f"RED {variant} {failure}", flush=True)
++    if failures and not options.expect_incomplete:
++        raise Behavior(f"{len(failures)} exercise groups failed")
++    if options.expect_incomplete:
++        if len(failures) != len(variants) * len(exercises):
++            raise AssertionError("Starter must independently fail every selected exercise group")
++        EVIDENCE["status"] = "EXPECTED_INCOMPLETE"
++        return
++    boundary = [item for item in qualified if item[1] in ("e5", "e6")]
++    if boundary:
++        sys.path.insert(0, str(CASE / "postgres"))
++        http = load("roo_track_http_support", CASE / "http/support.py")
++        pg, cluster = http.pg_verify, http.cluster
++        if cluster.CONFIG.exists() and cluster.running(cluster.configuration()):
++            raise RuntimeError("Refusing an already running cluster; lifecycle ownership is required")
++        owned = False
++        try:
++            # Set ownership before start so partial startup is also cleaned up.
++            owned = True
++            cluster.start()
++            cluster.apply_schema()
++            retained = [prepare_e5(pg, variant, cmd, record) for variant, ex, cmd, record in boundary if ex == "e5"]
++            if retained:
++                restart_e5(pg, retained)
++            for variant, exercise, cmd, record in boundary:
++                if exercise == "e6":
++                    e6(http, variant, cmd, record)
++            EVIDENCE["barriers"] = pg.EVIDENCE["barriers"]
++        finally:
++            try:
++                http.cleanup()
++            finally:
++                if owned and cluster.CONFIG.exists():
++                    cluster.stop()
++            EVIDENCE["all_http_processes_stopped"] = all(s.process.poll() is not None for s in http.PROCESSES)
++    for variant, exercise, _, record in qualified:
++        record["status"] = "PASS"
++        print(f"PASS {variant} {exercise}", flush=True)
++    EVIDENCE["status"] = "PASS"
++
++
++if __name__ == "__main__":
++    code = 0
++    try:
++        main()
++    except Exception as error:
++        code = 1
++        EVIDENCE["status"] = "FAIL"
++        EVIDENCE["errors"].append({"type": type(error).__name__, "message": str(error), "traceback": traceback.format_exc()})
++        print(f"FAIL {type(error).__name__}: {error}", file=sys.stderr)
++    finally:
++        runtime = TRACK / ".runtime"
++        runtime.mkdir(exist_ok=True)
++        (runtime / "last-run.json").write_text(json.dumps(EVIDENCE, indent=2) + "\n")
++    sys.exit(code)
+--- /dev/null
++++ after/case-studies/orders-payments/track/verify.sh
+@@ -0,0 +1,16 @@
++#!/usr/bin/env bash
++set -euo pipefail
++TRACK="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
++if [[ "${1:-}" == "--help" ]]; then
++    echo "Usage: verify.sh"
++    echo "Build serially, require all independent starter RED groups, then qualify the full solution."
++    exit 0
++fi
++if [[ "$#" -ne 0 ]]; then echo "Usage: verify.sh" >&2; exit 2; fi
++bash "$TRACK/build.sh"
++python3 "$TRACK/verify.py" --source starter --expect-incomplete
++# Preserve both current receipts without touching historical research evidence.
++cp "$TRACK/.runtime/last-run.json" "$TRACK/.runtime/starter-last-run.json"
++python3 "$TRACK/verify.py" --source solution
++cp "$TRACK/.runtime/last-run.json" "$TRACK/.runtime/solution-last-run.json"
++python3 "$TRACK/check_independence.py"
+--- /dev/null
++++ after/research/roo-track-validation.md
+@@ -0,0 +1,83 @@
++# Executable ROO adoption track qualification
++
++Date: 2026-10-11. Scope: the separate orders/payments adoption track, with
++unchanged base, PostgreSQL, and HTTP applications. All amounts are USD minor
++units. These are current local execution results, distinct from the preserved
++historical case-study receipts.
++
++Root ran `bash case-studies/orders-payments/track/verify.sh` successfully.
++Both starter and solution sources compiled. The untouched starter produced
++18 specific behavioral RED groups: six exercises in each of Java composition,
++Java Template Method, and Rust composition. Infrastructure errors were not
++accepted as expected learner failures.
++
++| Completed solution | Shared policy cases | Malformed inputs rejected | Native intermediate-state groups | PostgreSQL e5 | HTTP e6 |
++|---|---|---|---|---|---|
++| Java composition | 31 | 23 | 4 | PASS | PASS |
++| Java Template Method | 31 | 23 | 4 | PASS | PASS |
++| Rust composition | 31 | 23 | 4 | PASS | PASS |
++
++The six exercise groups passed for all three solutions. A separate regression
++compiled temporary starters with only e6 completed, verified that e2 still
++returned `stop`, and passed actual e6 HTTP recovery in all three variants.
++Every learner observation in those HTTP transcripts belonged to e6. The
++supplementary HTTP 202 demonstration uses an explicitly recorded harness/caller
++reconciliation action, with no prerequisite on another exercise's policy.
++
++Native scenarios use
++the same line inputs, recovery identities/amounts, changed identity/fingerprint,
++and acknowledgement-loss obligations. Java checks actual line records; Rust
++compares cloned orders, retaining encapsulation of private line storage.
++
++## Observed boundaries
++
++- Fifteen database lock witnesses: pay/add coordination, process after-effect
++  gates, and HTTP after-snapshot gates. Waiting is observed in PostgreSQL,
++  rather than inferred from elapsed time.
++- Three pay processes killed with SIGKILL after provider approval committed.
++  Fresh runner processes observed Pending, one charge, no event, and the same
++  intent identity.
++- One immediate PostgreSQL restart preserved all three Pending snapshots.
++  The server start time changed and server logs showed WAL redo. Recovery
++  finalized each existing intent with one charge and one terminal event.
++- Six HTTP response losses before headers, observed as client exceptions:
++  payment and line addition for each implementation. Fresh servers read the
++  committed state. Same-ID payment replay preserved the effect; line recovery
++  selected inspection and stop before a separate deliberate caller append.
++- Explicit reconciliation after HTTP 202; new-key conflict and injected wrong
++  policy actions were rejected. All owned HTTP processes ended, and root
++  independently confirmed the marked PostgreSQL cluster stopped afterward.
++
++Java compilation used release 21 with warnings denied. Both new Rust crates
++passed formatting, offline build, and Clippy with warnings denied. The first
++Clippy attempt identified two helper-style issues; both were corrected and
++rechecked without suppressing the warnings. Existing Java PostgreSQL pure and
++compiler-negative checks and HTTP protocol checks also ran during the serial
++build. Their older research receipts were not overwritten.
++
++## Evidence and limits
++
++The [starter receipt](roo-track-starter-evidence.json) and
++[solution receipt](roo-track-solution-evidence.json) retain cases, source
++hashes, action transcripts, normalized snapshots, gates, negative controls,
++and restart evidence. The [exercise independence receipt](roo-track-independence-evidence.json)
++records temporary policy hashes, incomplete e2 probes, and real e6 outcomes.
++[Command qualification](roo-track-qualification.json)
++retains successful checks and the initial Clippy failure. The
++[static validation](roo-track-validation.json) records protected-file, local
++link, original-fence, and runtime-source identity checks. The
++[run ledger](roo-track-run.md) describes task ownership and available AI usage.
++
++The policy receives facts and chooses actions; the completed applications own
++domain transitions and effect/transaction ordering. Compiler acceptance alone
++does not establish those runtime properties. An actually uncertain COMMIT is
++not injected: its inspection policy is checked separately from the witnessed
++SIGKILL window. Provider and inbox transactions share one local PostgreSQL/WAL
++domain. The checks do not establish external-provider behavior, hardware
++power-loss survival, authenticated tenant isolation, production capacity, or
++all interleavings. Java/Rust parity applies to this bounded exercise contract.
++
++Starter and solution are separate source implementations. Rebuild after
++editing a starter. The full `verify.sh` entry point intentionally qualifies an
++untouched starter's failures; use normal `verify.py --source starter` for
++completed learner work, as explained in the [track guide](../case-studies/orders-payments/track/README.md).

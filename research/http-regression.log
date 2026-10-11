@@ -1,0 +1,161 @@
+Java unit checks: 280
+Java negative checks: private mutation and final algorithm rejected
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.01s
+     Running unittests src/lib.rs (case-studies/orders-payments/rust/target/debug/deps/orders_payments_case-db13d1747e5e3630)
+
+running 20 tests
+test adapters::tests::failed_store_commit_installs_neither_candidate_order_nor_event ... ok
+test application::tests::decline_is_terminal_and_remembers_one_fact ... ok
+test application::tests::maximum_total_is_accepted_but_following_sum_is_rejected ... ok
+test application::tests::empty_and_cross_state_operations_have_no_effect ... ok
+test adapters::tests::refund_requires_confirmed_charge_and_full_matching_fingerprint ... ok
+test adapters::tests::payment_and_refund_keys_have_separate_typed_namespaces ... ok
+test adapters::tests::payment_fingerprint_compares_every_request_field_and_stable_result_wins ... ok
+test fixture::tests::malformed_rows_are_rejected_before_execution ... ok
+test application::tests::missing_and_unavailable_lookup_remain_distinct_then_same_key_retry_recovers ... ok
+test application::tests::invalid_additions_preserve_every_line_and_total ... ok
+test application::tests::prepare_failure_precedes_remote_and_keeps_draft ... ok
+test application::tests::intent_is_frozen_and_retry_event_identity_is_stable ... ok
+test application::tests::refund_prepare_failure_leaves_paid_without_refund_identity ... ok
+test application::tests::timeout_after_refund_lookup_recovers_recorded_effect ... ok
+test application::tests::refund_commit_failure_keeps_refunding_and_remote_effect_then_recovers ... ok
+test application::tests::terminal_commit_failure_keeps_pending_without_candidate_event ... ok
+test application::tests::delivery_failure_ack_failure_and_deduplication_preserve_fact_order ... ok
+test application::tests::refund_timeout_before_not_found_and_identity_conflict_then_retry ... ok
+test fixture::tests::invalid_adapter_probes_are_fixture_errors ... ok
+test fixture::tests::numeric_grammar_and_signed_range_are_separate ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (case-studies/orders-payments/rust/target/debug/deps/roo_payments-4a9a51a2800d0962)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests orders_payments_case
+
+running 2 tests
+test src/lib.rs - (line 34) ... ok
+test src/fixture.rs - fixture::run (line 120) ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test src/lib.rs - (line 14) - compile fail ... ok
+test src/lib.rs - (line 5) - compile fail ... ok
+test src/lib.rs - (line 27) - compile fail ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+all doctests ran in 0.56s; merged doctests compilation took 0.35s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.07s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.00s
+   Generated /Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/rust/target/doc/orders_payments_case/index.html and 1 other file
+PASS Rust compiler negatives: 3 intended diagnostics
+PASS Java composition: 42 oracle rows, 10 malformed fixtures
+PASS Java inheritance: 42 oracle rows, 10 malformed fixtures
+PASS Rust composition: 42 oracle rows, 10 malformed fixtures
+PASS shared contract: all three variants match the independent oracle
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s
+     Running unittests src/lib.rs (target/debug/deps/roo-aba6c6e9b720b612)
+
+running 10 tests
+test order::tests::rejects_business_invalid_values ... ok
+test typestate::tests::invalid_strategy_preserves_nonempty_draft_for_retry ... ok
+test strategy::tests::built_in_strategies_obey_same_contract ... ok
+test strategy::tests::trait_implementation_does_not_imply_valid_behavior ... ok
+test events::tests::foreign_subscriber_is_rejected ... ok
+test graph::tests::foreign_handles_are_rejected_even_for_same_slot_and_generation ... ok
+test order::tests::rejected_add_preserves_aggregate_and_line ... ok
+test typestate::tests::failed_transition_can_be_retried ... ok
+test events::tests::unsubscribe_suppresses_pending_delivery_and_preserves_rejected_payload ... ok
+test graph::tests::reuse_rejects_stale_identity_and_dangling_edge ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests roo
+
+running 3 tests
+test src/view.rs - view (line 33) ... ok
+test src/view.rs - view (line 4) ... ok
+test src/typestate.rs - typestate (line 5) ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test src/view.rs - view (line 12) - compile fail ... ok
+test src/view.rs - view (line 23) - compile fail ... ok
+test src/typestate.rs - typestate (line 23) - compile fail ... ok
+test src/typestate.rs - typestate (line 14) - compile fail ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+all doctests ran in 0.36s; merged doctests compilation took 0.15s
+PASS orders/payments case and original ROO laboratory
+PASS pgJDBC 42.7.14: pinned SHA-256 verified
+Java PostgreSQL pure checks: 52
+Java PostgreSQL compiler negatives: private fields and final algorithm rejected
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running unittests src/lib.rs (case-studies/orders-payments/postgres/rust/target/debug/deps/roo_postgres_case-8b0fe1280f7da923)
+
+running 6 tests
+test domain::tests::full_request_fingerprints_are_not_just_keys ... ok
+test domain::tests::rejected_additions_preserve_all_prior_facts ... ok
+test domain::tests::identities_and_money_validate_at_boundary ... ok
+test fixture::tests::numeric_grammar_distinguishes_overflow_from_malformed_text ... ok
+test domain::tests::intents_and_events_own_stable_copied_facts ... ok
+test fixture::tests::full_fixture_is_parsed_before_execution ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (case-studies/orders-payments/postgres/rust/target/debug/deps/roo_postgres-fb5761dc3d49f67b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests roo_postgres_case
+
+running 2 tests
+test src/lib.rs - (line 40) ... ok
+test src/lib.rs - (line 48) ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 4 tests
+test src/lib.rs - (line 12) - compile fail ... ok
+test src/lib.rs - (line 4) - compile fail ... ok
+test src/lib.rs - (line 22) - compile fail ... ok
+test src/lib.rs - (line 33) - compile fail ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+all doctests ran in 0.87s; merged doctests compilation took 0.50s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.39s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.30s
+ Documenting roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.76s
+   Generated /Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust/target/doc/roo_postgres_case/index.html and 1 other file
+PASS Rust compiler negatives: 4 intended diagnostics
+Owned PostgreSQL cluster started on loopback
+Shared schema applied to owned test database
+PASS Java composition: 42 shared oracle rows and 10 malformed fixtures
+PASS Java composition: 3 persistent boundary guards
+PASS Java composition: 7 witnessed concurrent schedules
+PASS Java composition: 5 SIGKILL and fresh-process recovery cases
+PASS Java inheritance: 42 shared oracle rows and 10 malformed fixtures
+PASS Java inheritance: 3 persistent boundary guards
+PASS Java inheritance: 7 witnessed concurrent schedules
+PASS Java inheritance: 5 SIGKILL and fresh-process recovery cases
+PASS Rust composition: 42 shared oracle rows and 10 malformed fixtures
+PASS Rust composition: 3 persistent boundary guards
+PASS Rust composition: 7 witnessed concurrent schedules
+PASS Rust composition: 5 SIGKILL and fresh-process recovery cases
+PASS PostgreSQL immediate restart: 12 durable snapshots preserved and recovered
+PASS 5 SQL constraint probes; all three implementations satisfy one shared contract
+Owned PostgreSQL cluster stopped; test data retained

@@ -1,0 +1,451 @@
+{
+  "run_id": "pg_4160de03316a",
+  "variants": {
+    "Java composition": {
+      "oracle_rows": 42,
+      "malformed_fixtures": 10,
+      "persistent_guards": [
+        "atomic_fixture_reservation",
+        "init_preserves_existing_data",
+        "reject_non_loopback_configuration"
+      ],
+      "concurrency": [
+        "different_payment_keys",
+        "same_payment_key",
+        "different_refund_keys",
+        "add_before_pay",
+        "pay_before_add",
+        "concurrent_relays",
+        "same_refund_key"
+      ],
+      "process_crashes": [
+        {
+          "case": "kill_after_prepare",
+          "signal": "SIGKILL",
+          "phase": "after_prepare"
+        },
+        {
+          "case": "kill_after_effect",
+          "signal": "SIGKILL",
+          "phase": "after_effect"
+        },
+        {
+          "case": "kill_after_finalize",
+          "signal": "SIGKILL",
+          "phase": "after_finalize"
+        },
+        {
+          "case": "kill_after_delivery",
+          "signal": "SIGKILL",
+          "phase": "after_delivery"
+        },
+        {
+          "case": "kill_after_refund_effect",
+          "signal": "SIGKILL",
+          "phase": "after_effect"
+        }
+      ],
+      "restart_scopes": [
+        "pending",
+        "refunding",
+        "inbox",
+        "paid"
+      ]
+    },
+    "Java inheritance": {
+      "oracle_rows": 42,
+      "malformed_fixtures": 10,
+      "persistent_guards": [
+        "atomic_fixture_reservation",
+        "init_preserves_existing_data",
+        "reject_non_loopback_configuration"
+      ],
+      "concurrency": [
+        "different_payment_keys",
+        "same_payment_key",
+        "different_refund_keys",
+        "add_before_pay",
+        "pay_before_add",
+        "concurrent_relays",
+        "same_refund_key"
+      ],
+      "process_crashes": [
+        {
+          "case": "kill_after_prepare",
+          "signal": "SIGKILL",
+          "phase": "after_prepare"
+        },
+        {
+          "case": "kill_after_effect",
+          "signal": "SIGKILL",
+          "phase": "after_effect"
+        },
+        {
+          "case": "kill_after_finalize",
+          "signal": "SIGKILL",
+          "phase": "after_finalize"
+        },
+        {
+          "case": "kill_after_delivery",
+          "signal": "SIGKILL",
+          "phase": "after_delivery"
+        },
+        {
+          "case": "kill_after_refund_effect",
+          "signal": "SIGKILL",
+          "phase": "after_effect"
+        }
+      ],
+      "restart_scopes": [
+        "pending",
+        "refunding",
+        "inbox",
+        "paid"
+      ]
+    },
+    "Rust composition": {
+      "oracle_rows": 42,
+      "malformed_fixtures": 10,
+      "persistent_guards": [
+        "atomic_fixture_reservation",
+        "init_preserves_existing_data",
+        "reject_non_loopback_configuration"
+      ],
+      "concurrency": [
+        "different_payment_keys",
+        "same_payment_key",
+        "different_refund_keys",
+        "add_before_pay",
+        "pay_before_add",
+        "concurrent_relays",
+        "same_refund_key"
+      ],
+      "process_crashes": [
+        {
+          "case": "kill_after_prepare",
+          "signal": "SIGKILL",
+          "phase": "after_prepare"
+        },
+        {
+          "case": "kill_after_effect",
+          "signal": "SIGKILL",
+          "phase": "after_effect"
+        },
+        {
+          "case": "kill_after_finalize",
+          "signal": "SIGKILL",
+          "phase": "after_finalize"
+        },
+        {
+          "case": "kill_after_delivery",
+          "signal": "SIGKILL",
+          "phase": "after_delivery"
+        },
+        {
+          "case": "kill_after_refund_effect",
+          "signal": "SIGKILL",
+          "phase": "after_effect"
+        }
+      ],
+      "restart_scopes": [
+        "pending",
+        "refunding",
+        "inbox",
+        "paid"
+      ]
+    }
+  },
+  "barriers": [
+    {
+      "worker": "pg_4160de03316a_w_14",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_14:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_15",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_15|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_17",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_17:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_20",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_20:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_21",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_21|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_23",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_23:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_24",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_24|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_26",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_26:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_27",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_27|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_29",
+      "phase": "after_delivery",
+      "observation": "roo:pg_4160de03316a_w_29:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_30",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_30|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_32",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_32:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_35",
+      "phase": "after_prepare",
+      "observation": "roo:pg_4160de03316a_w_35:after_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_37",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_37:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_39",
+      "phase": "after_finalize",
+      "observation": "roo:pg_4160de03316a_w_39:after_finalize|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_41",
+      "phase": "after_delivery",
+      "observation": "roo:pg_4160de03316a_w_41:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_43",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_43:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_57",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_57:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_58",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_58|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_60",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_60:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_63",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_63:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_64",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_64|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_66",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_66:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_67",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_67|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_69",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_69:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_70",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_70|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_72",
+      "phase": "after_delivery",
+      "observation": "roo:pg_4160de03316a_w_72:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_73",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_73|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_75",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_75:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_78",
+      "phase": "after_prepare",
+      "observation": "roo:pg_4160de03316a_w_78:after_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_80",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_80:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_82",
+      "phase": "after_finalize",
+      "observation": "roo:pg_4160de03316a_w_82:after_finalize|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_84",
+      "phase": "after_delivery",
+      "observation": "roo:pg_4160de03316a_w_84:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_86",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_86:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_100",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_100:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_101",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_101:rust|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_103",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_103:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_106",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_106:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_107",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_107:rust|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_109",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_109:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_110",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_110:rust|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_112",
+      "phase": "inside_prepare",
+      "observation": "roo:pg_4160de03316a_w_112:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_113",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_113:rust|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_115",
+      "phase": "after_delivery",
+      "observation": "roo:pg_4160de03316a_w_115:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_116",
+      "phase": "contender_row_lock",
+      "observation": "roo:pg_4160de03316a_w_116:rust|Lock|transactionid"
+    },
+    {
+      "worker": "pg_4160de03316a_w_118",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_118:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_121",
+      "phase": "after_prepare",
+      "observation": "roo:pg_4160de03316a_w_121:after_prepare|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_123",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_123:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_125",
+      "phase": "after_finalize",
+      "observation": "roo:pg_4160de03316a_w_125:after_finalize|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_127",
+      "phase": "after_delivery",
+      "observation": "roo:pg_4160de03316a_w_127:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "pg_4160de03316a_w_129",
+      "phase": "after_effect",
+      "observation": "roo:pg_4160de03316a_w_129:after_effect|Lock|advisory"
+    }
+  ],
+  "restart": {
+    "mode": "immediate",
+    "before": "2026-10-11 16:17:26.939303-03|180006|on|on|on",
+    "after": "2026-10-11 16:18:05.278631-03|180006|on|on|on",
+    "wal_recovery_log": [
+      "2026-10-11 16:18:05.283 -03 [81533] LOG:  database system was interrupted; last known up at 2026-10-11 16:17:26 -03",
+      "2026-10-11 16:18:05.323 -03 [81533] LOG:  database system was not properly shut down; automatic recovery in progress",
+      "2026-10-11 16:18:05.324 -03 [81533] LOG:  redo starts at 0/1F9C870",
+      "2026-10-11 16:18:05.325 -03 [81533] LOG:  redo done at 0/207DBC8 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s",
+      "2026-10-11 16:18:05.329 -03 [81527] LOG:  database system is ready to accept connections"
+    ],
+    "preserved_scopes": 12
+  },
+  "constraints": [
+    {
+      "case": "positive_quantity",
+      "sqlstate": "23514"
+    },
+    {
+      "case": "checked_product",
+      "sqlstate": "23514"
+    },
+    {
+      "case": "intent_shape",
+      "sqlstate": "23514"
+    },
+    {
+      "case": "stable_event_identity",
+      "sqlstate": "23505"
+    },
+    {
+      "case": "one_full_refund",
+      "sqlstate": "23505"
+    }
+  ],
+  "status": "PASS"
+}

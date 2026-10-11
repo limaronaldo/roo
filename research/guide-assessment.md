@@ -1,0 +1,62 @@
+# Assessment of the Rust and object-oriented design guide
+
+## Scope and evidence
+
+This assessment covers the preserved source copy at [RUST_VS_OO_GUIA_COMPLETO_2026.original.md](sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md). It contains 1,873 lines and 29 numbered sections, with SHA-256 `0b1edd27561e84a17777f1bf63a87a928a7d8fe9d603fd9f6b7e13fa504e6dd7`, as recorded in the run brief. I read the document in bounded, sequential sections and checked the listed claims against current primary Rust, Cargo, and Oracle Java documentation. The original remains unchanged.
+
+The companion [English guide](../docs/08-rust-and-object-design.md) retains the source's main argument and caveats, makes the ROO Relationship Contract its organizing tool, updates narrow technical details, and points to the orders-and-payments case study. Its examples are design sketches unless linked to actual lab code.
+
+Findings use three labels:
+
+- **Demonstrated defect:** a bounded factual statement that needs correction.
+- **Refinement:** a stronger or clearer explanation that preserves an already reasonable point.
+- **Verification gap:** evidence is absent, narrower than a reader might infer, or tied to a past environment. This label does not imply the source made a false claim.
+
+## Overall judgment
+
+The source is a careful and useful comparison, not a polemic that treats Rust as automatically superior to Java or class-based design as obsolete. It correctly separates language features, architecture, runtime behavior, and evidence. Its strongest contribution is the repeated distinction between local guarantees that types and ownership can express and business, persistence, authorization, or distributed guarantees that still need their own enforcement.
+
+The source's treatment of ownership, moves, `Drop`, graphs, `Rc`/`Arc`, typestate, trait dispatch, concurrency, async cancellation, payment uncertainty, and outbox delivery is already notably qualified. The revision keeps these distinctions intact. Three narrow technical statements need correction; the Java reference point needs a current source; and the source's explicit “not compiled in this session” note must remain historical provenance rather than becoming a statement about the current workspace.
+
+## Strengths worth preserving
+
+1. **It rejects the false Rust-versus-OO dichotomy.** Sections 1, 2, and 5 distinguish object-oriented techniques from class inheritance and explain what Rust supports without insisting on a naming dispute.
+2. **It compares modern Java fairly.** Section 2 names records and sealed classes or interfaces; section 5 demonstrates closed variants in both Java and Rust. It also shows constructor injection in Java without a DI container. The replacement retains and updates these examples.
+3. **It separates concepts often collapsed into “ownership.”** Sections 1, 6, 7, 8, 13, and 24 distinguish memory custody, domain identity, responsibility, authorization, borrowing, snapshots, and durable identity.
+4. **It handles ownership semantics precisely.** Section 6 explains that a `move` transfers a value and is not `drop`, that a field is located with its containing owner, and that `Copy` and `Clone` have different meanings. The small `Copy` wording issue below does not negate this sound treatment.
+5. **It does not pretend all graphs are acyclic.** Section 7 distinguishes Cargo dependencies, strong reference cycles, domain relationships, SQL relations, and actor messages. It correctly notes that `Rc` or `Arc` cycles can retain allocations and that IDs or weak pointers do not confer permission.
+6. **It distinguishes static shape from behavioral truth.** Sections 8–11 explain that newtypes, smart constructors, enums, typestate, traits, and `Send`/`Sync` only establish their stated local properties. They do not validate current authorization, provider behavior, or a business rule's correctness.
+7. **It treats async and concurrency without absolutes.** Section 16 recognizes both locks and actors as valid strategies, separates data races from logical races, and correctly says dropping a future cannot reverse an already completed remote effect.
+8. **Its distributed-systems cautions are strong.** Sections 17, 18, and 24 accurately distinguish local transaction boundaries, remote payment effects, uncertain outcomes, idempotency, outbox intent, duplicate delivery, and reconciliation. They do not claim that outbox means exactly-once delivery.
+9. **It resists unsupported performance and productivity claims.** Sections 1, 10, 15, 21, and 23 make measurement contextual and reject transferring a benchmark or AI productivity claim to another workload without evidence.
+10. **It already labels sketches and limits.** The source says its code was not compiled in its original session and repeatedly distinguishes examples from implementations. It also asks for matched acceptance tests when comparing languages.
+
+## Findings
+
+| ID | Classification | Source reference | Finding and treatment |
+|---|---|---|---|
+| D1 | Demonstrated defect, narrow | [§6.5, line 294](sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md#L294) | The sentence says `Vec<T>` stores elements in a contiguous allocation whenever it is nonempty. A nonempty vector of a zero-sized type has no element allocation. The official [Vec documentation](https://doc.rust-lang.org/std/vec/struct.Vec.html) states that a vector allocates only when the product of element size and capacity is nonzero. The replacement says non-zero-sized elements use the vector buffer when an allocation is required, and explicitly calls out zero-sized types. |
+| D2 | Demonstrated defect, narrow | [§6.6, line 300](sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md#L300) | The bullet characterizes `Copy` as permitting cheap duplication. `Copy` means values may be duplicated implicitly with copy semantics; it does not guarantee low cost. Large arrays are examples where a permitted copy can be expensive. The official [`Copy` documentation](https://doc.rust-lang.org/std/marker/trait.Copy.html) describes bitwise duplication and notes that move and copy can both result in bits being copied. The replacement distinguishes the semantic contract from cost. |
+| D3 | Demonstrated defect, narrow | [§7.1, line 316](sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md#L316) | “Cargo does not allow cycles between packages” is too broad. Cargo normally rejects dependency cycles but expressly permits cycles involving development dependencies because they need not form a cycle among build artifacts. The [Cargo resolver documentation](https://doc.rust-lang.org/stable/cargo/reference/resolver.html#dev-dependency-cycles) describes the exception and warns about duplicated package instances in test builds. The replacement states the narrower rule and recommends a non-dev acyclic graph where practical. |
+| R1 | Refinement / source currency | [§29.2, line 1846](sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md#L1846) | The bibliography labels Java SE 21 as “Java current,” while this task's environment is OpenJDK 26.0.1 and Oracle publishes the [Java SE 26 specifications](https://docs.oracle.com/en/java/javase/26/docs/specs/index.html). This is a stale reference point, not evidence that the source's discussion of Java records and sealed types is wrong. The new guide uses Java SE 26 primary documentation. A single original Java fence was compiled to class files with `javac --release 21`; this does not validate the other Java sketches or establish runtime behavior. |
+| V1 | Verification gap, historical context | [Introduction, line 8](sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md#L8) | The source records that `rustc` and `cargo` were unavailable in its authoring session. That statement is explicitly session-scoped and is preserved as provenance; it is not rewritten as a current capability claim. The present host reports Rust/Cargo 1.96.0 and OpenJDK 26.0.1. A separate [Rust selected-fence record](guide-snippet-checks.json) reports metadata compilation for 15 self-contained Rust fences from the original source, with a minimal `main` wrapper. A [Java selected-fence record](guide-java-snippet-check.json) reports that the sealed-interface/records fence at source line 209 compiled to class files with `javac --release 21 -Xlint:all -Werror`; it was not run, and the partial dependency-injection sketch remains unchecked. These are narrow checks only: they do not establish execution or behavior, cover every fence, prove FFI linkage or safety, or establish production correctness. |
+| V2 | Verification gap, explicitly disclosed | [§29.2, lines 1820–1846](sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md#L1820) | The reference list says sources were consulted, but the source does not give a per-claim retrieval record, and its examples were intentionally not compiled in that session. This is not a demonstrated citation failure. The replacement uses targeted official or author-primary links and says the sources establish only the cited rule or historical claim; it does not claim that entire books or all linked pages were read. |
+| R2 | Refinement / scope alignment | [§24, lines 1441–1595](sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md#L1441) | The proposal-approval case is explicitly illustrative and technically careful. The replacement links to the complete [orders-and-payments case](../case-studies/orders-payments/README.md) and [scenario specification](../case-studies/orders-payments/SPEC.md). The integrator reports execution of 42 shared scenarios against the exact oracle across Java composition, Java template-method inheritance, and Rust, plus language checks; see the [validation record](../research/orders-payments-validation.md) for exact results and limits. This is local simulator evidence, not proof of real persistence or provider behavior. |
+
+## Revision decisions
+
+- Keep the original Portuguese source and historical validation records unchanged.
+- Replace the proposal case narrative in the companion guide with the completed orders-and-payments case and its specification; point to the integrator's local validation record for measured scope and limitations.
+- Use the seven ROO fields consistently: owner/resource custodian, identity, mutation authority, access regime, validity horizon, execution domain, and failure boundary.
+- Improve the decision guidance for inheritance versus composition. Retaining inheritance is reasonable when the subtype relation and behavioral contract remain stable; choose composition for independent policy reuse or changing combinations. Neither language style is a universal rule.
+- Update Java examples and citations for current records, sealed interfaces, and ordinary interfaces. Explain their shallow immutability and the language's actual inheritance rules without presenting a record as an immutable object graph.
+- Add a compact Cargo dependency-cycle exception, zero-sized `Vec` case, and careful `Copy` cost note.
+- Link to the existing [23-pattern catalog](../docs/04-pattern-catalog.md) rather than restating its full GoF chapter.
+- Keep every new code fence illustrative. Link the [Rust laboratory](../docs/laboratory.md) and the orders-and-payments case validation record as separately scoped executable evidence; do not generalize either result beyond its recorded checks.
+- Preserve the distinction between memory safety, domain correctness, database constraints, provider idempotency, and delivery guarantees. No performance, novelty, or production claim is inferred from the source or the new guide.
+
+## Source-check limits
+
+I read the full original document by bounded line ranges and checked the three narrow Rust/Cargo statements against current official documentation. I also checked Oracle's Java SE 26 specification and language documentation for records and sealed types. The integrator reports local execution of the cross-language case; I did not rerun that suite. This was a targeted source review, not a full external link audit, a comprehensive Rust API audit, a broad Java build, runtime validation of the one checked source Java fence, or independent re-execution of the selected-fence checks. Case validation does not exercise a real database or payment provider.
+
+The integrator owns case acceptance and serialized builds. I did not run builds, tests, Git commands, publication, or changes outside `research/guide-assessment.md` and `docs/08-rust-and-object-design.md`.

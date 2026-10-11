@@ -1,0 +1,69 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "label": "shell syntax",
+      "command": [
+        "bash",
+        "-n",
+        "/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/track/compose.sh",
+        "/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/track/docker/entrypoint.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "workflow syntax",
+      "command": [
+        "actionlint",
+        ".github/workflows/roo-track.yml"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "label": "Compose configuration",
+      "command": [
+        "docker",
+        "compose",
+        "-f",
+        "compose.yaml",
+        "config",
+        "--format",
+        "json"
+      ],
+      "exit_code": 0,
+      "stdout": "validated JSON captured separately",
+      "stderr": ""
+    },
+    {
+      "label": "Python source parses without bytecode writes",
+      "exit_code": 0
+    }
+  ],
+  "baseline_files": 215,
+  "preserved_baseline_files": 213,
+  "changed_baseline_paths": [
+    ".gitignore",
+    "case-studies/orders-payments/track/README.md"
+  ],
+  "preserved_historical_research_files": 76,
+  "frozen_source_files": 223,
+  "source_candidate_id": "1f2ca6ff019010938513a5f7bece5d6e376640297a3eadabee6ab7d5b20713b4",
+  "new_source_paths": [
+    ".dockerignore",
+    ".github/workflows/roo-track.yml",
+    "case-studies/orders-payments/track/DOCKER.md",
+    "case-studies/orders-payments/track/compose.sh",
+    "case-studies/orders-payments/track/docker/Dockerfile",
+    "case-studies/orders-payments/track/docker/entrypoint.sh",
+    "case-studies/orders-payments/track/docker/evidence.py",
+    "compose.yaml"
+  ],
+  "local_document_links": "PASS",
+  "host_cluster_preserved": true,
+  "remote_github_actions": "not executed",
+  "existing_documentation_changes": "additions only; original text and code fences preserved"
+}

@@ -1,0 +1,2225 @@
+{
+  "scope": "Static documentation qualification only; no build, application test, HTTP, SQL, or cluster operation performed",
+  "baseline_candidate_id": "ce97665a034127dde219a8784ef49846513191bbd5131461a71c7cfcfde889e3",
+  "baseline_files": 165,
+  "documentation_files_changed": 22,
+  "changed_paths": [
+    "README.md",
+    "case-studies/orders-payments/README.md",
+    "case-studies/orders-payments/http/README.md",
+    "case-studies/orders-payments/http/java/README.md",
+    "case-studies/orders-payments/http/rust/README.md",
+    "case-studies/orders-payments/java/README.md",
+    "case-studies/orders-payments/postgres/README.md",
+    "case-studies/orders-payments/postgres/java/README.md",
+    "case-studies/orders-payments/postgres/rust/README.md",
+    "case-studies/orders-payments/rust/README.md",
+    "docs/01-foundations.md",
+    "docs/02-relationship-design.md",
+    "docs/03-concept-atlas.md",
+    "docs/04-pattern-catalog.md",
+    "docs/05-architecture.md",
+    "docs/06-cross-language.md",
+    "docs/07-learning-path.md",
+    "docs/08-rust-and-object-design.md",
+    "docs/laboratory.md",
+    "templates/architecture-decision.md",
+    "templates/design-review.md",
+    "templates/relationship-contract.md"
+  ],
+  "protected_files_byte_identical": 143,
+  "existing_research_files_byte_identical": 53,
+  "fenced_blocks_preserved": 66,
+  "fenced_block_details": [
+    {
+      "path": "README.md",
+      "blocks": 5,
+      "byte_identical": true,
+      "block_sha256": [
+        "0979d8eeeda3b65942646e5f858fefc748aea3ebdcc3edc31a91f799bfe28a36",
+        "5551f814ba014688cc960a7790a8356130b2dbe5dc56adb68c9fa2b1816fd263",
+        "45c5e95363c42144075f1b59c14305b8e8b0f591979226f6b31545bf9f47a1fa",
+        "39cedbd217ac2862f5f7c28f8a1aa102246f31fb07fb4dae3c3f9bfdc93c929a",
+        "5364a426544b27beca7cd85192dd2210ff2d9ae83f12224cb5737f20376685fe"
+      ]
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "blocks": 8,
+      "byte_identical": true,
+      "block_sha256": [
+        "e30f888c0485b2c3438dc4f7fcd003641fbfa955a6b994f9d0a1057ff3f703a9",
+        "bc9f020438e107237dfd68cdd71b22d9230640a94389b4268d47485f0befd620",
+        "99a0eebadfeab4fe9744e7a42b5cec7895cda45a735317106d4c1fc53402c9f9",
+        "a4e60f532272de1fda9d47d20517c31d20f86227d382a9d0e594103908cc0ec0",
+        "4db8dd16c1517b5437c9e3a2eacf1db2d79683fe4b333047131a7fd451ec8cbe",
+        "d2c707ff81527e0d3cf8405a5589f0ddea98fd1ffdb4ea31e97a97c69d8cde9f",
+        "45c5e95363c42144075f1b59c14305b8e8b0f591979226f6b31545bf9f47a1fa",
+        "df19438df98a42f4c189f3b3c187ef5e03c24f6528e5f51f78df3eef47d71873"
+      ]
+    },
+    {
+      "path": "case-studies/orders-payments/http/README.md",
+      "blocks": 18,
+      "byte_identical": true,
+      "block_sha256": [
+        "c125cbb6a588214302a7c5ee85a0959080e0822854389edbaef89ad0f910b19a",
+        "5364a426544b27beca7cd85192dd2210ff2d9ae83f12224cb5737f20376685fe",
+        "46bc5948970b3b41ef036e7cfe6c4a7c066cd0a2226d62013f4a6b65245db263",
+        "07a1b250846fa4761ebf3660ac3bfed2435329e65547edcb8283b47fb6b9ac32",
+        "49676674b6fa530407f86555e2a8dc221dff1a23cd9664ddafb3c42b1e6f086f",
+        "5edeffaf05ec30d9e791bc775c9491f972a95d3209520fee55ba7b8b8db00666",
+        "bf16debb436c24ccb7f69f98ecc67cf42a4bc6d1c72be0e918b67d6c2e4d55c4",
+        "f15f58d21f06e310b238b9c32e0e9c9767e2f27b4d7ad98fc501f3ac1574e450",
+        "d3a80ff330dcc3220a87e2fb2d029e6c51086efd0be429145a1018db329dde20",
+        "09774f65c0244a63f085859e49f16d7b4511581c5bbf72384b80b38d999496bd",
+        "70fcee80e7b44f412caf65b1fc505e2d9cc5f6a12189f07e6e7781eea1342c58",
+        "020c87b26396e4b7e9bf75560680237a7e3820fb8f1680927df37eeaf25ba191",
+        "677b2baac09674312aa50c7f48d8de287501fecdf67bfae0011d579370be5127",
+        "131cae4102f7e651c256084efce6ca8dfbea557de565764a1f4696ccd5aaaa99",
+        "dfe57839b21c6ba73205f0d15d051af072f3f32566172d814c1579f9efa0c1f2",
+        "0efd4d674b6770aece4d40d005582e84efb9b42771d2cfde7546ef40ee318566",
+        "02e3688314c0bbd81fd507d2e3696d07d3421ea30586b095e6a91b0f26ac6f62",
+        "bb38d92565aa5bec122288a8d681feb860317f2009effe29e9f6e0b58d1be5d0"
+      ]
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/README.md",
+      "blocks": 2,
+      "byte_identical": true,
+      "block_sha256": [
+        "9ec0df1f0cd9aa3a8bf456557cb4f79e4b1b2bc987de8ea5502cb83f50e5cf72",
+        "92f6875589ed38f292358fc89d9325c7e0b2a99a250e19332a51ea922e51bffb"
+      ]
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/README.md",
+      "blocks": 2,
+      "byte_identical": true,
+      "block_sha256": [
+        "ffae67bd8a48ceed65355d1bb91a29d8db959ea1652317f11918e1052ee0dd54",
+        "0834793aeee1cbe30ead51ac968692aaca22bbdb52a6d70d958a2a25f1a8e5c1"
+      ]
+    },
+    {
+      "path": "case-studies/orders-payments/java/README.md",
+      "blocks": 1,
+      "byte_identical": true,
+      "block_sha256": [
+        "d2c707ff81527e0d3cf8405a5589f0ddea98fd1ffdb4ea31e97a97c69d8cde9f"
+      ]
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/README.md",
+      "blocks": 9,
+      "byte_identical": true,
+      "block_sha256": [
+        "39cedbd217ac2862f5f7c28f8a1aa102246f31fb07fb4dae3c3f9bfdc93c929a",
+        "84c21a706f322b3d258f590f475d65806af54d27d3b1c00f76d6a21496beb071",
+        "f214bf92549e62990efeb1054e72e5d14bf67a6fcfcc814f525e1e3f87717ca8",
+        "a52bc50f5c4c0e44cc5eb289bdc7e16728cab228064c01bf06b8e1796a6a6a25",
+        "2e7e6cb5c1a0974f73d86d9bf1914ccbaa7c22165da64d79a2d2dfa0a63845ab",
+        "2e5fcd28c3add9a5e6cf38b861f9bc29aa27f96158282a9180909833b097ff0f",
+        "006c4474107833157e23c2203da92e4b386b5d9edde490def9cb08551c0cb93d",
+        "3bb0053e926d50d2fff4f7bf481bb04fc8ed309c2f8b7c1efd6a03c83e42647e",
+        "3b585fac373391d0dbae44202c645e5181fe7f8f4adf6e1b6e2a9985bc7a0a20"
+      ]
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/README.md",
+      "blocks": 1,
+      "byte_identical": true,
+      "block_sha256": [
+        "c1df85e25f05833859197f55a309ae1ba45b59effe0bc5dd3dc5456032802421"
+      ]
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/README.md",
+      "blocks": 2,
+      "byte_identical": true,
+      "block_sha256": [
+        "565330e1125d4f3e9adbd5a792b9ceac7a2988e8d0f2a0dacfa282e0149270e8",
+        "faa497e6fc30db739767fb43a126c6cf754ace6bed418b09ca0992e5a317a276"
+      ]
+    },
+    {
+      "path": "case-studies/orders-payments/rust/README.md",
+      "blocks": 1,
+      "byte_identical": true,
+      "block_sha256": [
+        "dbd1e840e8bcafe7f40c692bcfd91a6e8b302be5f9bd141de08edb7c663c76d3"
+      ]
+    },
+    {
+      "path": "docs/01-foundations.md",
+      "blocks": 0,
+      "byte_identical": true,
+      "block_sha256": []
+    },
+    {
+      "path": "docs/02-relationship-design.md",
+      "blocks": 3,
+      "byte_identical": true,
+      "block_sha256": [
+        "076e23ad398a395fe5136c1ae16211b8296a103c95731b3ef326477eb22eec84",
+        "9d1b991ab82237fe3e0eaeb422b2ea998a85bb6e2b0b57524a4f9d6f56348720",
+        "d10fedb5be147e3bc02ac8b6de1b2b19b0825caafffba9ff1a180257d6f36401"
+      ]
+    },
+    {
+      "path": "docs/03-concept-atlas.md",
+      "blocks": 0,
+      "byte_identical": true,
+      "block_sha256": []
+    },
+    {
+      "path": "docs/04-pattern-catalog.md",
+      "blocks": 0,
+      "byte_identical": true,
+      "block_sha256": []
+    },
+    {
+      "path": "docs/05-architecture.md",
+      "blocks": 0,
+      "byte_identical": true,
+      "block_sha256": []
+    },
+    {
+      "path": "docs/06-cross-language.md",
+      "blocks": 2,
+      "byte_identical": true,
+      "block_sha256": [
+        "b7e08051aa27d9c85b10ddb720115b138b2a88d582460f4ffebe8091852f6495",
+        "a20a1e58e73e9bf3cdd475d8bd4482127d83a2741c51d3cf21bdd749a264f5be"
+      ]
+    },
+    {
+      "path": "docs/07-learning-path.md",
+      "blocks": 0,
+      "byte_identical": true,
+      "block_sha256": []
+    },
+    {
+      "path": "docs/08-rust-and-object-design.md",
+      "blocks": 10,
+      "byte_identical": true,
+      "block_sha256": [
+        "3939523beb98de364d5157af5bfce533b4e5aa6749f55c363a85597eda4241d4",
+        "cacf538f1d29a48392c3d636ad1db80a08560ee2ee980b4f0d8bc7051d2d6c42",
+        "08f4bf1bf141a6791f2a006eed5d76e42ebffe3bbf6323681248a3c42bdfe8c3",
+        "d95d631be8fdd678056cc9063d69ffda04de3f77fa6d6b6402149d2accc20455",
+        "aecbf064d27fca806d96ab9cb53876de9b4fc049188bbf80bf0c7f672632a74a",
+        "34e2874c48aa4c52b77ac5d58e368a0f6900add8026f6f15dd20846625922e5a",
+        "254ba3b2487e017f4f6cbcdda13a30177863086fb82bce706cdffc8b6c199224",
+        "3f3181a5ca5bd1f6947b56d16024fd6e68fe0b02fd6b78ea10e0e0ef7c3aabf8",
+        "33a2541b89c152b742be2ebb2294dd433ed56bffbcd52e8b9e8966531a8f648f",
+        "3546c6c721bebf64154d63603ea62df5dd28067ebc790468edba7781d4823558"
+      ]
+    },
+    {
+      "path": "docs/laboratory.md",
+      "blocks": 2,
+      "byte_identical": true,
+      "block_sha256": [
+        "2631b5b39a97c2b067a7decdd08263adcaf1d7366ad60890e02f0bd6ac5a3684",
+        "63ef1fe65a91962f38f04ff4001b721892f16c6cf6385e25843e4c556e4b803a"
+      ]
+    },
+    {
+      "path": "templates/architecture-decision.md",
+      "blocks": 0,
+      "byte_identical": true,
+      "block_sha256": []
+    },
+    {
+      "path": "templates/design-review.md",
+      "blocks": 0,
+      "byte_identical": true,
+      "block_sha256": []
+    },
+    {
+      "path": "templates/relationship-contract.md",
+      "blocks": 0,
+      "byte_identical": true,
+      "block_sha256": []
+    }
+  ],
+  "protected_case_evidence_sections": [
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "start": "> **Evidence status.**",
+      "byte_identical": true,
+      "bytes": 1087,
+      "sha256": "afd9eba5b0300e916f4d58df73684445d9305698d9e09a001e7d36bd7b7f8c5b"
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "start": "## Running and validating the implementations",
+      "byte_identical": true,
+      "bytes": 3706,
+      "sha256": "a53c2a258c39dd1c55c00c04e2459a7e94053088b6fc10bb55beab5958e976ff"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/README.md",
+      "start": "> **Evidence boundary.**",
+      "byte_identical": true,
+      "bytes": 491,
+      "sha256": "78fc1015eb45b7b6882130c7ad0c5b94892a0cd6512f90d342d61665b1eff814"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/README.md",
+      "start": "## Executed validation",
+      "byte_identical": true,
+      "bytes": 2649,
+      "sha256": "f823a2020dec14a01262d3015fd4c373b67e7f9d6d0f8d2882dbb3050610a63d"
+    },
+    {
+      "path": "case-studies/orders-payments/http/README.md",
+      "start": "> **Evidence boundary.**",
+      "byte_identical": true,
+      "bytes": 638,
+      "sha256": "18499ca3babe4c159ad0fb1926f543091b1832f379e465f540b5782ddfd907dd"
+    },
+    {
+      "path": "case-studies/orders-payments/http/README.md",
+      "start": "## Reading the evidence",
+      "byte_identical": true,
+      "bytes": 2830,
+      "sha256": "d39491ba483563023f172d23faa82e9958103e8ea77f1d850bdda1838dcf386e"
+    }
+  ],
+  "historical_hash_date_version_tokens": [
+    {
+      "path": "README.md",
+      "occurrences": 4,
+      "all_preserved": true
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "occurrences": 0,
+      "all_preserved": true
+    },
+    {
+      "path": "case-studies/orders-payments/http/README.md",
+      "occurrences": 7,
+      "all_preserved": true
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/README.md",
+      "occurrences": 10,
+      "all_preserved": true
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/README.md",
+      "occurrences": 7,
+      "all_preserved": true
+    },
+    {
+      "path": "case-studies/orders-payments/java/README.md",
+      "occurrences": 1,
+      "all_preserved": true
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/README.md",
+      "occurrences": 9,
+      "all_preserved": true
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/README.md",
+      "occurrences": 9,
+      "all_preserved": true
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/README.md",
+      "occurrences": 4,
+      "all_preserved": true
+    },
+    {
+      "path": "case-studies/orders-payments/rust/README.md",
+      "occurrences": 1,
+      "all_preserved": true
+    },
+    {
+      "path": "docs/01-foundations.md",
+      "occurrences": 13,
+      "all_preserved": true
+    },
+    {
+      "path": "docs/02-relationship-design.md",
+      "occurrences": 9,
+      "all_preserved": true
+    },
+    {
+      "path": "docs/03-concept-atlas.md",
+      "occurrences": 4,
+      "all_preserved": true
+    },
+    {
+      "path": "docs/04-pattern-catalog.md",
+      "occurrences": 0,
+      "all_preserved": true
+    },
+    {
+      "path": "docs/05-architecture.md",
+      "occurrences": 0,
+      "all_preserved": true
+    },
+    {
+      "path": "docs/06-cross-language.md",
+      "occurrences": 3,
+      "all_preserved": true
+    },
+    {
+      "path": "docs/07-learning-path.md",
+      "occurrences": 8,
+      "all_preserved": true
+    },
+    {
+      "path": "docs/08-rust-and-object-design.md",
+      "occurrences": 5,
+      "all_preserved": true
+    },
+    {
+      "path": "docs/laboratory.md",
+      "occurrences": 0,
+      "all_preserved": true
+    },
+    {
+      "path": "templates/architecture-decision.md",
+      "occurrences": 0,
+      "all_preserved": true
+    },
+    {
+      "path": "templates/design-review.md",
+      "occurrences": 0,
+      "all_preserved": true
+    },
+    {
+      "path": "templates/relationship-contract.md",
+      "occurrences": 0,
+      "all_preserved": true
+    }
+  ],
+  "historical_expansion_note_preserved": true,
+  "local_markdown_links_checked": 297,
+  "local_anchor_links_checked": 55,
+  "external_links_not_fetched": 221,
+  "local_links": [
+    {
+      "source": "README.md",
+      "target": "docs/01-foundations.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/03-concept-atlas.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/04-pattern-catalog.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/05-architecture.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/06-cross-language.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/07-learning-path.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/08-rust-and-object-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/http/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/guide-assessment.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/literature.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/agenda.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "templates/architecture-decision.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "templates/design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/laboratory.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/orders-payments-run.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/http/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/run-ledger.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.py",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.sh",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "http/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "postgres/schema.sql",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/Adapters.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/InMemoryTemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/examples/recovery.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/lib.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/fixture.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.py",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/negative/PrivateMutation.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/negative/OverrideAlgorithm.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/CompositionRunner.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/TemplateRunner.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/fixture.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/main.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/lib.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.py",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.py",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.sh",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/Adapters.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/fixture.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/examples/recovery.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../docs/02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../docs/05-architecture.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../docs/06-cross-language.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-run.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-integration-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-regression.log",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-postgres-regression-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "#reading-the-evidence",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "java/run.sh",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "rust/Cargo.toml",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../docs/02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "java/src/roo/postgres/HttpService.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "java/src/roo/postgres/HttpProtocol.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "rust/src/lib.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "rust/Cargo.toml",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-regression.log",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-postgres-regression-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-run.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-checks.log",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-integration-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../research/http-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "java/src/roo/postgres/HttpProtocol.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "java/src/roo/postgres/HttpService.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "java/src/roo/postgres/HttpCompositionServer.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "java/src/roo/postgres/HttpTemplateServer.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "java/run.sh",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "rust/src/lib.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "rust/src/main.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "rust/Cargo.toml",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "schema.sql",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "verify.sh",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "regression.sh",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../postgres/java/src/roo/postgres/Database.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../postgres/rust/src/database.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../docs/02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../docs/05-architecture.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/README.md",
+      "target": "../../../docs/06-cross-language.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/java/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/java/README.md",
+      "target": "../../postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/java/README.md",
+      "target": "../../README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/java/README.md",
+      "target": "../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/http/java/README.md",
+      "target": "../../../../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/java/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/rust/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/rust/README.md",
+      "target": "../../postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/rust/README.md",
+      "target": "../../README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/rust/README.md",
+      "target": "../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/http/rust/README.md",
+      "target": "../../../../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/http/rust/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/java/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/java/README.md",
+      "target": "../README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/java/README.md",
+      "target": "../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/java/README.md",
+      "target": "../../../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "schema.sql",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-run.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "schema.sql",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "java/src/roo/postgres/Store.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "java/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "rust/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "java/src/roo/postgres/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "java/src/roo/postgres/Database.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "java/src/roo/postgres/Store.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "java/src/roo/postgres/Provider.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "rust/src/database.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "schema.sql",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../docs/02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "java/src/roo/postgres/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "java/src/roo/postgres/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-integration-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-checks.log",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-regression.log",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "schema.sql",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-run.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../research/postgres-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../docs/02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../docs/05-architecture.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/README.md",
+      "target": "../../../docs/06-cross-language.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/java/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/java/README.md",
+      "target": "../../README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/java/README.md",
+      "target": "../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/java/README.md",
+      "target": "../../../../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/java/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/rust/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/rust/README.md",
+      "target": "../../README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/rust/README.md",
+      "target": "../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/rust/README.md",
+      "target": "../../../../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/postgres/rust/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/rust/README.md",
+      "target": "../README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/rust/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/rust/README.md",
+      "target": "../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/rust/README.md",
+      "target": "../../../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/rust/README.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#1-core-concepts",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#identity-value-objects-and-entities",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#association-aggregation-composition-and-dependency",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#cardinality-and-object-graphs",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#mutability-and-invariants",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#invariants-construction-and-lifecycle",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#delegation-and-composition",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#three-forms-of-polymorphism",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#static-dispatch-dynamic-dispatch-and-open-sets",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#interfaces-traits-bounds-and-supertraits",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#associated-types-variance-and-coherence",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#inheritance-has-several-meanings",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#liskov-substitution-and-behavioral-contracts",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#the-diamond-problem",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#solid-and-grasp-as-design-prompts",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#null-absence-exceptions-and-result",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#typestate-and-state-machines",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/03-concept-atlas.md",
+      "target": "#5-worked-hierarchy-redesigns",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/05-architecture.md",
+      "target": "../research/literature.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/05-architecture.md",
+      "target": "04-pattern-catalog.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/05-architecture.md",
+      "target": "06-cross-language.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/06-cross-language.md",
+      "target": "laboratory.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/07-learning-path.md",
+      "target": "01-foundations.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/07-learning-path.md",
+      "target": "02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/07-learning-path.md",
+      "target": "06-cross-language.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/07-learning-path.md",
+      "target": "04-pattern-catalog.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/07-learning-path.md",
+      "target": "06-cross-language.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../research/sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "03-concept-atlas.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "05-architecture.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "04-pattern-catalog.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "laboratory.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../research/guide-snippet-checks.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../research/guide-java-snippet-check.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "04-pattern-catalog.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../case-studies/orders-payments/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../case-studies/orders-payments/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "laboratory.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "07-learning-path.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "07-learning-path.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "laboratory.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#1-the-thesis-design-obligations-before-representation",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#2-keep-the-comparison-honest",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#2-keep-the-comparison-honest",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#a-compact-comparison",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#1-the-thesis-design-obligations-before-representation",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#4-object-oriented-design-inheritance-and-composition",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#5-rust-ownership-borrowing-moves-and-destruction",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#6-graphs-cycles-and-shared-state",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#7-types-invariants-and-typestate",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#7-types-invariants-and-typestate",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#8-polymorphism-contracts-and-solid",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#8-polymorphism-contracts-and-solid",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#8-polymorphism-contracts-and-solid",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "04-pattern-catalog.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#9-architecture-domains-modules-and-data-oriented-work",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#9-architecture-domains-modules-and-data-oriented-work",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#9-architecture-domains-modules-and-data-oriented-work",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#10-concurrency-async-errors-and-distributed-state",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#10-concurrency-async-errors-and-distributed-state",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#10-concurrency-async-errors-and-distributed-state",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#11-unsafe-rust-and-ffi",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#12-diagrams-that-show-the-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#13-quality-scenarios-and-trade-offs",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#14-documentation-verification-and-ai-assisted-change",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#14-documentation-verification-and-ai-assisted-change",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../case-studies/orders-payments/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../case-studies/orders-payments/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#16-myths-and-project-decisions",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#language-and-architecture-decisions",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#17-learning-sequence",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "07-learning-path.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#18-review-checklist",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/08-rust-and-object-design.md",
+      "target": "#primary-and-author-sources",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../src/order.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../src/strategy.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../src/typestate.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../src/view.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../src/graph.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../src/events.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../examples/order_workflow.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../examples/graph_events.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../examples/command_transfer.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/laboratory.md",
+      "target": "../research/validation.md",
+      "exists": true,
+      "anchor_exists": null
+    }
+  ],
+  "gof_patterns_preserved": [
+    "Abstract Factory",
+    "Builder",
+    "Factory Method",
+    "Prototype",
+    "Singleton",
+    "Adapter",
+    "Bridge",
+    "Composite",
+    "Decorator",
+    "Facade",
+    "Flyweight",
+    "Proxy",
+    "Chain of Responsibility",
+    "Command",
+    "Interpreter",
+    "Iterator",
+    "Mediator",
+    "Memento",
+    "Observer",
+    "State",
+    "Strategy",
+    "Template Method",
+    "Visitor"
+  ],
+  "diff_sha256": "71e6b68b010c957b23755e2a9e184ef6db61efe03086ea89e51b4bca81887654",
+  "automated_checks": "PASS",
+  "errors": [],
+  "semantic_review": "Independent frozen-candidate review recorded separately",
+  "limitations": [
+    "Static link validation does not fetch external sources.",
+    "Protected byte checks preserve prior evidence; they do not rerun or extend its runtime claims.",
+    "English prose quality and portable contract semantics require human or independent model review."
+  ]
+}

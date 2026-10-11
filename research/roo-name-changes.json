@@ -1,0 +1,54 @@
+{
+  "scope": "Exact user-supplied five-file expansion recipe; historical change record",
+  "files": [
+    {
+      "path": "README.md",
+      "replacements": [
+        {
+          "old_text": "# ROO — Rust Object Oriented",
+          "new_text": "# ROO — Relationship & Ownership Oriented design"
+        },
+        {
+          "old_text": "ROO does not introduce a language, compiler, object runtime, or inheritance extension. Version 0.1 is a first edition of the method, a literature map, reusable design worksheets, and a small standard-library-only Rust library. It is intended to grow through worked examples and evidence.",
+          "new_text": "ROO does not introduce a language, compiler, object runtime, or inheritance extension. Version 0.1 is a first edition of the method, a literature map, reusable design worksheets, and a small standard-library-only Rust library. It is intended to grow through worked examples and evidence.\n\nROO originally stood for Rust Object Oriented. The expansion changed because the method applies beyond Rust; Rust remains the laboratory language."
+        }
+      ]
+    },
+    {
+      "path": "docs/01-foundations.md",
+      "replacements": [
+        {
+          "old_text": "ROO — Rust Object Oriented is a proposed software design method and executable learning laboratory.",
+          "new_text": "ROO — Relationship & Ownership Oriented design — is a proposed software design method and executable learning laboratory."
+        }
+      ]
+    },
+    {
+      "path": "docs/03-concept-atlas.md",
+      "replacements": [
+        {
+          "old_text": "# ROO — Rust Object-Oriented Concept Atlas",
+          "new_text": "# ROO Concept Atlas"
+        }
+      ]
+    },
+    {
+      "path": "docs/04-pattern-catalog.md",
+      "replacements": [
+        {
+          "old_text": "# ROO — Rust Object Oriented: GoF Pattern Translation Catalog",
+          "new_text": "# ROO GoF Pattern Translation Catalog"
+        }
+      ]
+    },
+    {
+      "path": "Cargo.toml",
+      "replacements": [
+        {
+          "old_text": "An executable laboratory for ownership-aware object-oriented software design",
+          "new_text": "An executable laboratory for Relationship & Ownership Oriented software design"
+        }
+      ]
+    }
+  ]
+}

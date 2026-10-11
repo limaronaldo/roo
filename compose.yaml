@@ -1,0 +1,13 @@
+services:
+  track:
+    image: ${ROO_TRACK_IMAGE:-roo-track:local}
+    build:
+      context: .
+      dockerfile: case-studies/orders-payments/track/docker/Dockerfile
+    network_mode: none
+    init: true
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 45s
+    command: [qualify]

@@ -1,0 +1,226 @@
+{
+  "date": "2026-10-11",
+  "scope": "Improved English Rust/OO guide and orders/payments ROO case",
+  "candidate_id": "799e7e4efa40c83325f920d3b40eddc95f770d208c863ef66ea5e5c8840b9c55",
+  "identity_rule": "SHA-256 of UTF-8 json.dumps(files, sort_keys=True, separators=(comma, colon)); paths sorted lexically",
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "f1cf95ffe2de18c620fc3ba8f33aca67c24fc69924e2a66ff1e7a4c979645b2b",
+      "bytes": 121
+    },
+    {
+      "path": "README.md",
+      "sha256": "e82ef11befc75041ebb6db84efda69bc78c118ab685c9011b72389307f17b76d",
+      "bytes": 9836
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "sha256": "f952972537d64f2172e0883678218ee14349b26041c63487cc15913a7346845c",
+      "bytes": 59817
+    },
+    {
+      "path": "case-studies/orders-payments/SPEC.md",
+      "sha256": "fa05f3d0b69b8e524d99d8923d396bfd2fe3725c265c3a3bfc6ad0efab05790c",
+      "bytes": 18308
+    },
+    {
+      "path": "case-studies/orders-payments/expected.tsv",
+      "sha256": "ec4a5bced20459cf691b568b440572314cf94fe1d0b33f02fa852418ef48dd78",
+      "bytes": 2422
+    },
+    {
+      "path": "case-studies/orders-payments/java/README.md",
+      "sha256": "b83a877a8e5630e4cc2a3885018127ee6461b003c11d65cabf00431f54a52093",
+      "bytes": 2498
+    },
+    {
+      "path": "case-studies/orders-payments/java/build.sh",
+      "sha256": "19808b239329f5df7db7f57a308b8339f563516f8ca64bb9e7c6d70de9acb718",
+      "bytes": 955
+    },
+    {
+      "path": "case-studies/orders-payments/java/negative/OverrideAlgorithm.java",
+      "sha256": "57f884bd9230c08713241f07eeaa0693a84f088092b1f085a1860953bac1de7e",
+      "bytes": 328
+    },
+    {
+      "path": "case-studies/orders-payments/java/negative/PrivateMutation.java",
+      "sha256": "12e71bf377e5ab97d07cb6c756a8765e34cbf0a2fe47a1f879a1aa057f0b773f",
+      "bytes": 187
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/Adapters.java",
+      "sha256": "296ea05e8373ca8547888ad0245abf418326aefd815207e70d6c30d79d2f7f55",
+      "bytes": 5736
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/Application.java",
+      "sha256": "eb1a1c70bfe4cc90e0f46c8e4e28c3cd17df4f0a15a0ed7d1256ab47445982c7",
+      "bytes": 353
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/CompositionApplication.java",
+      "sha256": "e4c1efa776a34fafd0c8cd1b6747121737c334895c13f217255eca0c317e8032",
+      "bytes": 3501
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/CompositionRunner.java",
+      "sha256": "56b2a131eae24f5301c4bc93d9e79c8491bfbd08c2b23f9972d7e8c8fc57e02e",
+      "bytes": 179
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/Domain.java",
+      "sha256": "eae6deb667207ed2b46168ee28f1f9763a887b70a45e61a2a77f6ea741a60665",
+      "bytes": 5673
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/FixtureRunner.java",
+      "sha256": "39ef96884e8989e7be1a80ff96daaab29b55d508ec432a2fa61cebc26490a584",
+      "bytes": 6631
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/InMemoryTemplateApplication.java",
+      "sha256": "d992d5a4428e8771294fff2332c0f33fb8eb40b306d05c0dbba5c27a8d252cee",
+      "bytes": 636
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/TemplateApplication.java",
+      "sha256": "88098632ebfa84940d25abf3e9fef4d68a52a43cc882ab8a95f9f82358ef9869",
+      "bytes": 3494
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/TemplateRunner.java",
+      "sha256": "4d976dbd9f492534d9b5ea5e58bdbe213b9da600bdf83008948224c3e55c0626",
+      "bytes": 172
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/UnitTests.java",
+      "sha256": "d320e6362fa83bef9e8414eb583f7a79a0ed4b86b6b86728dd23076dcbc80874",
+      "bytes": 12266
+    },
+    {
+      "path": "case-studies/orders-payments/rust/Cargo.lock",
+      "sha256": "247e677862e91cb756fa37e9d11b6c2b9aaf3385b63346f64b1c0889c2da86f9",
+      "bytes": 164
+    },
+    {
+      "path": "case-studies/orders-payments/rust/Cargo.toml",
+      "sha256": "ae06aa02d1e9c56c304170e8880c288680c8daa7ae42ecf279c0d5f96bd55e14",
+      "bytes": 231
+    },
+    {
+      "path": "case-studies/orders-payments/rust/README.md",
+      "sha256": "c63cdb1193cc67482b9aaa3d8b7275a18eb80d697916139b7d74ba205c8e8a26",
+      "bytes": 6894
+    },
+    {
+      "path": "case-studies/orders-payments/rust/examples/recovery.rs",
+      "sha256": "0b5bc1e0d7d434c2594e9654ae48169599ee14f460eb42395673d825a9a77484",
+      "bytes": 1693
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/adapters.rs",
+      "sha256": "b08d131cbe5ea22e6cf2647c8633bbd0004e96f7163559444206e7d2c4050a8c",
+      "bytes": 12435
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/application.rs",
+      "sha256": "5e99f372372dab707c9cd199786abdbab74f7e2c5274ef4200aae32829f987fc",
+      "bytes": 17906
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/domain.rs",
+      "sha256": "4574cd88ecd5775e7b7d2507e2989123ccea566deacd14d1f5b08981c16695b6",
+      "bytes": 7794
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/fixture.rs",
+      "sha256": "0c9ccce26129f26bc9e2f8b7413d95a4208ca033fcb4caec922fd038572d7b85",
+      "bytes": 8551
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/lib.rs",
+      "sha256": "fb0fd3ef5f6ee1b1f0deb65541da5d5ec6d68e17737125015c953243ca202fa5",
+      "bytes": 2610
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/main.rs",
+      "sha256": "5bc2e30f1a44d8ff24bba177fe342d3b2b698c8a3414e236c57996743d90b84e",
+      "bytes": 622
+    },
+    {
+      "path": "case-studies/orders-payments/scenarios.tsv",
+      "sha256": "862fc2dff7203dc7204480053bd5ee0588a4227e6a32fe7bb3497cae342b0e4e",
+      "bytes": 3102
+    },
+    {
+      "path": "case-studies/orders-payments/verify.py",
+      "sha256": "e91dfceb6beeb5ae06ef03d2930abeb2a55fc9d41c82ad90a624052e872a80e6",
+      "bytes": 4332
+    },
+    {
+      "path": "case-studies/orders-payments/verify.sh",
+      "sha256": "d9f27b5986353c749dcaa21ee8f7bac9100f2a1fe408f594f34564e1d9756040",
+      "bytes": 889
+    },
+    {
+      "path": "case-studies/orders-payments/verify_rust_negative.py",
+      "sha256": "bfc565f1d2563664bdf752671826aa7e998abf90baf63588c69a483b145c29e8",
+      "bytes": 2758
+    },
+    {
+      "path": "docs/08-rust-and-object-design.md",
+      "sha256": "5b5835e8a0787a477aca3d87b5c5f49763e8ecf9d79edd54c9951261dba8addf",
+      "bytes": 64318
+    },
+    {
+      "path": "research/guide-assessment.md",
+      "sha256": "37ddc2ee3e4305433c86539eed68d24134e7c1b3e2b966c945d4961a601228ed",
+      "bytes": 12467
+    },
+    {
+      "path": "research/guide-java-snippet-check.json",
+      "sha256": "6f4ce43c5416a2e876e03867f333daff6eb54ad323b38617c2a99a9c68c4bb57",
+      "bytes": 410
+    },
+    {
+      "path": "research/guide-snippet-checks.json",
+      "sha256": "d3229267c7762bd038b514a0bc674faf0d6f91233ce406ea90a067362163c342",
+      "bytes": 4567
+    },
+    {
+      "path": "research/orders-payments-checks.log",
+      "sha256": "3812e92ff7201ed389d02cc531228c5cf57a2cb6cc1e352198e9d3084ca17f09",
+      "bytes": 5355
+    },
+    {
+      "path": "research/orders-payments-negative-evidence.json",
+      "sha256": "757b5a8ccc205c6bc59d7f606b716f35d64e9521b51a82e49b62a4cc66af8b67",
+      "bytes": 1116
+    },
+    {
+      "path": "research/orders-payments-security.md",
+      "sha256": "6163c7bfeaaa3589f56a4db2fa1bbbf0a859466a75c9c47877a0c898e26e7eb8",
+      "bytes": 1773
+    },
+    {
+      "path": "research/orders-payments-sources.md",
+      "sha256": "ce659395df88c134fc5a0651152796572644ced9044ebc0557c69c4487d04042",
+      "bytes": 12082
+    },
+    {
+      "path": "research/orders-payments-validation.md",
+      "sha256": "f71128390270d8c8279ba63ecde57d82830e9dc5088e0a35538db615bc2d813e",
+      "bytes": 6053
+    },
+    {
+      "path": "research/sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md",
+      "sha256": "0b1edd27561e84a17777f1bf63a87a928a7d8fe9d603fd9f6b7e13fa504e6dd7",
+      "bytes": 102577
+    }
+  ],
+  "excluded": "Build/target/cache output; run ledger, review and candidate manifests; unchanged ROO v0.1 content is covered by its historical manifest. Executed log, validation, negative diagnostics and security record are included.",
+  "baseline_candidate_id": "2e7f4aafab61b8f664a6cd84b3e1183ed9cef4cfd228cdc13c67a21c2f71df2d",
+  "relative_links_checked": 128
+}

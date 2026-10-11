@@ -1,0 +1,1784 @@
+{
+  "status": "EXPECTED_INCOMPLETE",
+  "variants": {
+    "java-composition": {
+      "e1": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "0",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "0",
+              "quantity": "3",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "9223372036854775807",
+              "quantity": "2",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "9223372036854775807",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "37",
+              "quantity": "3",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "-7",
+              "quantity": "-2",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "0007",
+              "quantity": "-0",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "invalid_quantity",
+          "invalid_price",
+          "product_overflow",
+          "sum_overflow",
+          "varied_valid_add",
+          "negative_input",
+          "numeric_normalization"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e1: Expected decision add:13:0, received stop"
+      },
+      "e2": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "pay77",
+              "last_result": "LocalCommitFailed",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "pay77",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "unavailable"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "pay77",
+              "last_result": "Approved",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "recover_pending",
+          "lookup_unavailable",
+          "paid_needs_inspection",
+          "draft_needs_inspection",
+          "missing_pending_identity"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e2: Expected decision reconcile:ok:none, received stop"
+      },
+      "e3": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "stable78",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "stable78",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "stable78",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "other79",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "-",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "stable78",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "stable78",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "same_key_retry",
+          "different_intent_probe",
+          "missing_requested_identity",
+          "terminal_retry"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e3: Expected decision pay:Changed43:approve:none, received stop"
+      },
+      "e4": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e4",
+              "phase": "redeliver",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "RelayAckFailed",
+              "pending_outbox": "1",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e4",
+              "phase": "redeliver",
+              "state": "Refunded",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "5",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e4",
+              "phase": "redeliver",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "redeliver_one",
+          "redeliver_many",
+          "nothing_to_deliver"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e4: Expected decision relay:ok, received stop"
+      },
+      "e5": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "uncertain_commit",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "uncertain_commit",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "unavailable"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "uncertain_pending_commit",
+          "uncertain_paid_commit",
+          "restart_recovery",
+          "restart_unavailable",
+          "restart_paid",
+          "restart_draft"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e5: uncertain_pending_commit: expected inspect, observed stop"
+      },
+      "e6": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http82",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "new83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "-",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_response_lost",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_inspected",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "lost_paid_response",
+          "prefer_persisted_identity",
+          "no_committed_intent",
+          "no_recovery_identity",
+          "lost_line_response",
+          "line_inspected"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e6: lost_paid_response: expected pay:http82:approve:none, observed stop"
+      }
+    },
+    "java-inheritance": {
+      "e1": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "0",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "0",
+              "quantity": "3",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "9223372036854775807",
+              "quantity": "2",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "9223372036854775807",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "37",
+              "quantity": "3",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "-7",
+              "quantity": "-2",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "0007",
+              "quantity": "-0",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "invalid_quantity",
+          "invalid_price",
+          "product_overflow",
+          "sum_overflow",
+          "varied_valid_add",
+          "negative_input",
+          "numeric_normalization"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e1: Expected decision add:13:0, received stop"
+      },
+      "e2": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "pay77",
+              "last_result": "LocalCommitFailed",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "pay77",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "unavailable"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "pay77",
+              "last_result": "Approved",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "recover_pending",
+          "lookup_unavailable",
+          "paid_needs_inspection",
+          "draft_needs_inspection",
+          "missing_pending_identity"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e2: Expected decision reconcile:ok:none, received stop"
+      },
+      "e3": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "stable78",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "stable78",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "stable78",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "other79",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "-",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "stable78",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "stable78",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "same_key_retry",
+          "different_intent_probe",
+          "missing_requested_identity",
+          "terminal_retry"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e3: Expected decision pay:Changed43:approve:none, received stop"
+      },
+      "e4": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e4",
+              "phase": "redeliver",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "RelayAckFailed",
+              "pending_outbox": "1",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e4",
+              "phase": "redeliver",
+              "state": "Refunded",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "5",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e4",
+              "phase": "redeliver",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "redeliver_one",
+          "redeliver_many",
+          "nothing_to_deliver"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e4: Expected decision relay:ok, received stop"
+      },
+      "e5": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "uncertain_commit",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "uncertain_commit",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "unavailable"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "uncertain_pending_commit",
+          "uncertain_paid_commit",
+          "restart_recovery",
+          "restart_unavailable",
+          "restart_paid",
+          "restart_draft"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e5: uncertain_pending_commit: expected inspect, observed stop"
+      },
+      "e6": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http82",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "new83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "-",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_response_lost",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_inspected",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "lost_paid_response",
+          "prefer_persisted_identity",
+          "no_committed_intent",
+          "no_recovery_identity",
+          "lost_line_response",
+          "line_inspected"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e6: lost_paid_response: expected pay:http82:approve:none, observed stop"
+      }
+    },
+    "rust": {
+      "e1": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "0",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "0",
+              "quantity": "3",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "9223372036854775807",
+              "quantity": "2",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "9223372036854775807",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "37",
+              "quantity": "3",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "-7",
+              "quantity": "-2",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e1",
+              "phase": "add",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "0007",
+              "quantity": "-0",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "invalid_quantity",
+          "invalid_price",
+          "product_overflow",
+          "sum_overflow",
+          "varied_valid_add",
+          "negative_input",
+          "numeric_normalization"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e1: learner selected the wrong next action"
+      },
+      "e2": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "pay77",
+              "last_result": "LocalCommitFailed",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "pay77",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "unavailable"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "pay77",
+              "last_result": "Approved",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e2",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "recover_pending",
+          "lookup_unavailable",
+          "paid_needs_inspection",
+          "draft_needs_inspection",
+          "missing_pending_identity"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e2: learner selected the wrong next action"
+      },
+      "e3": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "stable78",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "stable78",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "stable78",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "other79",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "-",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e3",
+              "phase": "retry",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "stable78",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "stable78",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "same_key_retry",
+          "different_intent_probe",
+          "missing_requested_identity",
+          "terminal_retry"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e3: learner selected the wrong next action"
+      },
+      "e4": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e4",
+              "phase": "redeliver",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "RelayAckFailed",
+              "pending_outbox": "1",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e4",
+              "phase": "redeliver",
+              "state": "Refunded",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "5",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e4",
+              "phase": "redeliver",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "redeliver_one",
+          "redeliver_many",
+          "nothing_to_deliver"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e4: learner selected the wrong next action"
+      },
+      "e5": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "uncertain_commit",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "uncertain_commit",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "unavailable"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "db81",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e5",
+              "phase": "recover",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "uncertain_pending_commit",
+          "uncertain_paid_commit",
+          "restart_recovery",
+          "restart_unavailable",
+          "restart_paid",
+          "restart_draft"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e5: uncertain_pending_commit: expected inspect, observed stop"
+      },
+      "e6": {
+        "transcript": [
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Paid",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http82",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Pending",
+              "total": "250",
+              "payment_id": "http82",
+              "last_result": "Unknown",
+              "pending_outbox": "0",
+              "requested_payment_id": "new83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "http83",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "payment_response_lost",
+              "state": "Draft",
+              "total": "250",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "-",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_response_lost",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          },
+          {
+            "observation": {
+              "exercise": "e6",
+              "phase": "line_inspected",
+              "state": "Draft",
+              "total": "300",
+              "payment_id": "-",
+              "last_result": "-",
+              "pending_outbox": "0",
+              "requested_payment_id": "p1",
+              "unit": "50",
+              "quantity": "1",
+              "lookup": "ok"
+            },
+            "action": "stop"
+          }
+        ],
+        "cases": [
+          "lost_paid_response",
+          "prefer_persisted_identity",
+          "no_committed_intent",
+          "no_recovery_identity",
+          "lost_line_response",
+          "line_inspected"
+        ],
+        "status": "RED",
+        "failure": "BEHAVIOR e6: lost_paid_response: expected pay:http82:approve:none, observed stop"
+      }
+    }
+  },
+  "errors": [],
+  "source": "starter",
+  "selected_exercises": [
+    "e1",
+    "e2",
+    "e3",
+    "e4",
+    "e5",
+    "e6"
+  ],
+  "source_hashes": {
+    "SPEC.md": "cacd524a92999b117add701ab1e65e7c078d1c2c2fe97e1da8dfab95c2b77eef",
+    "build.sh": "d377dfc4db5f4d0461180e87148345b0e4e937fafeca6fe1c95b0f1972245032",
+    "check_independence.py": "d4fe470cc9cd381a40352216d905fcf6358516a3319bb99bb3bc5ec80d48ea3a",
+    "java/common/roo/payments/TrackInput.java": "782869dd0fde3b37b4d8588a69cad8e48e4f16869e577d6292fee5cf6cd5e979",
+    "java/common/roo/payments/TrackMain.java": "6b87eab37d880b1f6cde3d22aa34d3887635be123f0b3f58630b8689ad363945",
+    "java/common/roo/payments/TrackNative.java": "935b9dcaac7253f461f2c4ffeca5fec5673af53e807219532f7137b92215fe3b",
+    "java/solution/roo/payments/LearnerPolicy.java": "5e0bdad227472de703aed267d0ef3a3718b0adc0760f6f31b94c3cbff1826b7d",
+    "java/starter/roo/payments/LearnerPolicy.java": "56471ca6dce05d34cc4a2e3d1101f980884c7af9b52b0550f9cba53ff6cfef75",
+    "malformed-cases.json": "aa4355b8bd926bb5b624e7a0e098ca32f88918726c9fdfce7b9cfbbc550cb7e6",
+    "policy-cases.tsv": "71bda065580dd9f34067962733664f4754deafce4cded447050fa21c055201f0",
+    "rust/shared.rs": "9f2fb02a50f097879a92c78f6241b15679251b120c79c642d7dc3c05583a7a8b",
+    "rust/solution/Cargo.toml": "b105915b48edf95060a645313d60005f79c3d20c34c94c8427adc34657dee3b4",
+    "rust/solution/src/learner.rs": "9374e978219d25be5625d29947fa64827c3f9ea395b9c8e395e19fdcc31a43da",
+    "rust/solution/src/main.rs": "444845bb518c96fa7def1ddea6a2df8cde77b585d6e8b3705fe78a276f1fbe2f",
+    "rust/starter/Cargo.toml": "5bc7ec2aed505dcb327e0da18a4793e75a25d69dabf48fa2d6b2778195c6eb23",
+    "rust/starter/src/learner.rs": "ebde0492cecbe4d4db8f87143c4a4ca998c4bea18b22b2b7a74f697099c3bb4f",
+    "rust/starter/src/main.rs": "444845bb518c96fa7def1ddea6a2df8cde77b585d6e8b3705fe78a276f1fbe2f",
+    "verify.py": "33b7b5d2037ebbe4b067dfd0bc4633540aabe25db309b1f6ba9ded34bff8ee96",
+    "verify.sh": "3358c6134f164cc30a9e0c5f57923b9f0527697ae071039d6146d9c65adce241"
+  },
+  "qualification_counts": {
+    "java-composition": {
+      "malformed_rejections": 23,
+      "policy_cases": 31,
+      "native_passes": 0
+    },
+    "java-inheritance": {
+      "malformed_rejections": 23,
+      "policy_cases": 31,
+      "native_passes": 0
+    },
+    "rust": {
+      "malformed_rejections": 23,
+      "policy_cases": 31,
+      "native_passes": 0
+    }
+  }
+}

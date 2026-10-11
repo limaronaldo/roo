@@ -1,0 +1,1503 @@
+--- before/README.md
++++ after/README.md
+@@ -2,7 +2,7 @@
+ 
+ **Design relationships with ownership, authority, time, and failure in view.**
+ 
+-ROO is a proposed software design method and an executable learning laboratory. It revisits object-oriented concepts and software architecture through Rust's ownership model, then carries the useful design decisions back to other languages.
++ROO is a proposed, language-independent software design method supported by an executable learning laboratory. It revisits object-oriented concepts and software architecture by making relationships explicit: who retains data, who may change it, how access expires, and how failure is handled. Rust is the laboratory language; Java and the other language mappings show how the same contracts can use different enforcement mechanisms.
+ 
+ The ambition is straightforward: a design should explain who owns data, who can change it, how long access remains valid, and what happens when an operation fails **before** those questions appear as compiler errors or production bugs.
+ 
+@@ -17,7 +17,7 @@
+ | Field | Question |
+ |---|---|
+ | Owner / resource custodian | Who retains the value and determines its local lifecycle? |
+-| Identity | Is this an embedded value, a temporary view, or an independently identified entity? |
++| Stable identity | Is this an embedded value, a temporary view, or an independently identified entity? |
+ | Mutation authority | Which API is allowed to change which state and preserve which invariant? |
+ | Access regime | Is access owned, borrowed, copied, transferred, or explicitly shared? |
+ | Validity horizon | When does access cease to be valid: end of call, owner destruction, version change, cancellation? |
+@@ -26,7 +26,7 @@
+ 
+ An `Order` can own its `LineItem` values, retain a `CustomerId` rather than a live customer reference, lend a short-lived read view to pricing code, and transfer an owned submission message to a worker. Those relationships have different meanings even if a traditional diagram draws all of them as arrows.
+ 
+-Memory ownership, business responsibility, authorization, database identity, and transaction boundaries are related decisions. They are not interchangeable.
++Memory ownership, business responsibility, authorization, database identity, and transaction boundaries are related decisions. They are not interchangeable. A component can retain a resource without being authorized to perform every business operation; a durable identifier can outlive any one in-memory instance.
+ 
+ ## Design commitments
+ 
+@@ -34,10 +34,10 @@
+ 2. **Describe ownership before pointer shape.** An association does not automatically require a reference, reference counter, or mutex.
+ 3. **Make mutation authority visible.** Private fields and narrow operations protect invariants; synchronization alone does not express business permission.
+ 4. **Give access a time boundary.** A borrowed view, durable ID, snapshot and message have different validity rules.
+-5. **Select extensibility deliberately.** Use enums for a closed set of cases, generics for concrete variation, and trait objects for appropriate runtime variation.
+-6. **Model failure alongside success.** A consuming operation should explain whether rejected state can be recovered; events require delivery semantics.
+-7. **Share intentionally.** `Rc`, `Arc`, interior mutability and locks are useful tools when their lifecycle and coordination costs match the problem.
+-8. **Use the compiler as evidence.** Compilation establishes selected type, borrowing and thread-safety properties. It does not prove behavioral subtyping, domain correctness, authorization, deadlock freedom or distributed consistency.
++5. **Select extensibility deliberately.** Decide whether the set of behaviors is closed, selected statically, or extended at runtime. Rust enums, generics and trait objects are possible realizations of those decisions.
++6. **Model failure alongside success.** An operation should explain which state remains available after rejection, how uncertain outcomes are resolved, and what delivery semantics events require.
++7. **Share intentionally.** Define who coordinates access and for how long before selecting shared references, locks or messages. Rust's `Rc`, `Arc` and interior mutability provide specific mechanisms with lifecycle and coordination costs.
++8. **Assign evidence to each obligation.** Compiler checks, runtime tests, database constraints, protocol observations and human review support different claims. Compilation establishes selected type, borrowing and thread-safety properties; it does not prove behavioral subtyping, domain correctness, authorization, deadlock freedom or distributed consistency.
+ 
+ Rust already supports several object-oriented capabilities, including encapsulated state and behavior. Its lack of class-based implementation inheritance motivates different representations of the same design intent. See the official [discussion of object-oriented characteristics](https://doc.rust-lang.org/book/ch18-01-what-is-oo.html).
+ 
+@@ -47,8 +47,8 @@
+ |---|---|
+ | [1. Foundations](docs/01-foundations.md) | Definitions, intellectual lineage, principles and limits |
+ | [2. Relationship design](docs/02-relationship-design.md) | The contract, notation, decision process and a worked domain |
+-| [3. Concept atlas](docs/03-concept-atlas.md) | Classical OO, inheritance, SOLID, polymorphism and Rust translations |
+-| [4. Pattern catalog](docs/04-pattern-catalog.md) | All 23 GoF patterns, ownership decisions and tradeoffs |
++| [3. Concept atlas](docs/03-concept-atlas.md) | Classical OO, inheritance, SOLID and polymorphism through portable relationship decisions and Rust mappings |
++| [4. Pattern catalog](docs/04-pattern-catalog.md) | All 23 GoF patterns, relationship decisions, realizations and tradeoffs |
+ | [5. Software architecture](docs/05-architecture.md) | DDD, ports/adapters, layers, messages, persistence and failure |
+ | [6. Cross-language transfer](docs/06-cross-language.md) | Applying the method in Rust, Java and other languages |
+ | [7. Learning path](docs/07-learning-path.md) | Reading sequence, exercises, assessment and a capstone |
+@@ -61,6 +61,8 @@
+ | [Research agenda](research/agenda.md) | How to test whether the proposed synthesis improves design |
+ 
+ For a project, start with the [Relationship Contract worksheet](templates/relationship-contract.md), record consequential choices with the [architecture decision template](templates/architecture-decision.md), then use the [design review guide](templates/design-review.md).
++
++Keep two artifacts connected: a language-independent contract for the scenario and invariant, and an implementation mapping that names the language, runtime, storage and protocol mechanisms used to uphold it. Each obligation should name its evidence and remaining assumptions. Adopting the method does not require a Rust implementation.
+ 
+ ## From an object diagram to an implementation
+ 
+@@ -81,7 +83,9 @@
+ 3. Choose the access regime and state when it expires.
+ 4. Specify concurrency, transaction and failure behavior.
+ 5. Select a language representation that preserves those decisions.
+-6. Test both the permitted operation and an important forbidden operation.
++6. Identify the evidence for both a permitted operation and an important forbidden operation, and record what that evidence leaves unproved.
++
++The diagram's values, IDs, borrows, traits and messages illustrate representation choices in the Rust laboratory. In another language, retain the preceding relationship decisions and choose mechanisms that preserve them. The orders-and-payments studies follow this approach from in-memory objects to durable PostgreSQL state and HTTP requests; their shared oracle compares recorded observable behavior, while each layer needs its own evidence for access, concurrency and recovery.
+ 
+ When Rust rejects a design, examine whether the representation expresses the intended relationship. Sometimes the right answer is a shorter borrow, an owned message, an ID lookup, or a different API. Sometimes it is a legitimate advanced representation or an explicit runtime coordination mechanism. Compiler friction is a diagnostic signal, not a verdict on architecture.
+ 
+@@ -132,7 +136,7 @@
+ 
+ The underlying ideas have substantial prior art: information hiding, behavioral subtyping, ownership types, separation logic, capability-oriented design, RAII, domain-driven design, typestate, and Rust's existing type system.
+ 
+-ROO proposes an integrated teaching and review workflow: use one Relationship Contract across classical OO concepts, Rust representations, architecture boundaries and cross-language implementations. The contract vocabulary, worksheets and evaluation agenda are this project's contribution. No claim of unprecedented theory, universal superiority, or empirical validation is made.
++ROO proposes an integrated teaching and review workflow: use one Relationship Contract across classical OO concepts, architecture boundaries and implementations in different languages. Rust representations make selected obligations visible to its compiler; other realizations may use encapsulation, runtime checks, database constraints or protocols. The contract vocabulary, worksheets and evaluation agenda are this project's contribution. No claim of unprecedented theory, universal superiority, or empirical validation is made.
+ 
+ This edition covers a curated set of influential concepts. It does not establish a quantitative ranking of today's literature or claim exhaustive coverage of every OO or architectural school. Source attribution and future evaluation are part of the method.
+ 
+--- before/case-studies/orders-payments/README.md
++++ after/case-studies/orders-payments/README.md
+@@ -1,8 +1,8 @@
+ # Orders and payments: a ROO case study
+ 
+-This case study applies ROO's Relationship Contract to a small checkout and
+-refund workflow. It implements the same bounded behavior as Java composition,
+-Java template-method inheritance, and Rust composition, then compares what each
++This case study applies ROO (Relationship & Ownership Oriented design) to a
++small checkout and refund workflow. It implements the same bounded behavior as
++Java composition, Java template-method inheritance, and Rust composition, then compares what each
+ representation makes visible and what still depends on runtime or infrastructure
+ contracts.
+ 
+@@ -26,6 +26,27 @@
+ > and the [research source ledger](../../research/orders-payments-sources.md)
+ > for their scope and limits.
+ 
++## Read this as a design method
++
++ROO is a language-independent method: start with a scenario and its invariants,
++make the relationships explicit, choose mechanisms for those relationships, then
++state what evidence supports each guarantee and what remains an assumption.
++Here the scenario is an order whose payment may complete while the caller sees
++an unknown result. The decisions are to retain a stable intent, separate local
++and provider commits, and publish terminal facts with local state. Java and Rust
++realize those decisions with different access and reuse mechanisms; the
++[PostgreSQL](postgres/README.md) and [HTTP](http/README.md) extensions carry them
++across persistence and request boundaries.
++
++Use the seven-field Relationship Contract below to review each realization.
++Keep resource custody (who holds a value or connection), domain responsibility
++(who protects an invariant), identity (what remains the same across retries),
++and authorization (who is permitted to act) distinct. An order's responsibility
++for its lines is a domain decision; an adapter's custody of a snapshot is an
++implementation decision. Neither custody nor possession of an ID grants caller
++authorization. The frozen specifications define this exercise's behavior; the
++dated evidence records bound its execution claims.
++
+ ## What this case teaches
+ 
+ The business rule is familiar: assemble an order, submit a payment, recover from
+@@ -93,6 +114,25 @@
+ the **simulated provider's contract**, whose records live for the whole fresh
+ scenario; they are not guarantees supplied by Java, Rust, ROO, or a real payment
+ provider.
++
++### Identity across the three boundaries
++
++The extensions preserve domain identity while adding storage and protocol
++addresses. Read these identities together rather than treating every key as a
++new domain entity:
++
++| Boundary | Identity in this case | Relationship decision |
++|---|---|---|
++| Domain | Typed `OrderId`, fixed to `O1` in each scenario | Names the order independently of an object's memory address; line values belong to that order |
++| PostgreSQL | `scope` identifies the scenario's stored order; `(scope, line_no)` identifies a retained line row | Keeps separate scenarios apart and makes line storage dependent on its order scope |
++| HTTP | `/v1/scopes/{scope}` addresses that same persistent scenario | Selects the stored scenario for one application operation; domain order ID remains `O1` |
++
++The line row key is a storage identity, not an independently introduced domain
++`LineId` or an add-command receipt. It does not make line addition replay-safe.
++Likewise, scope is a synthetic scenario partition, not proof of tenant isolation
++or authorization. The [schema](postgres/schema.sql) and
++[HTTP contract](http/SPEC.md) define the concrete mapping; a production design
++would need to decide its own order addressing and authorization rules.
+ 
+ ## Business walkthrough
+ 
+@@ -711,6 +751,15 @@
+ reference or snapshot is valid, and what survives a partial failure. Each
+ language expresses and checks those decisions differently.
+ 
++To port the case, first write down the scenario's invariants and partial-failure
++outcomes. Next fill the same seven contract fields for order/lines, intent/provider,
++and event/consumer. Then choose local access rules, persistence keys and atomic
++units, and protocol recovery behavior that realize those decisions. Finally
++identify the supporting compiler checks, runtime checks, and recorded scenarios,
++with assumptions about provider retention and durability kept explicit. Reuse
++the decisions and verify the new mechanisms; translating class or borrow syntax
++alone does not establish the contract.
++
+ Provider key rules also vary. The checked [Stripe API v1 idempotency guidance](https://docs.stripe.com/api/idempotent_requests)
+ describes replaying the first saved result and pruning keys after at least 24
+ hours; [Adyen's idempotency guidance](https://docs.adyen.com/development-resources/api-idempotency)
+--- before/case-studies/orders-payments/http/README.md
++++ after/case-studies/orders-payments/http/README.md
+@@ -22,6 +22,26 @@
+ > [Regression](../../../research/http-regression.log) and
+ > [PostgreSQL observations](../../../research/http-postgres-regression-evidence.json)
+ > remain separate from the accepted PostgreSQL baseline.
++
++## Carry the method across a request boundary
++
++ROO (Relationship & Ownership Oriented design) is a language-independent method.
++Here it asks how the same scenario and invariants hold when a caller can lose a
++response. Keep the seven relationship fields and decide which identity the next
++request must reuse, who can perform a
++transition, and which committed facts survive that loss. Java and Rust realize
++the local request handling; the accepted PostgreSQL adapters realize persistence
++and serialization. HTTP adds representation, addressing, and response semantics.
++The recorded evidence below supports specific local schedules; it does not turn
++the simulator's provider or deployment assumptions into production guarantees.
++
++The handler has custody of request and response bytes. Domain/application code
++retains responsibility for order transitions, and PostgreSQL retains committed
++facts. The path's `scope` addresses one synthetic persistent scenario whose
++domain `OrderId` remains `O1`; its line rows retain the dependent
++`(scope, line_no)` key. A route or row key introduces neither an independent
++domain line identity nor caller authorization. This case's scope validation is
++input validation, not an authentication or tenant-isolation mechanism.
+ 
+ ## The request still enters the same domain protocol
+ 
+--- before/case-studies/orders-payments/http/java/README.md
++++ after/case-studies/orders-payments/http/java/README.md
+@@ -1,4 +1,19 @@
+ # Java HTTP adapters
++
++ROO — Relationship & Ownership Oriented design is a language-independent
++method for tracing request relationships and failure boundaries before
++choosing Java and HTTP mechanisms.
++
++Start with a payment or refund POST whose response is lost: persisted intent
++and the same operation identity allow recovery, while line POST has no durable
++receipt and must be inspected before a caller chooses another attempt. The
++[HTTP contract](../SPEC.md), [PostgreSQL tutorial](../../postgres/README.md), and
++[original case](../../README.md) define the behavior. Chapter 2's [contract](../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
++and [worksheet](../../../../templates/relationship-contract.md) help separate
++request custody, the accepted application's domain responsibility, durable
++scope and operation identity, mutation authority, access duration, execution,
++and failure before choosing HTTP and Java mechanisms. IDs do not authorize
++callers; this service models no caller authentication or authorization.
+ 
+ These two entrypoints compile the unchanged PostgreSQL domain, store, provider,
+ and coordinators alongside new same-package HTTP adapters:
+--- before/case-studies/orders-payments/http/rust/README.md
++++ after/case-studies/orders-payments/http/rust/README.md
+@@ -1,4 +1,20 @@
+ # Rust HTTP adapter
++
++ROO — Relationship & Ownership Oriented design is a language-independent
++method; this adapter shows Rust's local access rules meeting the same persistent
++HTTP contract.
++
++Begin with a lost payment or refund response: recovery reuses the persisted
++operation identity, while line POST has no durable receipt and requires state
++inspection before another attempt. The [HTTP contract](../SPEC.md),
++[PostgreSQL tutorial](../../postgres/README.md), and [original case](../../README.md)
++define the boundary. Chapter 2's [Relationship Contract](../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
++and [worksheet](../../../../templates/relationship-contract.md) guide decisions
++about request custody, the application's domain responsibility, durable scope
++and operation identity, mutation authority, access duration, execution, and
++failure before choosing Rust mechanisms. Rust ownership and borrows govern local
++access; SQL coordinates processes. IDs are not credentials, and the service
++models no caller authentication or authorization.
+ 
+ This standalone Rust 2024 crate serves the resource API in [the HTTP contract](../SPEC.md).
+ The executable is `roo-http`. It directly depends on the accepted PostgreSQL crate;
+--- before/case-studies/orders-payments/java/README.md
++++ after/case-studies/orders-payments/java/README.md
+@@ -1,4 +1,20 @@
+ # Java variants
++
++ROO — Relationship & Ownership Oriented design is a language-independent
++method; this README carries one scenario and invariant into Java relationship
++decisions, implementation mechanisms, and evidence.
++
++Start with timeout-after-effect: the order stays Pending and the same PaymentId
++drives reconciliation when the caller cannot know the provider outcome. The
++[shared contract](../SPEC.md) and [case walkthrough](../README.md) fix that
++invariant; chapter 2's [Relationship Contract](../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
++and [worksheet](../../../templates/relationship-contract.md) guide custody,
++domain responsibility, stable identity, mutation authority, access lifetime,
++execution, and failure decisions. This in-memory PaymentId lasts one scenario,
++not a restart, and grants no authorization. Java types, private APIs, and final
++methods express local boundaries, but do not statically enforce exclusive
++resource custody or prove adapter honesty. No caller authorization policy is
++modeled.
+ 
+ Both entrypoints consume the frozen parent SPEC and share typed immutable request
+ facts, the encapsulated aggregate, detached store snapshots, provider records,
+--- before/case-studies/orders-payments/postgres/README.md
++++ after/case-studies/orders-payments/postgres/README.md
+@@ -18,6 +18,22 @@
+ > [primary-source ledger](../../../research/postgres-sources.md) explains the
+ > PostgreSQL, JDBC, and Rust client rules behind the design. A check is evidence
+ > only after the integrator records that it ran against this implementation.
++
++## Carry the method across persistence
++
++ROO (Relationship & Ownership Oriented design) is a language-independent method.
++It starts here with the same scenario and invariants as the in-memory case. The new question is which
++relationships must survive a process and coordinate competing writers. Retain
++the seven contract fields, then choose row keys, locks, transactions, and
++recovery observations to realize them. Java and Rust still express local access
++and orchestration; PostgreSQL supplies the cross-session commit and locking
++mechanisms. The evidence records below delimit the checked failure schedules
++and leave external-provider and hardware assumptions explicit.
++
++Resource custody and domain responsibility remain different: an adapter holds a
++connection, PostgreSQL retains committed rows, and domain/application operations
++protect the order's business rules. Storage identity selects the facts to load;
++it does not authorize a caller to mutate them.
+ 
+ ## What changes when storage becomes durable
+ 
+@@ -48,6 +64,19 @@
+ immutable intent matching, event consistency with the current order, and a
+ refund's relationship to an approved full payment. This is a synthetic local
+ exercise, not a tenant-security or production payment design.
++
++### Domain identity and storage identity
++
++The domain order is `OrderId("O1")` within each synthetic scenario. PostgreSQL's
++`scope` primary key distinguishes the stored scenarios and selects their
++serialization row; it does not replace the order ID in payment or event facts.
++Line facts use `(scope, line_no)`, with a foreign key to the order scope and line
++numbers allocated under its row lock. That dependent storage key introduces no
++independent domain `LineId` and no command receipt. The accepted add operation
++remains non-idempotent. The [schema](schema.sql) and
++[add implementation](java/src/roo/postgres/Store.java) make the mapping concrete;
++HTTP later exposes this same scope in its resource path. Scope partitions test
++data and supplies no tenant authorization policy.
+ 
+ ## Run locally
+ 
+--- before/case-studies/orders-payments/postgres/java/README.md
++++ after/case-studies/orders-payments/postgres/java/README.md
+@@ -1,4 +1,19 @@
+ # Java PostgreSQL orders and payments
++
++ROO — Relationship & Ownership Oriented design is a language-independent
++method for deciding each relationship before selecting Java, JDBC, or database
++mechanisms.
++
++Start with provider success followed by failed local finalization: the committed
++intent and its PaymentId must remain available for recovery, while terminal
++order state and its event commit together. The [frozen PostgreSQL contract](../SPEC.md)
++and [original case](../../README.md) define those invariants. Chapter 2's
++[Relationship Contract](../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
++and [worksheet](../../../../templates/relationship-contract.md) help separate
++resource custody, domain responsibility, durable operation identity, mutation
++authority, access duration, execution, and failure before choosing Java, JDBC,
++and SQL mechanisms. IDs identify records, not authorized callers; this local
++case models no caller authentication or authorization.
+ 
+ Two runners implement the frozen [persistent contract](../SPEC.md). Domain
+ identities and immutable request/event facts live in `Domain.java`; pure
+--- before/case-studies/orders-payments/postgres/rust/README.md
++++ after/case-studies/orders-payments/postgres/rust/README.md
+@@ -1,4 +1,20 @@
+ # Rust PostgreSQL orders and payments
++
++ROO — Relationship & Ownership Oriented design is a language-independent
++method; this Rust implementation makes local access decisions visible while
++the database coordinates durable state across processes.
++
++Begin with a provider record committed before a failed finalization: the
++persisted intent and same typed operation identity must support recovery in a
++fresh process. The [frozen PostgreSQL contract](../SPEC.md) and
++[original case](../../README.md) set the behavior. Chapter 2's
++[Relationship Contract](../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
++and [worksheet](../../../../templates/relationship-contract.md) help decide who
++retains resources, who owns domain decisions, which identities survive restart,
++and where mutation, access, execution, and failure boundaries lie. Rust bounds
++Client/Transaction access locally; PostgreSQL transactions and locks coordinate
++processes. IDs are not credentials, and this case models no caller
++authentication or authorization.
+ 
+ This standalone Rust 2024 crate implements the frozen [PostgreSQL contract](../SPEC.md).
+ It uses synchronous `postgres = "=0.19.14"` without optional features and targets
+--- before/case-studies/orders-payments/rust/README.md
++++ after/case-studies/orders-payments/rust/README.md
+@@ -1,4 +1,18 @@
+ # Rust composition: orders and payments
++
++ROO — Relationship & Ownership Oriented design is a language-independent
++method, and Rust ownership is one way to realize its relationship contracts.
++
++Begin with timeout-after-effect: the order remains Pending and the same
++PaymentId supports reconciliation when the caller cannot know the provider
++outcome. The [shared case](../README.md) and [contract](../SPEC.md) fix that
++invariant; chapter 2's [Relationship Contract](../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
++and [worksheet](../../../templates/relationship-contract.md) guide custody,
++domain responsibility, stable identity, mutation authority, access lifetime,
++execution, and failure decisions. This in-memory PaymentId lasts one scenario,
++not a restart, and grants no authorization. Rust ownership and borrows enforce
++local movement and aliasing rules, not provider idempotency. No caller
++authorization policy is modeled.
+ 
+ This standalone, standard-library-only crate implements the frozen [shared
+ contract](../SPEC.md) using local ownership, typed identities, private domain
+--- before/docs/01-foundations.md
++++ after/docs/01-foundations.md
+@@ -1,9 +1,9 @@
+ # 1. Foundations: objects with explicit relationships
+ 
+-ROO — Relationship & Ownership Oriented design — is a proposed software design method and executable learning laboratory.
++ROO — Relationship & Ownership Oriented design — is a proposed language-independent software design method.
+ It starts with recognizable object-oriented concerns: abstraction, encapsulation, behavior, identity, collaboration, and substitutability.
+-It asks designers to describe the ownership and access contract of each collaboration before choosing its representation.
+-The intended result is a design that fits ordinary Rust and makes responsibilities clearer in other languages.
++It starts each design exercise with a scenario and its invariants, then describes the relationship contract of each collaboration before choosing language, runtime, storage, or protocol mechanisms.
++Rust is this edition's laboratory language: its executable examples explore selected realizations of the method, while the relationship decisions remain useful in other languages.
+ This is a v0.1 proposal, not new Rust semantics, a formal calculus, or an empirically proven superior methodology.
+ 
+ ## 1.1 The premise and its limits
+@@ -32,7 +32,7 @@
+ | Object | Encapsulated state and behavior, possibly represented by a struct plus implementations | Which invariants does this API protect? |
+ | Value | Data interpreted by its content for the operation under discussion | Would an equal replacement change the meaning? |
+ | Entity | A domain participant tracked across state changes by an identity rule | What makes it the same entity tomorrow? |
+-| Memory owner | The value or owning mechanism responsible for keeping a resource available and eventually releasing it | What keeps this allocation or resource alive? |
++| Owner / resource custodian | The participant or mechanism responsible for keeping state or a resource available and arranging its release | What retains this state or resource, and when is it released? |
+ | Domain responsibility | The component accountable for a business rule or transition | Where is the rule decided? |
+ | Stable identity | A key with a specified scope, uniqueness, and reuse policy | What does this key identify, and for how long? |
+ | Authority | Permission to perform a named action under policy | Who may approve, mutate, delete, or publish? |
+@@ -43,7 +43,9 @@
+ | Execution domain | The thread, task, actor, process, or service in which access is coordinated | How can operations overlap? |
+ 
+ These are design terms, not replacements for Rust's specification vocabulary.
+-In particular, domain responsibility is not synonymous with the owner of a Rust value.
++In particular, resource custody, domain responsibility, durable identity, and authorization are independent obligations.
++Custody retains a resource; responsibility protects a rule; identity recognizes an entity; authorization permits a principal to act.
++Domain responsibility is not synonymous with the owner of a Rust value.
+ A request handler may own an Order loaded from storage while an Order service remains responsible for its business policy.
+ A database row may identify a customer while many Rust values hold snapshots of that row.
+ 
+@@ -97,13 +99,13 @@
+ 
+ ## 1.5 Seven core commitments
+ 
+-1. **Name the invariant before the pointer.** State the rule and participating state before selecting `Box`, references, IDs, or reference counting.
+-2. **Separate keeping alive, identifying, and authorizing.** Record these independently even when one component performs all three roles.
++1. **Name the scenario and invariant before the mechanism.** State the expected and forbidden outcomes and participating state before selecting a language representation, storage model, or protocol.
++2. **Separate custody, responsibility, identity, and authorization.** Record these independently even when one component performs all four roles.
+ 3. **Give mutation a coordinator.** Each invariant needs a defined place where conflicting changes are prevented or detected.
+ 4. **Keep access no longer than required.** Prefer operation-scoped borrowing when the relationship itself is temporary.
+ 5. **Choose sharing deliberately.** Explain why independent values, transfers, or IDs do not meet the actual requirement before introducing shared mutable state.
+ 6. **Design time and failure with structure.** Document suspension, cancellation, stale observations, and partial external success as part of the relationship.
+-7. **Match the guarantee to evidence.** Separate compiler enforcement, runtime validation, testing, and unverified architectural expectations.
++7. **Match the guarantee to evidence.** Separate compiler/static checks, runtime checks, database guarantees, protocol evidence, and human review; record assumptions and the scope of tests explicitly.
+ 
+ These are heuristics, not absolute bans.
+ Shared mutable caches, cyclic graphs, dynamic plugins, and inheritance in other languages can be appropriate.
+@@ -179,5 +181,5 @@
+ A successful ROO design can explain each important relationship without appealing to an unexplained pointer choice.
+ It shows which transitions protect an invariant and how clients obtain the authority to request them.
+ It accounts for retention, suspension, concurrency, and failure at the relevant boundary.
+-It states what Rust checks and what people, runtime checks, and external systems must establish.
++It states what compiler/static checks, runtime checks, databases, protocols, and human review establish, and which assumptions remain unverified.
+ The next chapter turns those obligations into a reusable artifact.
+--- before/docs/02-relationship-design.md
++++ after/docs/02-relationship-design.md
+@@ -2,8 +2,10 @@
+ 
+ A relationship is a continuing or operation-scoped obligation between participants.
+ An arrow in a model describes connectivity; a ROO relationship contract describes how that connectivity is allowed to work.
++ROO — Relationship & Ownership Oriented design — is a language-independent method for making those obligations explicit.
+ This chapter proposes notation and a procedure for v0.1.
+-The notation is a review aid, not executable Rust syntax or a formal proof language.
++Begin with a scenario and its invariants, use the seven fields to decide relationships, then select mechanisms that realize those decisions.
++The notation is a language-independent review aid, not executable syntax or a formal proof language; Rust supplies the laboratory realizations in this edition.
+ 
+ ## 2.1 The seven-field Relationship Contract
+ 
+@@ -42,11 +44,15 @@
+ ```
+ 
+ Use additional `invariant`, `evidence`, and `open` lines when useful.
+-`evidence` names the enforcement mechanism: compiler, runtime validation, transaction, test, or documented assumption.
++`evidence` records the mechanism and its verified scope: compiler/static check, runtime validation, database constraint or transaction, protocol behavior, or human review.
++Tests provide observations about the mechanism exercised; documented assumptions remain assumptions until supported by evidence at their own boundary.
+ `open` records an unresolved requirement so it cannot be mistaken for an implemented guarantee.
+ A shorthand label such as `owned`, `borrowed`, `identified`, `snapshot`, `shared`, or `transferred` is an index into a complete contract, not its substitute.
+ 
+ Example for a contained part:
++
++First decide that the whole retains its parts, coordinates their commercial transitions, and rejects invalid candidate changes before installation.
++The following notation realizes that policy with Rust storage vocabulary; `Vec<LineItem>` is a representation choice rather than the premise of the relationship.
+ 
+ ```text
+ R(order_items: Order -> LineItem [0..n]) {
+@@ -70,28 +76,28 @@
+ 1. **Describe behavior.** Write the scenario, expected outcome, forbidden outcome, and relevant failure.
+ 2. **Locate the invariant.** List the exact pieces of state that must agree, and at which observation boundary.
+ 3. **Identify clocks and identities.** Decide what survives a call, a task, a restart, a deletion, and a business transition.
+-4. **Assign responsibility and custody.** Name the domain coordinator separately from each in-memory resource owner.
+-5. **Choose access.** Select the least complicated regime that supports the required sharing and overlap.
++4. **Assign responsibility, custody, and authorization.** Name the domain coordinator, each resource custodian, and the principals permitted to request changes independently.
++5. **Choose access.** Decide observation, controlled mutation, transfer, and coordination policy for the required sharing and overlap before choosing a pointer, lock, or queue.
+ 6. **Specify crossing points.** Define transfer, lookup, snapshot creation, serialization, suspension, and external effects.
+-7. **Design the API.** Restrict operations and receivers to communicate the selected authority and access regime.
+-8. **Assign evidence.** Mark static checks, runtime conditions, transaction guarantees, and unresolved assumptions.
++7. **Select mechanisms and design the API.** Choose language, runtime, storage, and protocol realizations; restrict operations and receivers to communicate the selected authority and access regime.
++8. **Assign evidence.** Mark compiler/static checks, runtime checks, database guarantees, protocol evidence, human review, and unresolved assumptions separately.
+ 9. **Try a counterexample.** Delete a target, reuse a slot, cancel after an external effect, or race two changes.
+ 10. **Revise the model.** Change boundaries when the counterexample reveals a missing responsibility rather than adding a pointer mechanically.
+ 
+-A representation decision follows the contract:
+-
+-| Requirement | Initial candidate | Cost or limitation to examine |
+-|---|---|---|
+-| Part exists only inside its whole | Owned field, `Vec<T>`, or `Box<T>` | Moving/removing the part must respect whole invariants |
+-| Read during one operation | `&T` or iterator/view | Provider must outlive access; interior effects may still exist |
+-| Exclusive local update | `&mut T` | Exclusive access does not authorize every business operation |
+-| Independent entity or arbitrary graph edge | Typed ID plus owner/repository lookup | Existence, stale handles, permissions, and versions need checking |
+-| Independent retained observation | Owned snapshot | Memory independence trades away automatic freshness |
+-| Transfer to another coordinator | Move an owned command/value | Define outcome on rejection and cancellation |
+-| Shared retained immutable data | `Rc<T>` locally or `Arc<T>` across suitable threads | Reference counts affect retention; immutability needs an actual type contract |
+-| Shared mutable local graph | `Rc<RefCell<T>>`, if required | Dynamic borrow conflicts, cycles, and reentrancy |
+-| Shared mutable concurrent state | `Arc<Mutex<T>>` or another synchronization design | Lock duration, deadlock, poisoning, contention, and business races |
+-| Single mutation coordinator | Actor/task owning state and accepting commands | Queueing, acknowledgement, shutdown, retries, and delivery semantics |
++A representation decision follows the contract. The middle column gives language-independent policies; the next column offers Rust realizations:
++
++| Requirement | Relationship policy | Initial Rust candidate | Cost or limitation to examine |
++|---|---|---|---|
++| Part exists only inside its whole | Whole retains and controls parts | Owned field, `Vec<T>`, or `Box<T>` | Moving/removing the part must respect whole invariants |
++| Read during one operation | Temporary observation | `&T` or iterator/view | Provider must outlive access; interior effects may still exist |
++| Exclusive local update | One updater during the operation | `&mut T` | Exclusive access does not authorize every business operation |
++| Independent entity or arbitrary graph edge | Resolve identity through a custodian | Typed ID plus owner/repository lookup | Existence, stale handles, permissions, and versions need checking |
++| Independent retained observation | Retain a separate snapshot | Owned snapshot | Memory independence trades away automatic freshness |
++| Transfer to another coordinator | Transfer command custody | Move an owned command/value | Define outcome on rejection and cancellation |
++| Shared retained immutable data | Shared retention with immutable content | `Rc<T>` locally or `Arc<T>` across suitable threads | Reference counts affect retention; immutability needs an actual type contract |
++| Shared mutable local graph | Checked local access | `Rc<RefCell<T>>`, if required | Dynamic borrow conflicts, cycles, and reentrancy |
++| Shared mutable concurrent state | Synchronize participating access | `Arc<Mutex<T>>` or another synchronization design | Lock duration, deadlock, poisoning, contention, and business races |
++| Single mutation coordinator | Commands go to one coordinator | Actor/task owning state and accepting commands | Queueing, acknowledgement, shutdown, retries, and delivery semantics |
+ 
+ These are candidates, not equivalences: an ID graph can also live inside one aggregate, and an actor can own a graph.
+ `Arc` makes reference-count updates thread-safe; it does not automatically make arbitrary inner data safe for concurrent use. [Standard library: Arc](https://doc.rust-lang.org/std/sync/struct.Arc.html)
+@@ -200,6 +206,10 @@
+ An actor avoids shared mutation of its owned state but does not automatically solve retries, queue overload, or partial external effects.
+ 
+ ## 2.8 The evidence ledger for invariants
++
++For every claim, distinguish compiler/static evidence, runtime evidence, database evidence, protocol evidence, and human review.
++The table below shows what the Rust realization can contribute; a database transaction must be verified at the store boundary, a remote deduplication promise at the protocol boundary, and an authorization policy through its implementation and review.
++None of those guarantees follows from a local compilation result, and an unverified expectation belongs in the assumptions ledger.
+ 
+ | Claim | Evidence Rust can contribute | Evidence still needed |
+ |---|---|---|
+--- before/docs/03-concept-atlas.md
++++ after/docs/03-concept-atlas.md
+@@ -2,20 +2,22 @@
+ 
+ **First edition · English · 2026-10-11**
+ 
+-ROO is a design vocabulary for carrying useful object-oriented ideas into Rust while making ownership, identity, mutation, and lifetime decisions explicit. It is also meant to sharpen design in Java and other languages: those questions matter even when a garbage collector or class hierarchy hides some of their costs.
+-
+-This atlas treats the classical purpose of a concept as the starting point, then asks how Rust expresses it. It is not a Java-to-Rust syntax conversion, a complete language reference, or a proof that a model is correct. The working sequence is:
++ROO means **Relationship & Ownership Oriented design**: a language-independent method for making domain responsibilities, relationships, identity, authority, and lifecycle decisions explicit. Useful object-oriented concepts are inputs to that method. Rust is the executable laboratory used here to explore one implementation; Java and other languages can realize the same domain decisions through their own mechanisms.
++
++This atlas starts with domain intent and invariants, decides the relationships needed to preserve them, and only then asks how a language expresses those decisions. It is not a Java-to-Rust syntax conversion, a complete language reference, or a proof that a model is correct. The working sequence is:
+ 
+ 1. State the responsibility and behavioral contract in domain terms.
+-2. Decide which value owns each piece of state, who may borrow or share it, and who may mutate it.
+-3. Choose a Rust representation that expresses the relevant variation: a struct, enum, generic bound, trait object, or module boundary.
++2. Assign domain responsibility, resource custody, mutation authority, access, identity, validity, execution, and failure boundaries for each relation.
++3. Choose an implementation in the target language; the Rust laboratory uses structs, enums, generic bounds, trait objects, and module boundaries.
+ 4. Record the tradeoff and the domain rules that still need tests, review, or runtime checks.
+ 
+ **Portable reading.** In Java, C#, C++, and other languages, keep the same questions about identity, mutation authority, collaborator lifetime, and who closes a resource. Map the answers to each language's own mechanisms, such as `AutoCloseable`, RAII, or managed references. Rust makes more aliasing and lifetime constraints visible in types; it does not make the underlying responsibility irrelevant elsewhere.
+ 
+ For every stored relation, distinguish **domain identity** (which entity this is) from **memory ownership** (which value controls its lifetime). A database key does not own an object in memory; an `Arc` does not by itself establish domain identity. Rust's ownership checks constrain aliasing and lifetimes, while domain invariants and behavioral promises remain design responsibilities. The [Rust Book](https://doc.rust-lang.org/stable/book/ch04-01-what-is-ownership.html) and [Rust Reference](https://doc.rust-lang.org/reference/) describe language rules; this atlas adds a design reading of those rules.
+ 
+-The entries use the same four questions throughout: **Classical intent → Rust translation → Ownership decision → Tradeoff.** Any model sketch below is conceptual pseudocode, not a claim that a snippet was compiled. The executable laboratory, when available, is the source of compile evidence; this atlas makes no compiler claim.
++Record seven fields for each important relation: **Owner/resource custodian; Stable identity; Mutation authority; Access regime; Validity horizon; Execution domain; Failure boundary.** The custodian retains or releases a resource; the domain role answers for a business rule. A durable identity survives replacement of a representation, while authorization decides which principal may act. Neither a reference, a key, nor custody alone grants business authorization. Access may be exclusive, shared, read-only, or mediated; validity may end at a call, workflow, lease, or explicit revocation; execution and failure boundaries must describe asynchronous and distributed relations too.
++
++The entries follow **Classical intent → Relationship decision → Rust translation → Rust ownership mapping → Tradeoff.** Any model sketch below is conceptual pseudocode, not a claim that a snippet was compiled. The executable laboratory, when available, is the source of compile evidence; this atlas makes no compiler claim.
+ 
+ ## 1. Core concepts
+ 
+@@ -23,9 +25,11 @@
+ 
+ **Classical intent.** Give callers a stable set of operations while keeping representation choices and invariant-preserving decisions inside a boundary. In Java this is commonly a class with private fields and public methods.
+ 
++**Relationship decision.** Assign one domain boundary responsibility for each invariant. Name the operations and authorized actors that can change it, what observers may see, and how rejected changes leave a valid state. Keeping a resource alive does not grant permission to change its business meaning.
++
+ **Rust translation.** Put data in a `struct` or `enum`, behavior in inherent `impl` blocks or trait implementations, and control access with module privacy. Keep fields private when arbitrary writes could break an invariant; expose methods that express allowed operations. Rust's [module privacy rules](https://doc.rust-lang.org/stable/book/ch07-02-defining-modules-to-control-scope-and-privacy.html) form part of this boundary.
+ 
+-**Ownership decision.** Use `&self` for observation, `&mut self` for exclusive in-place change, or a consuming `self` method when an operation transfers or replaces the value. A method's receiver is an ownership and authority choice, not just syntax.
++**Rust ownership mapping.** Use `&self` for observation, `&mut self` for exclusive in-place change, or a consuming `self` method when an operation transfers or replaces the value. A method's receiver is an ownership and authority choice, not just syntax.
+ 
+ **Tradeoff.** More invariants can be protected at the API boundary, but callers may need purpose-built methods instead of direct field access. Privacy does not prove that a business rule is correct; it only limits where the representation can be changed.
+ 
+@@ -33,9 +37,11 @@
+ 
+ **Classical intent.** Let a client depend on a useful promise rather than a concrete implementation. The abstraction should say what a client may rely on and leave mechanism open to change.
+ 
++**Relationship decision.** State the shared promise, including allowed effects and failure outcomes, before choosing interchangeable providers. Decide who selects and replaces a provider, whether clients retain it beyond a call, and how withdrawal or unavailability is reported.
++
+ **Rust translation.** Use a public trait for shared behavior, a generic bound for compile-time requirements, a trait object for runtime erasure, or a module/API boundary for a concrete service. Use an enum when the alternatives are a known, closed set. The [Rust Book's treatment of traits](https://doc.rust-lang.org/stable/book/ch10-02-traits.html) explains shared behavior; its [trait-object chapter](https://doc.rust-lang.org/stable/book/ch18-02-trait-objects.html) compares open-ended runtime alternatives.
+ 
+-**Ownership decision.** A trait method that borrows `&self` grants observation; `&mut self` grants temporary exclusive mutation; taking `self` can consume an implementation. Lifetimes on references state how long a borrowed implementation must remain valid. A `Box<dyn Trait>` owns the erased value; `&dyn Trait` borrows it.
++**Rust ownership mapping.** A trait method that borrows `&self` grants observation; `&mut self` grants temporary exclusive mutation; taking `self` can consume an implementation. Lifetimes on references state how long a borrowed implementation must remain valid. A `Box<dyn Trait>` owns the erased value; `&dyn Trait` borrows it.
+ 
+ **Tradeoff.** A narrow abstraction decouples callers, but an abstraction introduced before there is real variation can add indirection and maintenance. An interface or trait is a contract, not an automatic architectural seam.
+ 
+@@ -43,9 +49,11 @@
+ 
+ **Classical intent.** A class commonly combines a representation, operations, access control, construction rules, and a place in a subtype hierarchy. An object is one runtime instance with state and behavior.
+ 
++**Relationship decision.** Separate a domain role from its current representation. Decide whether replacement preserves identity, who maintains its invariants, who has custody of its resources, and when collaborators must stop using it; a class-shaped representation is optional.
++
+ **Rust translation.** A struct or enum stores a value; `impl` blocks attach methods; modules govern visibility; traits describe behavior shared across types. Rust does not have class inheritance, and the Rust Book deliberately distinguishes Rust structs/enums from the bundled state-and-behavior object model used by many OO languages ([OO characteristics](https://doc.rust-lang.org/stable/book/ch18-01-what-is-oo.html)).
+ 
+-**Ownership decision.** Decide whether a value is stored inline, boxed, borrowed, reference-counted, or represented by a stable key. The representation follows from its lifecycle and sharing needs, not from the word “object.”
++**Rust ownership mapping.** Decide whether a value is stored inline, boxed, borrowed, reference-counted, or represented by a stable key. The representation follows from its lifecycle and sharing needs, not from the word “object.”
+ 
+ **Tradeoff.** Rust separates concerns that a class may bundle, making ownership and reuse more explicit. It also means a design may span a data type, one or more traits, and a module rather than a single class declaration.
+ 
+@@ -53,9 +61,11 @@
+ 
+ **Classical intent.** A value object is defined by its values; an entity is tracked by identity across changing state. Two entity instances with equal fields may still represent different people, orders, or accounts.
+ 
++**Relationship decision.** Choose equality from domain meaning. Specify which authority issues durable identities, which component is responsible for authoritative updates, and whether retained links resolve current state or a snapshot. Define deletion and stale-link behavior independently of in-memory custody.
++
+ **Rust translation.** Give value objects value equality when that is their domain meaning; derive or implement `PartialEq`/`Eq` only when those semantics are right. Give entities an explicit newtype key such as `CustomerId`, and define equality or lookup in terms of that key when required. Keep the domain model independent of whether an instance currently lives in a database, cache, or process.
+ 
+-**Ownership decision.** An aggregate or repository may own the in-memory entity value; other components can borrow it during a call or hold a typed ID and look it up later. Use `Rc`/`Arc` only when shared lifetime ownership is actually part of the in-memory model. `Rc::ptr_eq`/`Arc::ptr_eq` answers an allocation-identity question, not a domain-identity question.
++**Rust ownership mapping.** An aggregate or repository may own the in-memory entity value; other components can borrow it during a call or hold a typed ID and look it up later. Use `Rc`/`Arc` only when shared lifetime ownership is actually part of the in-memory model. `Rc::ptr_eq`/`Arc::ptr_eq` answers an allocation-identity question, not a domain-identity question.
+ 
+ **Tradeoff.** Value semantics make copying and comparison straightforward, but cloning an entity can create competing mutable snapshots. Identity keys support long-lived and cyclic domain graphs, but require lookup and failure handling. Memory ownership and persistence identity are separate axes.
+ 
+@@ -63,9 +73,11 @@
+ 
+ **Classical intent.** These relationship names describe different promises. An association says instances are related. Aggregation is a weak whole/part relation whose shared-part semantics are intentionally loose in UML. Composition is stronger containment: a part belongs to at most one composite at a time, and the composite is responsible for its disposition. A dependency means one component uses another without necessarily retaining it. UML's [aggregation semantics](https://www.omg.org/spec/UML/2.5.1/PDF) make clear that shared aggregation is not a precise synonym for ownership.
+ 
++**Relationship decision.** For each edge, state its purpose, cardinality, custodian, authorized changes, and termination rule. Composition requires an exclusive whole/part commitment and an explicit disposition or transfer policy; association alone implies neither custody nor authorization. Define what a disconnected or unavailable collaborator means to the workflow.
++
+ **Rust translation.** Represent an association with the least powerful link that fits: a borrowed reference for a scoped relation, an ID for a relation resolved elsewhere, or an owning handle when the object retains another value. A dependency may be only a function argument, generic parameter, imported trait, or service field. Represent a composed part as an owned field, `Box<T>`, or owned collection when the whole controls its lifetime. Model intentionally shared ownership with `Rc<T>` or `Arc<T>`; pair with `RefCell<T>` or a synchronization primitive only if shared mutation is required.
+ 
+-**Ownership decision.** Name the owner, borrowers, mutation authority, sharing rule, and destruction rule for each relation. If a part can leave the whole, provide an explicit transfer operation. If two aggregates need the same entity, consider a stable ID or shared handle rather than claiming unique composition. For queued or spawned work, decide whether the task takes owned data or IDs or only borrows during a bounded call; state how it reports a missing target or failed operation.
++**Rust ownership mapping.** Name the owner, borrowers, mutation authority, sharing rule, and destruction rule for each relation. If a part can leave the whole, provide an explicit transfer operation. If two aggregates need the same entity, consider a stable ID or shared handle rather than claiming unique composition. For queued or spawned work, decide whether the task takes owned data or IDs or only borrows during a bounded call; state how it reports a missing target or failed operation.
+ 
+ **Tradeoff.** Inline composition is simple and makes destruction follow ownership, but Rust references cannot outlive their referents. IDs make persistence and cycles easier but move resolution and missing-target errors to runtime. Reference counting permits shared lifetimes but introduces counting overhead and can leak on strong reference cycles; it does not make mutation automatically safe.
+ 
+@@ -73,9 +85,11 @@
+ 
+ **Classical intent.** Multiplicity states how many related values are valid: exactly one, optional one, many, or a bounded or non-empty set. It is a domain constraint, not merely a field type.
+ 
++**Relationship decision.** Define permitted counts, uniqueness, reachability, and cycles as domain rules. Assign authority for adding, moving, and removing links, require both ends to remain consistent, and specify whether removal deletes a target or only ends the relation.
++
+ **Rust translation.** Use `T` for exactly one, `Option<T>` for zero-or-one, `Vec<T>` for an ordered zero-or-more collection, and a map or set when keyed lookup or uniqueness is part of the contract. A non-empty or bounded collection needs a wrapper/newtype whose constructors and operations preserve that rule. Rust's [`Option`](https://doc.rust-lang.org/std/option/enum.Option.html) is an explicit sum type, so absence must be handled by the caller.
+ 
+-**Ownership decision.** A collection of owned values owns its elements. A collection of references borrows them for one shared lifetime. A collection of IDs expresses links without owning the targets. Model both ends of a bidirectional relation deliberately; storing back-pointers can require IDs, arenas, or reference counting.
++**Rust ownership mapping.** A collection of owned values owns its elements. A collection of references borrows them for one shared lifetime. A collection of IDs expresses links without owning the targets. Model both ends of a bidirectional relation deliberately; storing back-pointers can require IDs, arenas, or reference counting.
+ 
+ **Tradeoff.** The type can rule out some invalid cardinalities, but collection types alone do not enforce uniqueness, lower bounds, or cross-record consistency. Strongly connected object graphs often need IDs or an arena rather than ordinary references or mutually strong `Rc` links.
+ 
+@@ -83,9 +97,11 @@
+ 
+ **Classical intent.** Encapsulate changes so each state transition preserves the object's valid-state rules. Mutability may be visible to a client or hidden behind methods.
+ 
++**Relationship decision.** List valid transitions and the role authorized to initiate each. Decide whether competing updates serialize, reject, or reconcile, which observations may be stale, and what atomicity or recovery is required after a partial failure. Separate derived-cache changes from domain changes.
++
+ **Rust translation.** Ordinary mutation requires mutable access. A shared `&T` cannot normally be used to mutate the value; `Cell<T>` and `RefCell<T>` provide single-threaded interior mutability, while `Mutex<T>`, `RwLock<T>`, and atomics support selected cross-thread patterns. The standard library's [interior-mutability discussion](https://doc.rust-lang.org/stable/book/ch15-05-interior-mutability.html) explains the runtime-checked `RefCell` tradeoff.
+ 
+-**Ownership decision.** Prefer one clear owner with `&mut` access when possible. Add shared ownership (`Rc`/`Arc`) and interior mutability only for a concrete sharing requirement. Identify which methods may change domain state and which only cache derived data.
++**Rust ownership mapping.** Prefer one clear owner with `&mut` access when possible. Add shared ownership (`Rc`/`Arc`) and interior mutability only for a concrete sharing requirement. Identify which methods may change domain state and which only cache derived data.
+ 
+ **Tradeoff.** Exclusive mutation is visible in the API and statically constrained. Interior mutability moves some checks to runtime or synchronization and can make state changes less obvious. The borrow checker does not prove an invariant such as “balance never becomes negative”; constructors and every mutating path must preserve it.
+ 
+@@ -93,9 +109,11 @@
+ 
+ **Classical intent.** Construction establishes the object's valid initial state; every operation preserves its invariants; destruction releases resources at the right time.
+ 
++**Relationship decision.** Name the role that establishes a valid instance, the custodian that releases resources, and the authority that approves activation or shutdown. Define when a relation becomes usable, what survives transfer, and how failed construction or shutdown is observed and recovered.
++
+ **Rust translation.** Use associated functions such as `new` or `try_new` rather than a language-defined constructor. Validate input and use private fields or newtypes to make invalid states harder to create. A builder is useful for many optional settings; a typestate builder can make required steps explicit. Resource-owning values release resources through `Drop` when ownership ends. Rust's [ownership chapter](https://doc.rust-lang.org/stable/book/ch04-01-what-is-ownership.html) connects scope, moves, and cleanup; [Drop](https://doc.rust-lang.org/stable/book/ch15-03-drop.html) covers custom cleanup.
+ 
+-**Ownership decision.** A constructor returning `Self` transfers the new value to its caller; a fallible constructor returns `Result<Self, E>`. A consuming transition (`self -> Next`) transfers ownership to the next valid state. The owner controls when the value is dropped; ordinary borrows cannot extend that lifetime.
++**Rust ownership mapping.** A constructor returning `Self` transfers the new value to its caller; a fallible constructor returns `Result<Self, E>`. A consuming transition (`self -> Next`) transfers ownership to the next valid state. The owner controls when the value is dropped; ordinary borrows cannot extend that lifetime.
+ 
+ **Tradeoff.** RAII makes cleanup reliable on normal scope exit and early returns, but `Drop` is not a good place for fallible business shutdown. Provide an explicit `close`, `commit`, or `finish` operation returning `Result` when callers must observe failure; keep `Drop` as best-effort cleanup. A builder adds ceremony, and typestate can increase the number of types and make dynamic workflows harder to express.
+ 
+@@ -103,9 +121,11 @@
+ 
+ **Classical intent.** A component forwards a responsibility to a collaborator rather than inheriting implementation or accumulating unrelated responsibilities.
+ 
++**Relationship decision.** Keep the delegating role accountable for its public promise while assigning a specific task to the collaborator. Decide which capabilities it receives, whether it may retain inputs, who can replace it, and how its failure affects the enclosing operation.
++
+ **Rust translation.** Store the collaborator as a field and call it explicitly; implement a trait for a wrapper by forwarding selected methods. A wrapper can add policy before or after delegation. `Deref` is for pointer-like ergonomics and should not be treated as a general substitute for inheritance or explicit forwarding.
+ 
+-**Ownership decision.** Own a collaborator when the wrapper controls its lifetime; borrow it for a scoped operation; use `Box<dyn Trait>` for an owned runtime-selected implementation; use `Arc<dyn Trait + Send + Sync>` only when shared cross-thread ownership is needed. Generic `Wrapper<C>` keeps the collaborator's concrete type static.
++**Rust ownership mapping.** Own a collaborator when the wrapper controls its lifetime; borrow it for a scoped operation; use `Box<dyn Trait>` for an owned runtime-selected implementation; use `Arc<dyn Trait + Send + Sync>` only when shared cross-thread ownership is needed. Generic `Wrapper<C>` keeps the collaborator's concrete type static.
+ 
+ **Tradeoff.** Delegation makes dependencies and lifetimes visible and supports independent variation. It can require forwarding methods and add wrapper types. If forwarding obscures the API, reconsider which responsibility belongs on the wrapper.
+ 
+@@ -115,9 +135,11 @@
+ 
+ **Classical intent.** Polymorphism lets one algorithm work with multiple forms, but the mechanism matters. Subtype polymorphism substitutes one implementation for a contract; parametric polymorphism abstracts over a type parameter; ad hoc polymorphism selects behavior for a type-specific operation.
+ 
++**Relationship decision.** Identify the behavior that varies and the common observable promise. Decide who chooses an implementation, whether that choice may change during a workflow, and which data, effects, and failure obligations every alternative must respect.
++
+ **Rust translation.** Use a trait plus `T: Trait` for statically selected behavior over generic types; use `dyn Trait` behind a pointer for heterogeneous runtime values; use trait implementations such as `Add` or `Display` for ad hoc operations. Rust does not overload an ordinary function name by argument type, and trait implementations are constrained by coherence.
+ 
+-**Ownership decision.** Generic methods borrow, mutate, or consume `T` according to their parameter and receiver types. A trait object also needs an explicit ownership form such as `&dyn Trait`, `Box<dyn Trait>`, or `Arc<dyn Trait>`.
++**Rust ownership mapping.** Generic methods borrow, mutate, or consume `T` according to their parameter and receiver types. A trait object also needs an explicit ownership form such as `&dyn Trait`, `Box<dyn Trait>`, or `Arc<dyn Trait>`.
+ 
+ **Tradeoff.** Generics preserve concrete type information and permit static dispatch but generally instantiate code for each used type. Trait objects permit mixed concrete types behind one API but use dynamic dispatch and pointer indirection. Ad hoc trait implementations provide a uniform operation but must be coherent and should match the operation's semantics.
+ 
+@@ -125,9 +147,11 @@
+ 
+ **Classical intent.** Dynamic dispatch supports calling an overridden operation through a base reference; static dispatch chooses an implementation before runtime. An extensible framework may also need types unknown when the framework was compiled.
+ 
++**Relationship decision.** Decide who may introduce alternatives and when they are selected. Define compatibility, replacement, and withdrawal rules for extensions, including the lifetime of outstanding calls; openness is a product and governance decision before it is a dispatch mechanism.
++
+ **Rust translation.** `T: Trait` and argument-position `impl Trait` are statically dispatched. `dyn Trait` is dynamically dispatched through a trait-object pointer and vtable. A finite `enum` is a closed set whose matches can be exhaustive; a public trait can permit downstream types to implement behavior, subject to coherence and object-compatibility rules. The [Reference's trait-object rules](https://doc.rust-lang.org/reference/types/trait-object.html) and [trait rules](https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility) define the boundary.
+ 
+-**Ownership decision.** Use a generic collection when every element has the same concrete type; use an enum when alternatives are known and closed; use `Vec<Box<dyn Trait>>` when one owned collection must hold different runtime implementations. Borrow a trait object if the collection does not own its elements.
++**Rust ownership mapping.** Use a generic collection when every element has the same concrete type; use an enum when alternatives are known and closed; use `Vec<Box<dyn Trait>>` when one owned collection must hold different runtime implementations. Borrow a trait object if the collection does not own its elements.
+ 
+ **Tradeoff.** Static dispatch enables optimization and keeps calls concrete, but can increase code size or expose concrete types through APIs. Dynamic dispatch allows heterogeneous extension, at the cost of an indirect call, pointer-sized metadata, and limits on which trait methods can be dispatched. Choose the openness the product needs rather than pre-emptively making every type extensible.
+ 
+@@ -135,9 +159,11 @@
+ 
+ **Classical intent.** An interface names a capability or contract without requiring a shared state layout. Abstract classes often mix that contract with inherited fields and implementation.
+ 
++**Relationship decision.** Name a capability by the promise clients need, including effects and failures. Combining capabilities must not silently combine custody or grant broader authorization; specify what access each operation needs and how long it may retain collaborators.
++
+ **Rust translation.** A trait describes associated functions, types, and constants implemented separately for concrete types. Default methods offer reusable behavior. A trait bound (`T: Read`) constrains a generic caller. A trait object (`dyn Read`) erases a concrete type for runtime dispatch. A supertrait (`trait Writer: Read`) requires that implementors also satisfy another capability; it is a behavioral/type requirement, not a parent class carrying fields. See the [Rust Reference](https://doc.rust-lang.org/reference/items/traits.html) and Java's official [interface and inheritance guide](https://docs.oracle.com/javase/tutorial/java/IandI/interfaceDef.html).
+ 
+-**Ownership decision.** Method receivers make borrowing explicit. Bounds do not imply ownership: accepting `&T` borrows, while accepting `T` takes ownership. A trait object needs a pointer because the concrete size is erased. Trait objects can also carry lifetime and auto-trait bounds such as `Send` or `Sync` where appropriate.
++**Rust ownership mapping.** Method receivers make borrowing explicit. Bounds do not imply ownership: accepting `&T` borrows, while accepting `T` takes ownership. A trait object needs a pointer because the concrete size is erased. Trait objects can also carry lifetime and auto-trait bounds such as `Send` or `Sync` where appropriate.
+ 
+ **Tradeoff.** Traits separate capability from data layout and can be implemented without inheriting fields. Their method set and associated items affect extensibility. A trait with generic methods, some `Self` uses, or generic associated types may not be dyn-compatible; keep a generic interface and a smaller object-safe façade when both use cases are needed.
+ 
+@@ -145,9 +171,11 @@
+ 
+ **Classical intent.** Generic contracts define how types relate. Subtyping and covariance/contravariance explain safe substitution in a hierarchy; multiple inheritance and mixins add implementation reuse but create conflicts.
+ 
++**Relationship decision.** State which input, output, and collaborator types must remain compatible and who governs extensions to that contract. A substitution must preserve validity and permitted effects, not merely reuse a name; resolve conflicting meanings at the contract boundary.
++
+ **Rust translation.** Associated types name a type selected by an implementation (for example, an iterator's `Item`). A generic trait parameter is useful when one type can implement the trait in multiple distinct ways. Variance describes how lifetime/type subtyping passes through a generic type; it is not class inheritance. Rust's [variance reference](https://doc.rust-lang.org/reference/subtyping.html) identifies covariant, contravariant, and invariant cases. Coherence rejects overlapping impls and foreign-trait/foreign-type impls under the [orphan rules](https://doc.rust-lang.org/reference/items/implementations.html#trait-implementation-coherence).
+ 
+-**Ownership decision.** Bind an associated type in a trait-object use when the trait permits it; prefer static bounds if a generic associated type or method prevents dynamic dispatch. Use a local newtype to adapt a foreign type or trait while respecting coherence. Lifetimes on borrowed types are where variance most often matters to ordinary API design.
++**Rust ownership mapping.** Bind an associated type in a trait-object use when the trait permits it; prefer static bounds if a generic associated type or method prevents dynamic dispatch. Use a local newtype to adapt a foreign type or trait while respecting coherence. Lifetimes on borrowed types are where variance most often matters to ordinary API design.
+ 
+ **Tradeoff.** Coherence makes trait resolution predictable and lets libraries evolve without arbitrary conflicting implementations, but it limits downstream extension combinations. Variance is usually a property to understand when designing reference-containing abstractions, not a feature to tune casually. It does not grant permission to weaken ownership or aliasing rules.
+ 
+@@ -157,9 +185,11 @@
+ 
+ **Classical intent.** “Inheritance” can mean at least four different things: **state inheritance** (subclass gets fields), **implementation inheritance** (subclass reuses code), **interface/type inheritance** (subclass is assignable to a parent type), and **behavioral inheritance** (subclass preserves the parent's promised behavior). A design that gains one does not automatically gain the others.
+ 
++**Relationship decision.** Decide separately whether roles share state, reuse behavior, or promise substitution. Shared state needs one authoritative update policy and a stated custodian; reused code does not imply shared identity, lifecycle, or business authority.
++
+ **Rust translation.** Rust has no class inheritance. Use struct fields or composition for state; helper functions, delegation, or default trait methods for code reuse; traits and bounds for capabilities; and explicit contracts for behavior. Use an enum for a closed family of variants. The Rust Book's [OO chapter](https://doc.rust-lang.org/stable/book/ch18-01-what-is-oo.html) and trait-object example show how common OO intents map without subclassing.
+ 
+-**Ownership decision.** State reused by multiple concepts can be owned as an inner value, borrowed for an operation, or referenced by an ID. A trait implementation owns no shared base state by virtue of implementing the trait. Decide who owns each field before selecting a reuse mechanism.
++**Rust ownership mapping.** State reused by multiple concepts can be owned as an inner value, borrowed for an operation, or referenced by an ID. A trait implementation owns no shared base state by virtue of implementing the trait. Decide who owns each field before selecting a reuse mechanism.
+ 
+ **Tradeoff.** Composition and traits avoid coupling a subtype to a base representation, but may require explicit delegation and do not create automatic field reuse. In Java or C++, inheritance remains useful when there is a stable subtype relationship and its state and behavior contracts are genuinely substitutable.
+ 
+@@ -167,9 +197,11 @@
+ 
+ **Classical intent.** A subtype should preserve the expectations that clients may rely on through the supertype: it must not strengthen required preconditions, weaken guaranteed postconditions, or invalidate the supertype's invariants and history constraints. Liskov and Wing frame behavioral subtyping in terms of specifications, not just matching method signatures ([paper](https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf)).
+ 
++**Relationship decision.** Specify what every implementation preserves: preconditions, postconditions, invariants, history, side effects, and failure outcomes. A replacement must respect clients’ retained relationships and authorization limits, including across deferred work or retries.
++
+ **Rust translation.** The compiler checks trait implementation shape and type compatibility, not the truth of a behavioral promise. A type can implement `Iterator`, `Read`, or a domain trait while still violating expectations in its documentation. Write trait contracts in terms of preconditions, results, side effects, and state guarantees; test implementations against those contracts.
+ 
+-**Ownership decision.** Choose receivers that expose mutation authority: `&self` should not secretly imply an externally observable state change unless interior mutability is part of the contract; `&mut self` makes exclusive mutation visible; a consuming method signals that the prior value is replaced or no longer available.
++**Rust ownership mapping.** Choose receivers that expose mutation authority: `&self` should not secretly imply an externally observable state change unless interior mutability is part of the contract; `&mut self` makes exclusive mutation visible; a consuming method signals that the prior value is replaced or no longer available.
+ 
+ **Tradeoff.** Explicit ownership narrows some aliasing hazards, but it cannot establish logical substitutability. Favor a smaller capability trait or a sum type when a proposed subtype has exceptions to the parent contract.
+ 
+@@ -177,15 +209,19 @@
+ 
+ **Classical intent.** In multiple inheritance, a diamond occurs when two branches share a base. Questions include whether the base state exists once or twice and which inherited implementation wins. Java avoids multiple class inheritance but permits multiple interfaces and defines conflict-resolution rules for defaults ([Oracle guide](https://docs.oracle.com/javase/tutorial/java/IandI/override.html)).
+ 
++**Relationship decision.** Determine whether the apparent shared base denotes one domain entity or two independent roles. For shared state, assign one update authority and a coherent lifecycle; for duplicated state, state how divergence is handled. Resolve competing behavior explicitly rather than relying on inheritance order.
++
+ **Rust translation.** There is no class-state diamond. A type can implement multiple traits, and traits can have supertraits, but overlapping method names may need fully qualified calls or an explicit wrapper decision. Trait coherence limits conflicting implementations; it does not decide which domain behavior is correct.
+ 
+-**Ownership decision.** Put shared state in one composed field or aggregate and expose narrow traits over it. If two capabilities need a common dependency, let the implementation hold one owner and delegate both capabilities to it; do not duplicate state just to satisfy two interfaces.
++**Rust ownership mapping.** Put shared state in one composed field or aggregate and expose narrow traits over it. If two capabilities need a common dependency, let the implementation hold one owner and delegate both capabilities to it; do not duplicate state just to satisfy two interfaces.
+ 
+ **Tradeoff.** Composition makes shared state ownership explicit and avoids virtual-base semantics. Multiple traits still can create naming and API complexity; favor explicit delegation when the result clarifies authority and behavior.
+ 
+ ### SOLID and GRASP as design prompts
+ 
+ **Classical intent.** SOLID and GRASP are heuristics for managing change and assigning responsibility, not language laws. Robert C. Martin's [SOLID material](https://cleancoder.com/files/solid.md) names SRP, OCP, LSP, ISP, and DIP. Craig Larman describes GRASP as a set of responsibility-assignment principles such as Information Expert and Creator ([book excerpt](https://www.informit.com/articles/article.aspx?p=360440&seqNum=2)).
++
++**Relationship decision.** Assign decisions to roles with the needed information and domain accountability, then grant only the capabilities they require. State which role coordinates a use case and which preserves each invariant; resource custody may belong to a different component. Introduce a boundary only for a real responsibility or variation.
+ 
+ **Rust translation.** Apply them to modules, types, traits, functions, and service boundaries, not only classes:
+ 
+@@ -196,7 +232,7 @@
+ - **DIP:** let policy depend on a capability and inject an implementation where substitution is needed. Choose generic/static or `dyn`/runtime injection deliberately.
+ - **GRASP Information Expert:** keep a decision near the value that owns the data and invariant required to make it. **Creator:** let an aggregate or component with the required data/lifecycle create its owned parts. **Controller:** use an application/service boundary to coordinate a use case without turning one stateful object into a god object.
+ 
+-**Ownership decision.** Treat responsibility assignment as a question about which owner has authority to change which state, and which layer owns a collaborator. A service can borrow an adapter for a call or own an injected adapter; neither choice is prescribed by SOLID or GRASP.
++**Rust ownership mapping.** Treat responsibility assignment as a question about which owner has authority to change which state, and which layer owns a collaborator. A service can borrow an adapter for a call or own an injected adapter; neither choice is prescribed by SOLID or GRASP.
+ 
+ **Tradeoff.** These heuristics help expose coupling and scattered responsibility, but maximizing abstraction, traits, or class count is not the goal. Keep a direct concrete design until a real change boundary or test seam justifies an abstraction.
+ 
+@@ -206,9 +242,11 @@
+ 
+ **Classical intent.** A nullable reference encodes absence but can let absence leak into ordinary operations. Exceptions represent failures that may be handled across a call boundary, though unchecked exceptions can hide the failure set from signatures.
+ 
++**Relationship decision.** Distinguish legitimate absence, an expired relation, denied access, and a failed operation. Assign the role that handles or propagates each outcome, define the state left behind, and bound diagnostic disclosure and retry authority. A missing link must not silently become permission to create or replace its target.
++
+ **Rust translation.** Use `Option<T>` when a value may be absent and `Result<T, E>` when an operation can fail with a reason the caller should handle. Use a domain error enum when callers need structured alternatives. Reserve `panic!` for broken assumptions or unrecoverable programming errors, not routine input or I/O failures. The Book covers [`Result`](https://doc.rust-lang.org/stable/book/ch09-02-recoverable-errors-with-result.html) and [when to panic](https://doc.rust-lang.org/stable/book/ch09-03-to-panic-or-not-to-panic.html); the standard library documents [`Result<T, E>`](https://doc.rust-lang.org/std/result/enum.Result.html).
+ 
+-**Ownership decision.** Error values are ordinary values returned to the caller; decide whether they own context, borrow it, or carry a stable ID. `?` propagates an error while transferring it according to the return type. `Option<&T>` borrows an optional target; `Option<T>` owns an optional value.
++**Rust ownership mapping.** Error values are ordinary values returned to the caller; decide whether they own context, borrow it, or carry a stable ID. `?` propagates an error while transferring it according to the return type. `Option<&T>` borrows an optional target; `Option<T>` owns an optional value.
+ 
+ **Tradeoff.** Absence and recoverable failure become visible in the type and must be handled or propagated. Rich errors can improve diagnosis but may expose implementation detail; translate lower-layer failures at a boundary when the caller needs domain meaning. `Option` says nothing about why a value is absent.
+ 
+@@ -216,9 +254,11 @@
+ 
+ **Classical intent.** A stateful object changes what operations are legal as it moves through a workflow. Runtime state patterns often use subclasses or state objects to vary behavior.
+ 
++**Relationship decision.** Define legal states and transitions, their authorizing actors, and the invariants preserved at each step. Decide whether identity survives transition, what concurrent observers may see, and what a failed transition leaves usable. External or persisted state requires validation regardless of representation.
++
+ **Rust translation.** For a small closed set of runtime states, use an enum and match on it. For a protocol whose legal transitions should be enforced at compile time, use distinct types or a type parameter and consuming transitions from one state type to the next. The [Rust Book's state-pattern chapter](https://doc.rust-lang.org/stable/book/ch18-03-oo-design-patterns.html) demonstrates a runtime trait-object implementation and a typestate redesign.
+ 
+-**Ownership decision.** A consuming transition takes the old state and returns the new state, so callers cannot keep using the pre-transition value. If the state must change behind a stable handle at runtime, store the state in one owned value and use an enum or a state trait object; shared mutable handles require a separate synchronization decision.
++**Rust ownership mapping.** A consuming transition takes the old state and returns the new state, so callers cannot keep using the pre-transition value. If the state must change behind a stable handle at runtime, store the state in one owned value and use an enum or a state trait object; shared mutable handles require a separate synchronization decision.
+ 
+ **Tradeoff.** Typestate can make illegal sequences unrepresentable for code compiled against the API, but creates more types and can be cumbersome when states come from external data, persistence, or user input. Parse and validate external state at the boundary; compile-time states do not replace runtime validation.
+ 
+@@ -229,13 +269,15 @@
+ ### A. `Rectangle` / `Square`
+ 
+ **Classical hierarchy and failure.** Suppose mutable `Rectangle` promises that changing width preserves height, while `Square : Rectangle` must keep width and height equal. A `Square` that changes both dimensions when the caller sets only width violates the caller's expectation; one that changes only width violates the square invariant. The issue is behavioral, not a spelling problem. Liskov and Wing's specification-based account explains why a subtype must preserve the parent's contract.
++
++**Relationship decision.** Preserve each shape’s dimensional invariant and offer only operations with a shared behavioral promise. Decide whether shapes are values or identity-bearing entities, who may replace dimensions, and how invalid dimensions are rejected. A shared area query does not require a shared mutation contract.
+ 
+ **Rust redesign.** First decide whether the product needs a closed geometry set or an open plugin API:
+ 
+ - For a fixed set, model the alternatives with a private enum containing `Rectangle { width, height }` and `Square { side }`, behind a public `Shape` wrapper with validating constructors and operations such as `area`. Public enum variants would expose their fields, so the wrapper is necessary if callers must not bypass dimension validation. There is no mutable rectangle supertype for a square to contradict.
+ - For external shapes, define a small `Shape` trait whose contract is meaningful for every implementation, such as a read-only `area` operation. Keep `Rectangle` and `Square` as independent value types. Store homogeneous values generically, mixed owned shapes as `Box<dyn Shape>`, or borrowed shapes as `&dyn Shape`.
+ 
+-**Ownership decision.** Dimensions are owned by each shape value; a collection owns its members if stored by value/`Box`, and borrows members if stored as references. If shapes need persistent entity identity, add an explicit ID rather than comparing addresses.
++**Rust ownership mapping.** Dimensions are owned by each shape value; a collection owns its members if stored by value/`Box`, and borrows members if stored as references. If shapes need persistent entity identity, add an explicit ID rather than comparing addresses.
+ 
+ **Tradeoff.** The enum makes alternatives and exhaustive handling visible but requires a coordinated edit when a new variant is added. The trait supports external implementations but commits the API to a contract and dynamic-dispatch boundary if heterogeneous values must coexist. The redesign preserves area behavior while removing the invalid “is-a” promise.
+ 
+@@ -243,9 +285,11 @@
+ 
+ **Classical hierarchy and failure.** A base storage class may own a path or connection and define `put`; `LocalStorage` and `CloudStorage` override transport, while `EncryptedStorage` and `RetryingStorage` add cross-cutting behavior. Inheritance then mixes “where data goes” with “how policy wraps each operation,” and combinations tend to multiply subclasses.
+ 
++**Relationship decision.** Separate transport responsibility, confidentiality policy, and retry authority. Specify who holds credentials, which operations may repeat without duplicate effects, the validity of each dependency, and what failures reach the caller. Wrapping a service must not enlarge the caller’s authorization.
++
+ **Rust redesign.** Model a storage capability as a `Store` trait with explicit operations and a typed error result. Implement it for concrete local and remote adapters. Represent encryption and retry as wrappers that each contain an inner store and add one policy around delegation. A service can be generic over `S: Store` for static composition or hold `Box<dyn Store>` when implementations are selected at runtime. This is composition around a capability, not base-class state reuse.
+ 
+-**Ownership decision.** Each wrapper owns its inner store when it controls its lifetime; a borrowed store is appropriate for one call or a service that does not own the adapter. Keep the encryption key in the narrowest secure owner that can perform the operation; do not copy key material into every object merely to mimic an inherited field. The service borrows or owns a configured wrapper based on application lifetime.
++**Rust ownership mapping.** Each wrapper owns its inner store when it controls its lifetime; a borrowed store is appropriate for one call or a service that does not own the adapter. Keep the encryption key in the narrowest secure owner that can perform the operation; do not copy key material into every object merely to mimic an inherited field. The service borrows or owns a configured wrapper based on application lifetime.
+ 
+ **Tradeoff.** Wrappers make policy order explicit (`Retry(Encrypt(Local))` can differ from `Encrypt(Retry(Local))`) and can be assembled without defining every subclass combination. They add forwarding types and may complicate error translation. Use a direct adapter when no real policy variation exists; introduce the wrapper only for a responsibility that can be tested independently.
+ 
+--- before/docs/04-pattern-catalog.md
++++ after/docs/04-pattern-catalog.md
+@@ -1,8 +1,10 @@
+ # ROO GoF Pattern Translation Catalog
+ 
+-This catalog translates all 23 patterns in Gamma, Helm, Johnson, and Vlissides' *Design
+-Patterns: Elements of Reusable Object-Oriented Software* (the Gang of Four, or GoF) into
+-Rust-shaped design choices. The GoF names, groupings, and problem statements are the
++This catalog examines all 23 patterns in Gamma, Helm, Johnson, and Vlissides' *Design
++Patterns: Elements of Reusable Object-Oriented Software* (the Gang of Four, or GoF) through
++**Relationship & Ownership Oriented design (ROO)**. ROO is language-independent: start
++with domain intent and invariants, decide relationships, then choose language mechanisms.
++Rust supplies the laboratory mappings in this catalog. The GoF names, groupings, and problem statements are the
+ established source material; each Rust realization and selection rule below is a **ROO
+ proposal**, not a claim that GoF prescribed Rust or that Rust has a canonical one-to-one
+ equivalent. [GoF / Pearson](https://www.pearson.com/en-us/subject-catalog/p/design-patterns-elements-of-reusable-object-oriented-software/P200000009480/9780321700698)
+@@ -19,7 +21,25 @@
+ 
+ ## A ROO selection rule
+ 
+-Start with the variation that must remain open:
++Before choosing a mechanism, name the pressure that makes the pattern useful: variation,
++coordination, resource lifetime, repeated data, delayed work, or restricted access. Name
++its participants and the domain invariant each must preserve. For every important
++relation record **Owner/resource custodian; Stable identity; Mutation authority; Access
++regime; Validity horizon; Execution domain; Failure boundary**. Specify who retains and
++releases resources, who can change state, how access is mediated, when the relation ends,
++where work runs, and who handles rejection, expiry, cancellation, or partial failure.
++
++Custody is resource retention and release; domain responsibility is accountability for a
++business rule. Durable identity may outlive any one representation. Authorization is the
++permission of a principal to act, and must be checked even when a component holds a
++reference or identity key. These are separate decisions. A pattern name assigns none of
++them automatically. For example, a queued Command can retain request data while a domain
++service preserves the invariant and execution-time authorization decides whether the
++request may still run.
++
++Decide next whether alternatives are closed or extensible, who chooses them, and whether
++selection occurs at construction, per call, or during a workflow. Map those decisions to
++the target language. In the Rust laboratory, the mechanism choices are:
+ 
+ - **Enum plus `match`:** choose when the set of alternatives is owned by this module and
+   intentionally closed. The compiler can require every case to be handled. This is often
+@@ -39,8 +59,8 @@
+   real variation. A named type can still clarify authority and lifecycle; an abstraction
+   is not valuable merely because a pattern has a name.
+ 
+-ROO's ownership default is ordinary ownership by value, then borrowing where the caller
+-should retain authority. Use `Box<T>` for a single owned indirection or recursive
++For the Rust mapping, prefer ordinary ownership by value, then borrowing where the caller
++should retain resource custody. Borrowing alone does not establish business authorization. Use `Box<T>` for a single owned indirection or recursive
+ storage, not as shared ownership. Use `Rc<T>` or `Arc<T>` only when multiple owners must
+ genuinely extend one value's lifetime. Add `RefCell<T>`, `Mutex<T>`, or `RwLock<T>` only
+ when runtime mutation authority is part of the design; that choice introduces runtime
+@@ -56,48 +76,51 @@
+ 
+ ## Creational patterns — 5
+ 
+-GoF intent is condensed in column one. The Rust design, ownership choice, and caution
+-columns are ROO proposals.
+-
+-| Pattern and intent | Idiomatic Rust realization | Ownership and authority | Limit or avoid when |
+-|---|---|---|---|
+-| **Abstract Factory** — create related product families while hiding their concrete classes. | A trait or generic factory with methods for each product; an enum factory when the family set is closed; associated types when products must remain statically related. | The factory returns owned values or borrows from a factory whose lifetime is explicit. The caller owns created products unless the factory intentionally shares them. | Avoid a boxed factory and boxed products when one concrete family is selected at startup. Rust has no virtual constructor; state how family consistency is enforced. |
+-| **Builder** — construct a complex value step by step while separating construction from representation. | A builder struct with consuming setters and `build(self) -> Result<T, E>`; a typestate builder when required steps must be compile-time obligations. | The builder owns pending inputs and transfers them to the finished value. Keep mutation local to the builder; the result owns its invariants. | Avoid for a small value with a clear constructor. Typestate can multiply types and complicate collections, deserialization, and runtime-selected steps. |
+-| **Factory Method** — let a creator defer which product is constructed. | A trait method returning a concrete associated type, a generic factory function, or an enum / `Box<dyn Product>` when the result really varies at runtime. | Factory input is borrowed or consumed according to the construction contract; the returned product is normally owned by the caller. | Avoid virtual-constructor emulation for a fixed mapping; a plain `match`, `From`, or constructor function is enough. Specify errors rather than hiding failure in `Option` or panic. |
+-| **Prototype** — create a new object by copying a prototypical instance. | `Clone` for an established value-copy contract; a named `duplicate` or domain-specific cloning method when identity, resources, or deep-copy behavior needs explanation. | The clone owns its resulting value. Document whether it shares reference-counted state, duplicates it, or retains identity-bearing handles. | `Clone` does not promise a deep copy. Avoid implying independent state when cloning `Rc`, `Arc`, handles, file descriptors, or external resources. |
+-| **Singleton** — ensure one instance and provide a global access point. | Prefer an explicitly constructed service passed to its users. For true process-wide state use immutable `static`, `OnceLock<T>`, or `LazyLock<T>`; add a lock only for shared mutation. | The application root owns an injected service. A static has process-wide authority and lifetime; decide who initializes it and who may mutate it. | Avoid globals for request, tenant, test, or configuration-scoped state. Statics are difficult to reset and isolate; locks add synchronization semantics. `LazyLock` initialization panic poisons future access. |
++GoF intent is condensed in column one. Read the portable relationship decision before
++choosing a representation. Relationship decisions, Rust mappings, and cautions are ROO
++proposals; the same decisions can be implemented in other languages.
++
++| Pattern and intent | Portable relationship decision | Idiomatic Rust realization | Rust custody and access mapping | Limit or avoid when |
++|---|---|---|---|---|
++| **Abstract Factory** — create related product families while hiding their concrete classes. | Pressure: consistent product families. The configuring role selects a family; the factory validates compatibility and states product custody, validity, and creation failure before clients receive products. | A trait or generic factory with methods for each product; an enum factory when the family set is closed; associated types when products must remain statically related. | The factory returns owned values or borrows from a factory whose lifetime is explicit. The caller owns created products unless the factory intentionally shares them. | Avoid a boxed factory and boxed products when one concrete family is selected at startup. Rust has no virtual constructor; state how family consistency is enforced. |
++| **Builder** — construct a complex value step by step while separating construction from representation. | Pressure: staged construction. The builder retains incomplete inputs; the domain constructor validates completeness and transfers a valid result. Define abandonment cleanup and what remains after failure. | A builder struct with consuming setters and `build(self) -> Result<T, E>`; a typestate builder when required steps must be compile-time obligations. | The builder owns pending inputs and transfers them to the finished value. Keep mutation local to the builder; the result owns its invariants. | Avoid for a small value with a clear constructor. Typestate can multiply types and complicate collections, deserialization, and runtime-selected steps. |
++| **Factory Method** — let a creator defer which product is constructed. | Pressure: variable creation. The creator controls the creation point; the provider selects a permitted product. Define input retention, product custody, authorization, and construction failure. | A trait method returning a concrete associated type, a generic factory function, or an enum / `Box<dyn Product>` when the result really varies at runtime. | Factory input is borrowed or consumed according to the construction contract; the returned product is normally owned by the caller. | Avoid virtual-constructor emulation for a fixed mapping; a plain `match`, `From`, or constructor function is enough. Specify errors rather than hiding failure in `Option` or panic. |
++| **Prototype** — create a new object by copying a prototypical instance. | Pressure: repeat configuration. The duplication policy decides whether identity is preserved or renewed, which state is independent or shared, and who may duplicate protected resources; define partial-copy failure. | `Clone` for an established value-copy contract; a named `duplicate` or domain-specific cloning method when identity, resources, or deep-copy behavior needs explanation. | The clone owns its resulting value. Document whether it shares reference-counted state, duplicates it, or retains identity-bearing handles. | `Clone` does not promise a deep copy. Avoid implying independent state when cloning `Rc`, `Arc`, handles, file descriptors, or external resources. |
++| **Singleton** — ensure one instance and provide a global access point. | Pressure: one service within a named scope. The composition authority sets that scope, initialization, access permissions, mutation policy, and shutdown. Define initialization failure and concurrent access before making it global. | Prefer an explicitly constructed service passed to its users. For true process-wide state use immutable `static`, `OnceLock<T>`, or `LazyLock<T>`; add a lock only for shared mutation. | The application root owns an injected service. A static has process-wide authority and lifetime; decide who initializes it and who may mutate it. | Avoid globals for request, tenant, test, or configuration-scoped state. Statics are difficult to reset and isolate; locks add synchronization semantics. `LazyLock` initialization panic poisons future access. |
+ 
+ ## Structural patterns — 7
+ 
+-| Pattern and intent | Idiomatic Rust realization | Ownership and authority | Limit or avoid when |
+-|---|---|---|---|
+-| **Adapter** — make an existing interface usable through another interface. | A named newtype around the adaptee implementing the target trait; a borrowed adapter when it must not own the wrapped value; `From`/`TryFrom` for value conversion. | The wrapper explicitly owns or borrows the adaptee. It controls which operations are exposed and translates errors at the boundary. | Avoid a wrapper that merely forwards every method without renaming, conversion, policy, or isolation. Do not use `Deref` to imply a broader transparent contract than intended. |
+-| **Bridge** — vary an abstraction and its implementation independently. | A generic abstraction parameterized by an implementation for static composition, or a field of `Box<dyn Implementor>` when the implementation must change at runtime. | The abstraction owns or borrows its implementation handle; mutation is delegated through a narrow trait. | Avoid a second indirection when there is only one axis of change or one implementation. Choose generic versus `dyn` by whether runtime heterogeneity is required. |
+-| **Composite** — let clients treat a part and a whole uniformly. | A recursive enum such as `Node::Branch(Vec<Node>)` for an owned tree; alternatively, a trait for an open set of node types. | In the tree form, a parent owns children; there is no reverse ownership edge. For editable graph-like structures, centralize records and links in an arena and pass stable IDs. | Avoid pretending a DAG is a tree. Parent links, multiple parents, removal, and cycles need explicit graph policy; do not add `Rc<RefCell<_>>` edges without defining who may mutate or retain nodes. |
+-| **Decorator** — add responsibilities by wrapping an object without changing its interface. | A generic wrapper `Decorator<T>` for static composition, or a `Box<dyn Component>` wrapper for runtime-selected layers; a concrete builder can compose layers. | Each wrapper owns its inner value or explicitly borrows it. The outermost wrapper owns the public call path and its added policy. | Avoid if a direct field or function is clearer. Deep wrapper stacks can obscure behavior, error flow, and debugging; keep ordering and drop behavior visible. |
+-| **Facade** — provide a simpler entry point over a subsystem. | A free function for a stateless operation or a small service struct holding explicit subsystem dependencies. | The facade borrows or owns dependencies according to its lifetime; the subsystem remains authoritative for its state. | Avoid a facade that becomes a second domain model or a universal service locator. Preserve meaningful errors and cancellation at the boundary. |
+-| **Flyweight** — share intrinsic state across many small logical objects, supplying context externally. | Separate immutable shared data from per-use context; use IDs, interned strings, or `Arc<T>` only where sharing has measured value. | A cache or arena owns canonical values; users carry a handle plus their own extrinsic state. Define cache lifetime and eviction authority. | Avoid premature interning and hidden global caches. Sharing saves memory only if values are repeated enough; synchronization and lookup may cost more than duplication. |
+-| **Proxy** — control access to another subject through a compatible interface. | A named wrapper implementing the same trait for lazy loading, authorization, caching, remote calls, or instrumentation. Async boundaries may require an explicit async trait/API design. | Proxy owns, borrows, or holds an ID for its subject. It must define whether it controls access, lifetime, failures, retries, and side effects. | Avoid “transparent” claims across errors, blocking, latency, cancellation, or identity changes. Keep remote and permission failures visible to callers. |
++| Pattern and intent | Portable relationship decision | Idiomatic Rust realization | Rust custody and access mapping | Limit or avoid when |
++|---|---|---|---|---|
++| **Adapter** — make an existing interface usable through another interface. | Pressure: contract mismatch. The adapter translates operations and failures between client and provider without enlarging authorization. Specify provider custody and whether retention lasts one call or the adapter lifetime. | A named newtype around the adaptee implementing the target trait; a borrowed adapter when it must not own the wrapped value; `From`/`TryFrom` for value conversion. | The wrapper explicitly owns or borrows the adaptee. It controls which operations are exposed and translates errors at the boundary. | Avoid a wrapper that merely forwards every method without renaming, conversion, policy, or isolation. Do not use `Deref` to imply a broader transparent contract than intended. |
++| **Bridge** — vary an abstraction and its implementation independently. | Pressure: two independent variation axes. The abstraction remains accountable for its contract; the implementor receives bounded capabilities. Define selection, replacement during active work, custody, and failure translation. | A generic abstraction parameterized by an implementation for static composition, or a field of `Box<dyn Implementor>` when the implementation must change at runtime. | The abstraction owns or borrows its implementation handle; mutation is delegated through a narrow trait. | Avoid a second indirection when there is only one axis of change or one implementation. Choose generic versus `dyn` by whether runtime heterogeneity is required. |
++| **Composite** — let clients treat a part and a whole uniformly. | Pressure: uniform part/whole operations. Decide tree versus graph, stable node identity, link-edit authority, deletion and transfer rules, and all-or-partial failure for operations over descendants. | A recursive enum such as `Node::Branch(Vec<Node>)` for an owned tree; alternatively, a trait for an open set of node types. | In the tree form, a parent owns children; there is no reverse ownership edge. For editable graph-like structures, centralize records and links in an arena and pass stable IDs. | Avoid pretending a DAG is a tree. Parent links, multiple parents, removal, and cycles need explicit graph policy; do not add `Rc<RefCell<_>>` edges without defining who may mutate or retain nodes. |
++| **Decorator** — add responsibilities by wrapping an object without changing its interface. | Pressure: layered policy. Each layer preserves the component promise and receives only needed authority. Define ordering, shared identity, inner-resource custody, cancellation, and failure propagation across layers. | A generic wrapper `Decorator<T>` for static composition, or a `Box<dyn Component>` wrapper for runtime-selected layers; a concrete builder can compose layers. | Each wrapper owns its inner value or explicitly borrows it. The outermost wrapper owns the public call path and its added policy. | Avoid if a direct field or function is clearer. Deep wrapper stacks can obscure behavior, error flow, and debugging; keep ordering and drop behavior visible. |
++| **Facade** — provide a simpler entry point over a subsystem. | Pressure: subsystem complexity. The facade coordinates a use case while domain participants retain their invariants. Specify dependency lifetime, caller authorization, cancellation, and recovery after partial effects. | A free function for a stateless operation or a small service struct holding explicit subsystem dependencies. | The facade borrows or owns dependencies according to its lifetime; the subsystem remains authoritative for its state. | Avoid a facade that becomes a second domain model or a universal service locator. Preserve meaningful errors and cancellation at the boundary. |
++| **Flyweight** — share intrinsic state across many small logical objects, supplying context externally. | Pressure: repeated immutable data. A custodian canonicalizes intrinsic state; clients retain per-use context. Define canonical identity, eviction and invalid-handle behavior, and whether access crosses execution boundaries. | Separate immutable shared data from per-use context; use IDs, interned strings, or `Arc<T>` only where sharing has measured value. | A cache or arena owns canonical values; users carry a handle plus their own extrinsic state. Define cache lifetime and eviction authority. | Avoid premature interning and hidden global caches. Sharing saves memory only if values are repeated enough; synchronization and lookup may cost more than duplication. |
++| **Proxy** — control access to another subject through a compatible interface. | Pressure: mediated access. The proxy enforces a stated access or delivery policy; the subject retains its domain responsibility. Define identity continuity, authorization, dependency lifetime, retries, and visible remote or cache failure. | A named wrapper implementing the same trait for lazy loading, authorization, caching, remote calls, or instrumentation. Async boundaries may require an explicit async trait/API design. | Proxy owns, borrows, or holds an ID for its subject. It must define whether it controls access, lifetime, failures, retries, and side effects. | Avoid “transparent” claims across errors, blocking, latency, cancellation, or identity changes. Keep remote and permission failures visible to callers. |
+ 
+ ## Behavioral patterns — 11
+ 
+-| Pattern and intent | Idiomatic Rust realization | Ownership and authority | Limit or avoid when |
+-|---|---|---|---|
+-| **Chain of Responsibility** — pass a request along handlers until one handles it. | An ordered `Vec`/iterator of borrowed handlers, a chain of owned handlers, or a fold over functions; return an explicit outcome such as continue, handled, or rejected. | A dispatcher owns the order; each handler borrows the request or takes owned data only when it accepts it. | Avoid when the decision is a short, stable `match`. Define ordering, whether rejection stops traversal, and how handler errors differ from “not handled.” |
+-| **Command** — encapsulate a request as a value that can be queued, logged, delayed, or undone. | An enum for a closed command set; structs implementing a `Command` trait for an open set; closures for short in-process actions. | The queue owns command data. A command receives a narrow mutable context; undo requires explicit prior state or a compensating command. | Avoid storing closures when commands need serialization, inspection, stable identity, or replay. Do not promise undo without specifying side effects and failure recovery. |
+-| **Interpreter** — represent and evaluate a small language grammar. | A recursive AST enum plus parser and evaluator functions; traits only where grammar extensions need an open boundary. | The AST owns or borrows source data under an explicit lifetime; evaluator borrows the AST and receives explicit environment authority. | Avoid when a parser, query engine, or existing language is the real need. Recursive evaluation needs limits or iterative handling for untrusted depth. |
+-| **Iterator** — traverse a collection without exposing its representation. | Implement `Iterator` for a traversal state, or return an iterator adapter over a collection. Use `IntoIterator` when owned, borrowed, and mutably borrowed traversal differ. | The iterator owns traversal state and either owns items or borrows them for a defined lifetime. The collection retains mutation authority unless the iterator consumes it. | Avoid a bespoke protocol for slices, maps, or ordinary lazy pipelines. Self-referential and lending iterators may need a different API because standard `Iterator::Item` cannot depend on each `next` borrow. |
+-| **Mediator** — centralize interaction among colleagues so they do not depend on each other directly. | An explicit coordinator that owns or borrows participants; for concurrent components, typed messages/channels can make communication and ownership boundaries visible. | The mediator owns routing policy, not necessarily participant state. Participants send requests through a narrow mediator API. | Avoid a “god mediator” that knows all rules and data. Split by cohesive use case; do not replace a clear direct call with a message bus without a decoupling need. |
+-| **Memento** — capture and restore an object's state without exposing its internals. | A private snapshot type created by the owner; clone a value only when that clone has snapshot semantics, or serialize a versioned snapshot for durable history. | The originator creates and interprets snapshots; a caretaker may own and order them but should not mutate their meaning. | Avoid assuming `Clone` means independent rollback. External effects, resource handles, schema evolution, and snapshot size need explicit policy. |
+-| **Observer** — notify dependents when a subject changes. | Prefer borrowed observers when lifetimes are nested; use an event queue/channel when asynchronous decoupling is useful; use a registry with subscription tokens for dynamic callbacks. | A subject/registry controls subscription IDs and dispatch. A token or explicit `unsubscribe` defines who can revoke a subscription. Observers should not own the subject strongly by default. | Reentrancy, unsubscribe during dispatch, event ordering, callback failure, and strong-reference cycles must be designed. See the hard case below; do not install a mutable shared callback graph by default. |
+-| **State** — vary an object's behavior as its internal state changes. | A closed enum with state-specific data and `match`; a trait object for independently extensible state implementations; typestate for transitions known at compile time. | The containing value owns its active runtime state. Typestate moves ownership into the next compile-time state; expose only operations valid for that type. | Avoid trait-object state for a small finite machine. Runtime events cannot be made compile-time known; invalid external transitions still need validation and errors. See the hard case below. |
+-| **Strategy** — select an algorithm behind a common policy. | A generic policy trait for static choice, `dyn Trait` for runtime substitution, an enum for a closed set, or a closure for one callable operation. | The caller or context selects and owns the strategy; pass only the data or capabilities the algorithm needs. | Avoid an abstraction when one small branch is sufficient. A strategy should vary a real algorithm, not turn every option into an object. |
+-| **Template Method** — define algorithm steps while allowing selected steps to vary. | A function that owns the invariant sequence and accepts a policy trait or a few closures for variable steps; default trait methods can provide shared behavior where the API fits. | The sequence-owning function retains control of order and invariants. Hook implementations receive only the data/capabilities needed for their step. | Avoid emulating a superclass with many overridable hooks. Too many hooks leak the algorithm's internals; prefer an explicit pipeline when callers need to reorder steps. |
+-| **Visitor** — add operations over a stable set of element types without placing every operation on each element. | For a closed enum or AST, use exhaustive `match` functions or a fold. For an open element interface, use traits; a classic `accept`/visitor pair works when element types are stable and operations are added often. | The data model owns its representation; each visitor borrows the element and receives only the access required for its operation. | Visitor does not solve simultaneous open extension of both element types and operations. Adding a new enum variant changes matches; adding a visitor method changes implementors. See the expression problem below. |
++| Pattern and intent | Portable relationship decision | Idiomatic Rust realization | Rust custody and access mapping | Limit or avoid when |
++|---|---|---|---|---|
++| **Chain of Responsibility** — pass a request along handlers until one handles it. | Pressure: variable routing. A coordinator chooses handler order and request validity. Specify each handler’s mutation authority, when custody transfers, whether rejection stops routing, and where errors are handled. | An ordered `Vec`/iterator of borrowed handlers, a chain of owned handlers, or a fold over functions; return an explicit outcome such as continue, handled, or rejected. | A dispatcher owns the order; each handler borrows the request or takes owned data only when it accepts it. | Avoid when the decision is a short, stable `match`. Define ordering, whether rejection stops traversal, and how handler errors differ from “not handled.” |
++| **Command** — encapsulate a request as a value that can be queued, logged, delayed, or undone. | Pressure: delayed or replayable action. A queue retains request data; an executor checks current authorization and target identity. Define expiry, execution domain, duplicate effects, cancellation, and compensation for failure. | An enum for a closed command set; structs implementing a `Command` trait for an open set; closures for short in-process actions. | The queue owns command data. A command receives a narrow mutable context; undo requires explicit prior state or a compensating command. | Avoid storing closures when commands need serialization, inspection, stable identity, or replay. Do not promise undo without specifying side effects and failure recovery. |
++| **Interpreter** — represent and evaluate a small language grammar. | Pressure: a small domain language. Grammar and evaluator define valid meaning; an environment grants bounded effects. Specify source validity, evaluation limits, and parse versus execution failure. | A recursive AST enum plus parser and evaluator functions; traits only where grammar extensions need an open boundary. | The AST owns or borrows source data under an explicit lifetime; evaluator borrows the AST and receives explicit environment authority. | Avoid when a parser, query engine, or existing language is the real need. Recursive evaluation needs limits or iterative handling for untrusted depth. |
++| **Iterator** — traverse a collection without exposing its representation. | Pressure: traversal independent of representation. The collection governs structural updates; traversal governs position. Define snapshot versus live access, item validity, concurrent edits, and invalidation or traversal failure. | Implement `Iterator` for a traversal state, or return an iterator adapter over a collection. Use `IntoIterator` when owned, borrowed, and mutably borrowed traversal differ. | The iterator owns traversal state and either owns items or borrows them for a defined lifetime. The collection retains mutation authority unless the iterator consumes it. | Avoid a bespoke protocol for slices, maps, or ordinary lazy pipelines. Self-referential and lending iterators may need a different API because standard `Iterator::Item` cannot depend on each `next` borrow. |
++| **Mediator** — centralize interaction among colleagues so they do not depend on each other directly. | Pressure: coordinated participants. A mediator controls routing and workflow, while participants retain domain state authority. Define registration lifetime, execution order, unavailable peers, and partial-work recovery. | An explicit coordinator that owns or borrows participants; for concurrent components, typed messages/channels can make communication and ownership boundaries visible. | The mediator owns routing policy, not necessarily participant state. Participants send requests through a narrow mediator API. | Avoid a “god mediator” that knows all rules and data. Split by cohesive use case; do not replace a clear direct call with a message bus without a decoupling need. |
++| **Memento** — capture and restore an object's state without exposing its internals. | Pressure: recoverable history. The originator defines valid snapshots; a caretaker retains them without editing their meaning. Define identity/version compatibility, restoration authority, retention, and rollback limits for external effects. | A private snapshot type created by the owner; clone a value only when that clone has snapshot semantics, or serialize a versioned snapshot for durable history. | The originator creates and interprets snapshots; a caretaker may own and order them but should not mutate their meaning. | Avoid assuming `Clone` means independent rollback. External effects, resource handles, schema evolution, and snapshot size need explicit policy. |
++| **Observer** — notify dependents when a subject changes. | Pressure: change notification. A registry controls subscription validity; subscribers control their reactions. Define revocation authority, delivery order, execution domain, reentry, and whether one subscriber failure stops delivery. | Prefer borrowed observers when lifetimes are nested; use an event queue/channel when asynchronous decoupling is useful; use a registry with subscription tokens for dynamic callbacks. | A subject/registry controls subscription IDs and dispatch. A token or explicit `unsubscribe` defines who can revoke a subscription. Observers should not own the subject strongly by default. | Reentrancy, unsubscribe during dispatch, event ordering, callback failure, and strong-reference cycles must be designed. See the hard case below; do not install a mutable shared callback graph by default. |
++| **State** — vary an object's behavior as its internal state changes. | Pressure: lifecycle-dependent behavior. A domain role authorizes legal transitions and preserves entity identity. Define active-state access, concurrent events, and the valid state remaining after rejection or failure. | A closed enum with state-specific data and `match`; a trait object for independently extensible state implementations; typestate for transitions known at compile time. | The containing value owns its active runtime state. Typestate moves ownership into the next compile-time state; expose only operations valid for that type. | Avoid trait-object state for a small finite machine. Runtime events cannot be made compile-time known; invalid external transitions still need validation and errors. See the hard case below. |
++| **Strategy** — select an algorithm behind a common policy. | Pressure: algorithm variation. A context selects a policy with a shared promise and grants bounded data access. Define replacement timing, retained-input validity, permitted effects, and comparable failure outcomes. | A generic policy trait for static choice, `dyn Trait` for runtime substitution, an enum for a closed set, or a closure for one callable operation. | The caller or context selects and owns the strategy; pass only the data or capabilities the algorithm needs. | Avoid an abstraction when one small branch is sufficient. A strategy should vary a real algorithm, not turn every option into an object. |
++| **Template Method** — define algorithm steps while allowing selected steps to vary. | Pressure: invariant sequence with variable steps. The coordinator retains sequence authority; hooks receive bounded capabilities. Define hook lifetime, execution order, cancellation, and recovery if a step fails. | A function that owns the invariant sequence and accepts a policy trait or a few closures for variable steps; default trait methods can provide shared behavior where the API fits. | The sequence-owning function retains control of order and invariants. Hook implementations receive only the data/capabilities needed for their step. | Avoid emulating a superclass with many overridable hooks. Too many hooks leak the algorithm's internals; prefer an explicit pipeline when callers need to reorder steps. |
++| **Visitor** — add operations over a stable set of element types without placing every operation on each element. | Pressure: new operations over stable elements. The model governs element invariants; operations receive explicit read or mutation authority. Define traversal validity, extension governance, and partial-visit failure. | For a closed enum or AST, use exhaustive `match` functions or a fold. For an open element interface, use traits; a classic `accept`/visitor pair works when element types are stable and operations are added often. | The data model owns its representation; each visitor borrows the element and receives only the access required for its operation. | Visitor does not solve simultaneous open extension of both element types and operations. Adding a new enum variant changes matches; adding a visitor method changes implementors. See the expression problem below. |
+ 
+ ## Five hard cases
+ 
+ ### 1. Observer: subscription, reentrancy, and cycles
++
++**Portable decision first.** Treat a subscription as a revocable relation with a named holder of revocation authority and a defined validity horizon. Choose synchronous or queued delivery, ordering, reentry, and subscriber-failure behavior before selecting a callback or registry mechanism.
+ 
+ The simple picture “subject calls every observer” omits the decisions that make this
+ pattern safe to use. ROO treats subscription as an explicit capability rather than a
+@@ -145,6 +168,8 @@
+ 
+ ### 2. State: runtime state and typestate promise different things
+ 
++**Portable decision first.** Define legal transitions, the actor authorized to request each, the invariant maintained by the transition authority, and the identity that survives it. Decide what a failed transition leaves behind and how concurrent or persisted events are validated. Then choose a state representation.
++
+ Use a runtime enum when input, network events, persistence, or user actions choose the
+ next state. The enum owns the current state data, and a transition function can validate
+ an event and return `Result<NextState, TransitionError>`. Exhaustive matching makes
+@@ -176,6 +201,8 @@
+ 
+ ### 3. Composite: trees, parent links, and arenas
+ 
++**Portable decision first.** Decide whether exclusive parentage is a domain invariant or shared descendants are valid. Assign link-edit authority and resource custody separately; define atomic reparenting, deletion, retained-link validity, and cycle policy before choosing storage.
++
+ When composition is truly a tree and edits are simple, recursive ownership expresses the
+ invariant directly: each branch owns its children, and the tree's root owns everything
+ below it. A node does not need a parent pointer merely to compute ancestors; pass the
+@@ -205,6 +232,8 @@
+ [std::rc::Weak](https://doc.rust-lang.org/std/rc/struct.Weak.html)
+ 
+ ### 4. Visitor and the expression problem
++
++**Portable decision first.** Decide who governs element variants and who may add operations. Each operation needs an explicit access regime and traversal-validity rule; mutation and partial failure must preserve model invariants. Then choose which extension axis the language mechanism supports.
+ 
+ Visitor is strongest when the element set is stable and new operations are added often.
+ Rust's enum-and-`match` design makes a closed element set explicit: adding an enum
+@@ -238,6 +267,8 @@
+ 
+ ### 5. Singleton: global lifecycle and concurrency
+ 
++**Portable decision first.** Name the uniqueness scope, initialization authority, resource custodian, authorized users, and shutdown boundary. Decide how competing calls coordinate and how failed initialization or shutdown is observed. Uniqueness alone grants neither global access nor unrestricted mutation.
++
+ “Exactly one instance” has at least two meanings: one service instance per application
+ composition root, or one global value per process. Prefer the first when the service has
+ configuration, external dependencies, mutable state, or tests; construct it once and
+@@ -271,7 +302,7 @@
+ 
+ ## ROO review checklist for a proposed translation
+ 
+-Before retaining a pattern label in a design, answer these questions in plain terms:
++Before retaining a pattern label in a design, record the seven relationship fields above and answer these questions in plain terms. Begin with domain intent and invariants; then use the Rust-specific questions to review a laboratory mapping:
+ 
+ 1. Which axis varies: data shape, algorithm, policy, lifecycle, representation, or
+    coordination?
+--- before/docs/05-architecture.md
++++ after/docs/05-architecture.md
+@@ -1,16 +1,16 @@
+ # 05 — Architecture through ownership and boundaries
+ 
+-ROO applies an ownership review to established architectural choices. It does not replace domain analysis, concurrency protocols, database constraints, or operational design. The relationship vocabulary below is a **proposed ROO synthesis**; the schools and research it draws on have independent histories. [The annotated literature ledger](../research/literature.md) records that distinction.
++ROO — Relationship & Ownership Oriented design — starts architectural work with scenarios and invariants, then decides relationships before choosing language, runtime, storage, or protocol mechanisms. The method is language-independent; Rust is this edition's laboratory language. It does not replace domain analysis, concurrency protocols, database constraints, or operational design. The relationship vocabulary below is a **proposed ROO synthesis**; the schools and research it draws on have independent histories. [The annotated literature ledger](../research/literature.md) records that distinction.
+ 
+ ## 1. Start with the decision that must remain changeable
+ 
+ Parnas argues for decomposing a system around hidden design decisions rather than merely its processing steps. A Rust module can hide a representation behind private fields and functions, but privacy alone does not hide a decision if callers depend on SQL rows, concrete framework errors, or a particular allocation graph. [Parnas, 1972](https://www.cs.lafayette.edu/~gexia/cs301/resources/parnas.html).
+ 
+-For ROO, write the decision first: “pricing policy varies independently from transport,” or “inventory persistence may change.” Then choose the smallest boundary that protects it. A function parameter or private module may be sufficient; a trait, crate, service, and network protocol each add costs. This is a design recommendation, not a result proved by Parnas or Rust.
++For ROO, establish the scenario and invariant, then write the decision that must remain changeable: “pricing policy varies independently from transport,” or “inventory persistence may change.” Record the affected relationship's custody, identity, authority, access, horizon, execution, and failure policy before choosing the smallest boundary that protects it. A function parameter or private module may be sufficient; a trait, crate, service, and network protocol each add costs. This is a design recommendation, not a result proved by Parnas or Rust.
+ 
+ Liskov and Wing define behavioral subtyping through preserved properties, including invariants and history constraints. Compatible method signatures are insufficient. A trait implementation that silently changes ordering, idempotency, or failure semantics can violate client expectations while compiling successfully. [Liskov and Wing, 1994](https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf).
+ 
+-Consequently a port contract should describe observable behavior as well as `&self`, `&mut self`, and return types. Does success mean durable acceptance? Can an error follow a completed remote effect? Which retry is safe? The compiler checks language rules; contract tests and protocol analysis check these additional promises.
++Consequently a port contract should describe observable behavior before selecting signatures such as `&self`, `&mut self`, and return types. Does success mean durable acceptance? Can an error follow a completed remote effect? Which retry is safe? Keep compiler/static evidence separate from runtime checks, database guarantees, protocol evidence, and human review. Contract tests exercise particular promises; they do not establish every possible execution, and an unverified infrastructure expectation remains an assumption.
+ 
+ ## 2. Three useful lenses with different jobs
+ 
+@@ -22,20 +22,20 @@
+ 
+ ROO adds a question to each lens: who has authority to change the state, how is that authority accessed, and how long is the access valid? A GRASP controller might borrow a store for one call; a GoF strategy might be an owned enum; dependency inversion might be a generic parameter. These choices need no dependency injection container.
+ 
+-## 3. DDD vocabulary and its Rust interpretation
++## 3. DDD vocabulary, relationship decisions, and Rust realizations
+ 
+ DDD models a domain within an explicit language and context. An **entity** has continuity of identity; a **value object** is defined by attributes rather than identity. An **aggregate** groups related objects behind a root that protects invariants. A **repository** provides access to aggregate roots; a **domain event** represents a meaningful occurrence. A **bounded context** delimits where a particular model and language apply. [Evans, DDD Reference, 2015](https://www.domainlanguage.com/wp-content/uploads/2016/05/DDD_Reference_2015-03.pdf).
+ 
+ The following are ROO translations, not additional DDD definitions:
+ 
+-| Concept | Ownership-aware implementation decision |
+-|---|---|
+-| Entity | Give it a typed stable ID; moving a Rust value must not change its domain identity. |
+-| Value object | Validate construction and expose intentional operations; `Copy` and `Clone` are separate technical decisions. |
+-| Aggregate | Prefer one custodian of mutable aggregate state; expose commands rather than arbitrary internal mutable references. |
+-| Repository | Introduce an abstraction for a domain access need, not automatically for every table. |
+-| Domain event | Return owned facts from successful transitions; external publication needs a separate durability protocol. |
+-| Bounded context | Translate identities, meanings, and schemas at the boundary; do not pass internal mutable graphs across it. |
++| Concept | Relationship decision | Rust realization or constraint |
++|---|---|---|
++| Entity | Specify continuity of identity independently of loaded instances. | Give it a typed stable ID; moving a Rust value must not change its domain identity. |
++| Value object | Validate construction and expose intentional operations. | `Copy` and `Clone` are separate technical decisions. |
++| Aggregate | Name the invariant coordinator separately from the custodian of loaded state. | Prefer one custodian of mutable aggregate state; expose commands rather than arbitrary internal mutable references. |
++| Repository | Introduce an abstraction for a domain access need, not automatically for every table. | Choose the trait or concrete API after defining lookup, failure, and consistency behavior. |
++| Domain event | Retain facts from successful transitions; external publication needs a separate durability protocol. | Return owned facts when consumers must outlive local access. |
++| Bounded context | Translate identities, meanings, and schemas at the boundary. | Do not pass internal mutable graphs across it. |
+ 
+ An aggregate root may own a `Vec<LineItem>` and store a `CustomerId` without owning the customer. Database rows may reconstruct one aggregate; one row may also feed several read projections. Allocation layout does not determine aggregate size or transaction scope.
+ 
+@@ -102,18 +102,18 @@
+ 
+ This is a **ROO design exercise**, not an executable claim about the laboratory. The business rule is: accept an order only after its requested quantities are reserved, while preventing duplicate acceptance for the same request. Use exact monetary values and validated positive quantities; pricing and authentication are supplied facts, not hidden globals.
+ 
+-Start with a modular application in one process. `Order` owns its lines and transitions; `OrderId`, `ProductId`, and `RequestId` are stable identities. A request owns `PlaceOrder`; an application service coordinates capabilities. No `Rc<RefCell<Order>>`, service locator, or repository-per-table scheme is needed.
++First decide that Order controls its line transitions, the request has a deduplication identity, and the application coordinator obtains authorized capabilities for reservation and acceptance. Resource custody does not itself grant business permission: an adapter can retain a connection while the application checks the principal's authority. Next choose a modular application in one process as this exercise's realization. `Order` owns its lines and transitions; `OrderId`, `ProductId`, and `RequestId` are stable identities. A request owns `PlaceOrder`; an application service coordinates capabilities. No `Rc<RefCell<Order>>`, service locator, or repository-per-table scheme is needed.
+ 
+ ### Relationship contract for this use case
+ 
+ | Field | Concrete decision |
+ |---|---|
+-| Memory owner / resource custodian | Command belongs to request; aggregate belongs to use-case execution; adapter controls transaction resource; durable store retains committed state. |
++| Owner / resource custodian | Command belongs to request; aggregate belongs to use-case execution; adapter controls transaction resource; durable store retains committed state. |
+ | Stable identity | `OrderId` identifies the order; `RequestId` deduplicates one operation; a remote `ReservationId` identifies reservation state. |
+-| Mutation authority | `Order` methods guard local transitions; transaction capability coordinates writes; remote inventory service alone changes remote stock. |
+-| Access regime | Short borrows for decisions; owned payloads across queues; scoped transaction access rather than a globally shared mutable store. |
+-| Validity horizon | Borrow ends locally; quoted price and reservation each have explicit expiry/version rules; durable identities survive reload. |
+-| Execution domain | Synchronous domain decision; async adapter calls; durable worker for recovery if remote effects are involved. |
++| Mutation authority | Authorized callers request acceptance; `Order` methods guard local transitions; transaction capability coordinates writes; remote inventory service alone changes remote stock. |
++| Access regime | Operation-scoped access for decisions; transferred payload custody across queues; scoped transaction access. Rust realizes local access with short borrows and queue payloads with owned values. |
++| Validity horizon | Local access ends with the operation; quoted price and reservation each have explicit expiry/version rules; durable identities survive reload. |
++| Execution domain | Local domain decision; adapter calls may suspend; durable worker coordinates recovery if remote effects are involved. |
+ | Failure boundary | Local DB commit is one boundary; remote reservation, reply delivery, and event relay are separate boundaries. |
+ 
+ ### Case A: inventory shares the transaction resource
+--- before/docs/06-cross-language.md
++++ after/docs/06-cross-language.md
+@@ -1,6 +1,6 @@
+ # Cross-language portability
+ 
+-ROO treats object design as the explicit design of relationships: who is responsible for a domain invariant, who releases an external resource, which identity survives replacement or restart, who may mutate state, and where access and failure are bounded. This can guide Rust, Java, C#, C++, Go, TypeScript, and Python. The language changes how some parts can be enforced; it does not decide the domain contract for us.
++ROO — Relationship & Ownership Oriented design — is a language-independent method. Begin with a scenario, its expected and forbidden outcomes, and the invariant connecting them. Then decide relationships: who is responsible for a domain invariant, who retains and releases a resource, which identity survives replacement or restart, who may mutate state, and where access and failure are bounded. This can guide Rust, Java, C#, C++, Go, TypeScript, and Python. Rust is this edition's laboratory language. The language changes how some parts can be enforced; it does not decide the domain contract for us.
+ 
+ Use the **Relationship Contract** for each relationship that carries a meaningful invariant:
+ 
+@@ -8,17 +8,19 @@
+ | --- | --- |
+ | Owner / resource custodian | Who keeps the state or resource available, and who releases it? Record the memory/resource custodian separately from the domain invariant owner when they differ. |
+ | Stable identity | What value identifies this domain entity across lookup, replacement, serialization, or restart? |
+-| Mutation authority | Which operations are allowed to change the relationship or its target? |
++| Mutation authority | Which principals may request changes, and which operations and coordinators may execute them? |
+ | Access regime | Is access a borrow, immutable view, controlled command, shared reference, or transferred value? |
+ | Validity horizon | For how long is a reference, handle, cache entry, or ID valid, and how is expiry detected? |
+ | Execution domain | Is access single-threaded, synchronized, actor-confined, transaction-confined, or otherwise coordinated? |
+ | Failure boundary | How are missing, stale, unavailable, concurrently changed, or failed resources reported? |
+ 
+-Keep three kinds of ownership separate. **Memory ownership** determines who retains or releases an allocation. **Domain responsibility** determines who protects a business rule. **Durable identity** determines how an entity is found again. One class or type may carry all three, but that is a design choice, not a language law. An address, object reference, or array index is usually not a durable identity.
++Keep four obligations separate. **Resource custody** determines who retains and releases state, allocations, or external resources. **Domain responsibility** determines who protects a business rule. **Durable identity** determines how an entity is found again. **Authorization** determines which principal may perform a named action under policy. One class or type may participate in all four, but that is a design choice, not a language law. An address, object reference, or array index is usually not a durable identity; possession of a durable ID does not grant authorization.
+ 
+ ## How to read the comparison
+ 
+ `Compile-time` means the type checker or compiler rejects a class of use before execution. `Runtime` means a runtime check or execution mechanism enforces a rule. `Convention` means an API design, review rule, or test must keep the promise. Many languages combine all three. Guarantees are also bounded by escape hatches such as `unsafe`, reflection, native code, `dynamic`, or unchecked casts.
++
++Keep database guarantees, protocol evidence, and human review distinct from compiler/static and runtime evidence. A uniqueness constraint needs evidence from the authoritative store; remote retry safety needs a protocol contract and exercised failure behavior; an authorization rule needs implemented checks and policy review. Tests observe the boundaries they exercise, while unverified expectations remain assumptions.
+ 
+ | Language | Allocation, aliases, and identity | Lifecycle and mutation | What the type system or runtime really guarantees |
+ | --- | --- | --- | --- |
+@@ -75,14 +77,16 @@
+ 
+ Consider a library that checks out a physical book copy to a member. The example keeps the same domain invariant in both languages: a copy has at most one active loan, and checkout and return are the only operations that change availability.
+ 
++Before selecting either language, decide that one domain coordinator controls availability, callers request named transitions, loans retain durable IDs, reads are snapshots, and concurrent commands must be serialized at the chosen boundary. The table records that policy first; the sketches then show different realizations. Caller authorization is an application obligation outside these sketches, whose supplied IDs are not evidence of permission.
++
+ | Field | Contract |
+ | --- | --- |
+-| Owner / resource custodian | `Library` is the invariant authority for copy availability and active loans. A repository/service separately owns database connections and transaction scopes. |
++| Owner / resource custodian | The loaded `Library` retains copy, member, and loan state; a repository/service separately retains database connections and transaction scopes. Domain responsibility for copy availability and active loans belongs to `Library`'s command boundary. |
+ | Stable identity | `CopyId`, `MemberId`, and `LoanId` are durable value IDs. `Loan` stores IDs rather than pointers/references to a `Copy` or `Member`. |
+ | Mutation authority | Callers request `checkout` or `return`; they cannot directly set a copy's state. Loan facts are immutable after creation for this example. |
+ | Access regime | Reads return a value snapshot. Commands go through the aggregate. Concurrent commands are serialized at the chosen boundary. |
+ | Validity horizon | An in-memory borrow/reference is valid only during its language-defined lifetime. A durable ID can outlive an object instance, but every lookup must still handle deletion or stale state. |
+-| Execution domain | Rust uses exclusive `&mut self` access in the single-threaded API; a shared service can place the aggregate behind a lock. Java serializes methods on this instance with `synchronized`, or can confine it to one executor. |
++| Execution domain | Serialize commands for the same loaded aggregate. Rust realizes this with exclusive `&mut self` access in the single-threaded API; a shared service can place the aggregate behind a lock. Java serializes methods on this instance with `synchronized`, or can confine it to one executor. |
+ | Failure boundary | Checkout returns a typed failure for unknown copy, unknown member, or already-loaned copy. The persistence adapter separately reports transaction and I/O failures. |
+ 
+ The Rust sketch makes one writer explicit in its API. It does not claim to make persistence atomic or prove that IDs exist in a database.
+@@ -139,7 +143,7 @@
+ 
+ This Rust block is an illustrative design sketch, not the compiled laboratory implementation. Production code should generate or receive IDs at a defined boundary and define how it handles inconsistent loaded state. The key Rust shape is `&mut self`: while that borrow is active, safe Rust code cannot also hold another mutable borrow of the same `Library`. Returning a `LoanId` rather than an internal reference also prevents callers from depending on an aggregate's storage layout. See [the executable laboratory](laboratory.md) for the compiled Rust examples and their actual evidence.
+ 
+-The following Java block is a teaching sketch only; it is not executable Java, is not part of the compiled Rust laboratory, and has no Java build evidence. A production Java implementation would be a separate exercise. This sketch has the same domain owner and IDs. The compiler does not prevent another reference to the `Library`, so private state and command methods establish the boundary by API design. `synchronized` serializes calls on this object instance; it does not make a multi-object or database transaction atomic.
++The following Java block is a teaching sketch only; it is not executable Java, is not part of the compiled Rust laboratory, and has no Java build evidence. A production Java implementation would be a separate exercise. This sketch has the same domain responsibility and IDs. The compiler does not prevent another reference to the `Library`, so private state and command methods establish the boundary by API design. `synchronized` serializes calls on this object instance; it does not make a multi-object or database transaction atomic.
+ 
+ ```java
+ record CopyId(UUID value) {}
+@@ -179,8 +183,8 @@
+ 
+ ## Refactoring toward portable contracts
+ 
+-1. Inventory meaningful relationships. Label each one as ownership, observation, shared access, resource custody, or durable reference; do not infer those roles from the word “has-a.”
+-2. Write the domain invariant first. Put state transitions behind the smallest owner/API that can check it, then test both allowed and rejected transitions.
++1. Describe the scenario and write its domain invariant. Identify expected, forbidden, and failure outcomes before selecting a language mechanism.
++2. Inventory meaningful relationships and complete the seven fields. Separate resource custody, domain responsibility, durable identity, and authorization; do not infer those roles from the word “has-a.” Put transitions behind the smallest coordinator/API that can check the invariant, then test both allowed and rejected transitions.
+ 3. Add stable ID value types where lookup must survive reload, serialization, or object replacement. Treat lookup failure and version mismatch as normal outcomes. Never persist an address, runtime object identity, or collection position as if it were durable.
+ 4. Mark each API as read view, controlled mutation, borrowed access, value copy, or ownership transfer. Avoid returning mutable internals when a snapshot or narrow interface suffices.
+ 5. State the lifecycle boundary for files, locks, sockets, database transactions, and subscriptions. Prefer deterministic close/using/defer/RAII scopes. Garbage collection alone does not close resources at a predictable time.
+--- before/docs/07-learning-path.md
++++ after/docs/07-learning-path.md
+@@ -1,6 +1,10 @@
+ # Learning path
+ 
+-This is an initial syllabus for learning ROO through design decisions and a running capstone, not a claim to cover all object-oriented, Rust, pattern, or architecture literature. It assumes basic programming experience and introduces Rust before asking learners to solve larger designs with its ownership model.
++This is an initial syllabus for learning ROO (Relationship & Ownership Oriented design), a proposed, language-independent method for describing and reviewing important software relationships. It pairs method practice with a Rust laboratory; it is not a claim to cover all object-oriented, Rust, pattern, or architecture literature.
++
++The portable method flow is scenario and invariant → seven-field Relationship Contract → language, runtime, storage, and protocol realization → evidence and remaining assumptions. The fields are Owner / resource custodian, Stable identity, Mutation authority, Access regime, Validity horizon, Execution domain, and Failure boundary.
++
++The Rust implementation and evidence in Stages 3 and 6 provide this syllabus's required Rust laboratory qualification. ROO can be adopted independently in another language by carrying the same scenarios, invariants, and relationship contracts into that language and collecting its own evidence; that adoption does not qualify the Rust laboratory.
+ 
+ Use the same small domain throughout: a library lends physical book copies to members. Returning to one domain makes it easier to see which design decisions come from the problem and which come from a language or pattern.
+ 
+@@ -18,11 +22,11 @@
+ 
+ **Read:** [ROO foundations](01-foundations.md) and [relationship design](02-relationship-design.md) in this project. Then use the Relationship Contract in [cross-language portability](06-cross-language.md).
+ 
+-**Exercise:** for `Library → Copy`, `Library → Loan`, and `Loan → Member`, fill the seven Relationship Contract fields. In the owner/resource-custodian field, distinguish memory or external-resource custody from domain responsibility when they differ. Decide which object graph links are useful only in memory and which relationships must survive loading from a store.
++**Exercise:** for `Library → Copy`, `Library → Loan`, and `Loan → Member`, fill all seven Relationship Contract fields. In the owner/resource-custodian field, distinguish memory or external-resource custody from domain responsibility when they differ. Decide which object graph links are useful only in memory and which relationships must survive loading from a store.
+ 
+-**Deliver:** a contract table for five relationships, plus a short note for each boundary where a reference, ID, copied value, or command is the right interface. Mark every promise as compiler-enforced, runtime-enforced, or convention/test-enforced in the initial language.
++**Deliver:** a contract table for five relationships that fills all seven fields, plus a short note for each boundary where a reference, ID, copied value, or command is the right interface. Mark every promise by its intended enforcement mechanism—compiler, runtime, storage/protocol, or convention/test—and record the available evidence.
+ 
+-**Review question:** have memory ownership, business responsibility, and persistent identity accidentally been collapsed into one answer?
++**Review question:** are custody, domain responsibility, stable identity, mutation authority, and caller authorization each explicit rather than collapsed into one answer?
+ 
+ ## Stage 3 — Learn Rust ownership by implementing the small model
+ 
+--- before/docs/08-rust-and-object-design.md
++++ after/docs/08-rust-and-object-design.md
+@@ -7,7 +7,7 @@
+ 
+ ## How to read this guide
+ 
+-This guide organizes Rust and object design around relationships: who keeps a value or resource available, what identifies a domain entity, who may change it, how access is coordinated, when that access expires, where operations can overlap, and what remains after failure.
++ROO (Relationship & Ownership Oriented design) is a proposed, language-independent method. This companion guide works through it with Rust and object-oriented design. Its portable flow starts with a scenario and invariant, records the seven-field Relationship Contract, maps each field to language, runtime, storage, and protocol choices, then names the evidence and remaining assumptions.
+ 
+ The original Portuguese guide remains preserved at [RUST_VS_OO_GUIA_COMPLETO_2026.original.md](../research/sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md). Its 29 topics are mapped to this edition in the coverage crosswalk near the end.
+ 
+@@ -86,7 +86,7 @@
+ | Field | Question |
+ |---|---|
+ | **Owner / resource custodian** | What keeps the related value, state, or resource available, and who releases it? |
+-| **Identity** | Is the target an embedded value or an independent entity? What key, scope, version, reuse, and deletion rules identify it? |
++| **Stable identity** | If the target has domain identity, what key, scope, version, reuse, and deletion rules identify it across operations or reloads? |
+ | **Mutation authority** | Which component may request and perform which state changes while preserving which invariants? |
+ | **Access regime** | Is access owned, borrowed, copied, transferred, snapshot-based, locked, actor-mediated, or otherwise coordinated? |
+ | **Validity horizon** | For what interval is the value, handle, observation, permission, or version usable? What makes it stale or invalid? |
+@@ -95,8 +95,8 @@
+ 
+ These fields must not be collapsed:
+ 
+-- A Rust value owner is not automatically the business owner.
+-- A database ID identifies data but does not authorize access to it.
++- Resource custody is distinct from domain responsibility, stable identity, and authorization.
++- A durable database ID identifies data but does not authorize access to it.
+ - A mutable borrow grants a form of exclusive access but not permission to make every business change.
+ - A transaction may make database writes atomic but does not include a payment provider unless the provider participates in a defined protocol.
+ - A snapshot can remain valid as historical evidence while being stale for a new decision.
+@@ -117,18 +117,19 @@
+ Failure boundary: timeout may mean unknown outcome; reconcile by attempt ID
+ ```
+ 
++The preserved label `Identity` in this notation is shorthand for the canonical **Stable identity** field.
++
+ Use several records when one relationship has distinct modes. An Order can retain only a Customer ID between requests, resolve an authorized view during checkout, and keep an owned snapshot of the commercial facts used to quote the order.
+ 
+ ### A short decision process
+ 
+ 1. State a concrete allowed scenario, a forbidden scenario, and a failure case.
+ 2. List the state that must agree and the moment at which it must agree.
+-3. Name the owner, stable identity, mutation authority, and access regime.
+-4. State when access expires, including freshness and business lifecycle.
+-5. Specify concurrency, suspension, transaction, retry, and cancellation behavior.
+-6. Choose the least complicated representation that meets those requirements.
+-7. Name the mechanism that checks each claim and record what remains assumed.
+-8. Try a counterexample: delete a target, reuse an ID, submit twice, time out after a remote effect, or race two updates.
++3. Complete all seven fields: Owner / resource custodian, Stable identity, Mutation authority, Access regime, Validity horizon, Execution domain, and Failure boundary. Keep custody, domain responsibility, identity, mutation authority, and caller authorization distinct.
++4. Map the contract to a language, runtime, storage, and protocol realization. Choose a representation that meets the requirements, including concurrency, suspension, transaction, retry, and cancellation behavior.
++5. Name what checks each claim, record the evidence, and state the assumptions that remain.
++6. Try a counterexample: delete a target, reuse an ID, submit twice, time out after a remote effect, or race two updates.
++7. Revise the contract or boundary when a counterexample exposes a missing requirement.
+ 
+ The full [relationship design chapter](02-relationship-design.md) includes notation, a commerce relationship matrix, graph policies, API choices, and review exit criteria. Reuse the [Relationship Contract worksheet](../templates/relationship-contract.md) when reviewing a real design.
+ 
+@@ -642,6 +643,8 @@
+ 
+ ## 17. Learning sequence
+ 
++Stages 1 and 2 of the [learning path](07-learning-path.md) define the domain and relationship contracts before its Rust Stage 3. The method artifacts are language-independent; the Rust examples and laboratory establish Rust-specific evidence. Applying the same contracts in another language is independent method adoption and requires evidence for that implementation.
++
+ 1. **Object model and boundaries:** implement a small domain value with private state; compare it with a Java record and class.
+ 2. **Ownership and access:** explain owned values, shared and exclusive borrows, indirection, shared handles, weak links, copying, cloning, and destruction without equating them to domain identity.
+ 3. **Types and transitions:** compare newtypes, validated constructors, runtime enums, and a narrowly scoped typestate protocol.
+@@ -658,7 +661,7 @@
+ ### Relationship and domain
+ 
+ - [ ] The invariant and identity rule are stated before choosing a pointer or class.
+-- [ ] Owner/resource custodian is distinct from domain responsibility.
++- [ ] Owner/resource custodian is distinct from domain responsibility, stable identity, and caller authorization.
+ - [ ] Mutation authority and caller authorization are separate.
+ - [ ] Access mode, validity horizon, execution domain, and failure boundary are explicit.
+ - [ ] Stale, missing, deleted, cross-tenant, and reused IDs have defined handling.
+--- before/docs/laboratory.md
++++ after/docs/laboratory.md
+@@ -1,6 +1,10 @@
+ # The executable laboratory
+ 
+ The `roo` package is a small standard-library-only teaching library. Its APIs make selected ownership and behavioral decisions observable. It is not a production order system, graph database, event broker, or distributed workflow engine.
++
++ROO (Relationship & Ownership Oriented design) is a language-independent method. Its flow is scenario and invariant → Relationship Contract with Owner / resource custodian, Stable identity, Mutation authority, Access regime, Validity horizon, Execution domain, and Failure boundary → language, runtime, storage, and protocol realization → evidence and remaining assumptions.
++
++This package defines the Rust laboratory qualification for selected Rust mechanics and behaviors. That qualification is separate from adopting the ROO method in another language: carry over the same scenarios, invariants, and contracts, then establish evidence for that language's runtime, storage, and protocols.
+ 
+ ## Relationship map
+ 
+--- before/templates/architecture-decision.md
++++ after/templates/architecture-decision.md
+@@ -2,13 +2,15 @@
+ 
+ Status: proposed / accepted / superseded. Date: [date]. Owner: [role].
+ 
++ROO (Relationship & Ownership Oriented design) is language-independent; record relationship decisions before their platform realization.
++
+ ## Problem and invariant
+ 
+-Describe the concrete operation, the state it touches, the required behavior, and the failure that the design must prevent.
++Describe the concrete operation, participants, state it touches, required behavior, and failure the design must prevent. Record the allowed and forbidden outcomes and the observation boundary for the invariant.
+ 
+ ## Relationship Contracts
+ 
+-Link the affected contracts. State memory ownership, business responsibility, identity and transaction boundaries separately.
++Link the affected contracts. State the domain responsibility for preserving each invariant separately from resource custody, durable identity, authorization, and transaction scope.
+ 
+ ## Alternatives
+ 
+@@ -18,7 +20,15 @@
+ 
+ ## Decision and reasons
+ 
+-Explain the selected representation and what would cause the choice to change. Specify the public operations and what each consumes, borrows, returns, or transfers.
++Record the language-neutral decision first: who coordinates the invariant, what needs independent identity, who is authorized to request each change, how participants access or transfer information, when it remains valid, where operations are coordinated, and what may happen on failure. Explain why this policy fits and what evidence or requirement would cause it to change.
++
++## Optional realization
++
++After the neutral decision, record the implementation choices that matter for the target language, runtime, store, or protocol. Specify public operations and their observable effects. Describe consuming, borrowing, copying, lookup, or ownership transfer only when those concepts apply to the chosen platform; they are realization choices, not the relationship decision.
++
++| Layer, language, runtime, store, or protocol | Realization | Enforcement or constraint |
++|---|---|---|
++| | | |
+ 
+ ## Failure and recovery
+ 
+@@ -26,12 +36,16 @@
+ 
+ ## Evidence and limits
+ 
+-- Compiler checks:
+-- Behavioral and failure tests:
++Separate evidence by what it can establish:
++
++- Compiler or static analysis:
++- Runtime or behavioral evidence:
++- Database constraints, transactions, and durability:
++- Protocol, wire, or remote-boundary behavior:
++- Human review and operational assumptions:
+ - Sources and established precedent:
+-- Assumptions, untested properties, and remaining risks:
+-- Cross-language implementation obligations:
++- Remaining assumptions, untested properties, and risks:
+ 
+ ## Consequences
+ 
+-State benefits, costs, migration steps and rollback options. Record the scope of acceptance; passing tests alone does not accept an architectural tradeoff.
++State benefits, costs, migration steps, and rollback options. Record the scope of acceptance; passing tests alone does not accept an architectural tradeoff.
+--- before/templates/design-review.md
++++ after/templates/design-review.md
+@@ -1,18 +1,32 @@
+ # ROO design review
+ 
+-Review one use case and its relationships against observable requirements. Do not score a design by counting traits, patterns, or compiler errors.
++ROO (Relationship & Ownership Oriented design) is language-independent. Review one use case and its relationships against observable requirements; start with behavior and the invariant, then inspect traits, interfaces, or class hierarchies only after defining the behavior a boundary must preserve. Do not score a design by counting patterns or compiler errors.
+ 
+ | Review question | Evidence to inspect |
+ |---|---|
+-| Does each important relationship have a custodian and a validity horizon? | Relationship Contract and data flow |
+-| Are memory ownership, identity, authorization and transaction scope distinguished? | API, storage model and use case |
+-| Can callers bypass an invariant through fields, mutable views, setters or reconstruction? | Visibility and mutation operations |
+-| Does a trait express a useful behavioral contract? | Implementations and shared contract tests |
+-| Is a hierarchy expressing reuse, substitutability or variation? | Alternatives and extension scenario |
+-| Are long-lived links represented appropriately? | IDs, borrows, snapshots and shared ownership |
+-| What happens on stale lookup, invalid input, cancellation or partial external failure? | Negative tests and failure path |
+-| Does concurrency preserve the whole business invariant? | Lock/actor/transaction boundary |
+-| What does compilation prove here, and what remains unproven? | Positive and negative compiler examples; runtime tests |
+-| Can another language preserve the same relationship decisions? | Cross-language mapping and enforcement limits |
++| What scenario, invariant, allowed outcome, forbidden outcome, and failure case define this review? | Use case, relationship decisions, and expected results |
++| What behavior must a boundary provide to its callers? | Requests, results, state changes, error behavior, and retry or idempotency rules |
++| Does each important relationship name its resource custodian and domain invariant coordinator separately? | Relationship Contract and data flow |
++| Does a target need durable identity beyond a current value or object lifetime? | Identity scope, version, reuse, deletion, and lookup rules |
++| Are mutation authority and business authorization explicit? | API, permissions, storage model, and use case |
++| Are access, aliasing, validity, and transfer decisions clear before choosing language mechanisms? | Relationship Contract and boundary crossings |
++| Can callers bypass an invariant through fields, mutable views, setters, or reconstruction? | Visibility, mutation operations, and scenario evidence |
++| Does the execution boundary preserve the whole invariant under overlap? | Coordination, transaction, or serialization boundary and concurrent scenario |
++| What happens on stale lookup, invalid input, cancellation, or partial external failure? | Negative behavior, recovery path, and observed results |
++| After the behavior is defined, do traits or interfaces expose the needed operations, and do implementations preserve their shared contract? | Port contract, implementations, and shared behavioral checks |
++| Does a hierarchy provide needed reuse, substitutability, or variation? | Alternatives and concrete extension scenario |
++| Can another language preserve the same relationship decisions with its own mechanisms? | Neutral contract and per-language enforcement limits |
++
++## Evidence classes
++
++Treat these sources separately; evidence in one class does not establish claims in another.
++
++| Evidence class | What it can support | Limit to record |
++|---|---|---|
++| Compiler or static analysis | Checked type, visibility, or access properties of the analyzed program | Does not establish domain correctness, authorization, runtime behavior, or external effects |
++| Runtime or behavioral evidence | Observed outcomes for the executed scenarios and conditions | Does not cover unobserved states or prove every interleaving |
++| Database or transaction evidence | Constraints, isolation, atomicity, and durability in the examined database setup | Does not establish end-to-end behavior across an unexamined service or provider |
++| Protocol or boundary evidence | Encoded inputs and outputs, rejection behavior, and tested delivery semantics | A schema alone does not prove domain correctness or durable effects |
++| Human review or operational decision | Explicit assumptions, policy choices, and reviewed tradeoffs | Is not execution evidence for behavior or infrastructure guarantees |
+ 
+ Classify findings as a demonstrated defect, an unverified question, or an optional improvement. Include the violated requirement and a concrete scenario. Review code and sources directly rather than relying only on the author's description.
+--- before/templates/relationship-contract.md
++++ after/templates/relationship-contract.md
+@@ -1,62 +1,70 @@
+ # Relationship Contract worksheet
+ 
+-Copy this worksheet for one relationship or a small group of relationships governed by the same invariant. It is a design aid, not a compiler annotation or a formal proof.
++Use this worksheet for one relationship or a small group governed by the same invariant. ROO (Relationship & Ownership Oriented design) is language-independent: start with the scenario and invariant, then make relationship decisions before choosing types, APIs, storage, or synchronization. This is a design aid, not a compiler annotation or formal proof. Keep resource custody (retention and release), domain responsibility (invariant-preserving decisions), stable identity (recognition across lifetimes), and authorization (permission to request an operation) separate.
+ 
+ ## Context
+ 
+-- Relationship: `Source → Target`
+-- Domain meaning and cardinality:
+-- Invariant that this relationship must preserve:
+-- Value, entity, resource, service, or event:
+-- Independent lifecycle and stable identity, if any:
++- Scenario or operation:
++- Expected outcome, forbidden outcome, and relevant failure:
++- Relationship: `Source → Target` (cardinality):
++- State that must agree and the invariant it must preserve:
++- Domain responsibility / invariant coordinator: which participant decides changes that must preserve the invariant?
++- Value, entity, resource, service, or event; independent lifecycle, if any:
+ 
+ ## Seven fields
+ 
+-| Field | Decision | Evidence / enforcement |
++| Field | Language-neutral decision | Questions to answer |
+ |---|---|---|
+-| Owner / resource custodian | | |
+-| Identity | | |
+-| Mutation authority | | |
+-| Access regime | | |
+-| Validity horizon | | |
+-| Execution domain | | |
+-| Failure boundary | | |
++| Owner / resource custodian | | Who retains the resource and handles its local lifecycle, release, or cleanup? Custody does not by itself grant authority to change domain state. |
++| Stable identity | | Does the target need an identity beyond its current value or lifetime? If so, state its scope, version, reuse, and deletion rules. A reference or storage address is not durable identity. |
++| Mutation authority | | Which operation changes state, and who is responsible for preserving the invariant at that transition? Record who may request it as a separate authorization decision. |
++| Access regime | | What interaction is required: observe, resolve, request a change, share state, or transfer facts? Which aliases or overlapping access are allowed? Defer language mechanisms to realization. |
++| Validity horizon | | When is access valid, stale, or revoked? Distinguish memory lifetime, business lifecycle, freshness, and cancellation. |
++| Execution domain | | Where must overlapping operations be coordinated: one operation, task or thread, process, service, or transaction? |
++| Failure boundary | | Which effects may survive failure? Who handles rollback, compensation, retry, cancellation, uncertainty, or redelivery? |
+ 
+ ## Supporting decisions
+ 
+-- Creation, replacement, deletion, and cleanup responsibilities:
+-- Reverse navigation: required or merely convenient? Who owns the index?
+-- Aliasing: which concurrent or overlapping views may exist?
+-- Identity resolution: missing, stale, cross-store, or unauthorized target behavior:
+-- Consistency: local invariant, transaction, eventual agreement, or snapshot:
+-- Serialization: which values or IDs cross a process boundary?
+-- Cancellation and retry: which state and resources remain? Is the operation idempotent?
+-- Resource budget: queue capacity, retained snapshots, lock duration, allocation and cleanup:
++- Authorization: who or what may request each operation, its scope, and how permission is checked or revoked:
++- Creation, replacement, deletion, release, and cleanup responsibilities:
++- Reverse navigation: is it needed, and who maintains the relation or index?
++- Identity resolution: behavior for a missing, stale, version-mismatched, or unauthorized target:
++- Consistency: which state must agree, and at what observation boundary (local invariant, transaction, eventual agreement, or snapshot)?
++- Boundary crossing: which facts or identities cross a process, persistence, or wire boundary?
++- Cancellation and retry: which state and resources remain, and is repetition idempotent?
++- Resource budget: queue capacity, retained snapshots, lock duration, allocation, and cleanup limits:
+ 
+-## Representation
++## Optional realization and enforcement
+ 
+-| Candidate | What it expresses | Cost / obligation | Selected? |
++Complete this section only after the neutral decisions above. Choose relevant implementation approaches; no Rust representation is required. A database foreign key does not determine an in-memory representation.
++
++| Candidate realization | What it may express | Cost or obligation | Selected? |
+ |---|---|---|---|
+ | Embedded owned value | | | |
+-| Temporary shared or exclusive borrow | | | |
++| Temporary shared or exclusive view | | | |
+ | Stable ID and resolver | | | |
+-| Independent snapshot / copy | | | |
+-| Owned message / command | | | |
++| Independent snapshot or copy | | | |
++| Owned message or command | | | |
+ | Explicit shared ownership and coordination | | | |
+-
+-Use only candidates relevant to the relationship. A database foreign key does not determine an in-memory pointer type.
+-
+-## Observable evidence
+-
+-- Permitted scenario and expected result:
+-- Forbidden scenario and expected rejection:
+-- Compiler-enforced property, if any:
+-- Runtime validation or behavioral test:
+-- Failure/retry/cancellation scenario:
+-- Remaining assumptions and unverified claims:
+ 
+ ## Cross-language interpretation
+ 
+-- Rust representation and enforcement:
+-- Other-language representation and enforcement:
+-- Where the other language requires convention, review, runtime validation, or tooling:
++Keep the relationship decision stable while mapping it to each relevant language, runtime, store, or protocol. A mapping may differ by platform; do not require every implementation to reproduce another language's type shapes.
++
++| Language, runtime, store, or protocol | Realization chosen | Enforcement and limits |
++|---|---|---|
++| | | |
++
++## Observed evidence
++
++Record evidence that was actually observed, with a link or artifact reference where available. Use only the categories relevant to this relationship.
++
++- Compiler or static analysis:
++- Runtime or behavioral scenario:
++- Database or transaction behavior:
++- Protocol or boundary behavior:
++- Human review or operational decision:
++
++## Remaining assumptions and open questions
++
++- Assumptions, unverified claims, and unresolved decisions:

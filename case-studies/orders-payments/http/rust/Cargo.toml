@@ -1,0 +1,20 @@
+[package]
+name = "roo-http-case"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.96"
+publish = false
+
+[workspace]
+
+[dependencies]
+axum = "=0.8.9"
+tokio = { version = "=1.53.2", features = ["rt-multi-thread", "macros", "net", "signal", "sync", "time"] }
+serde_json = "=1.0.154"
+serde = "=1.0.229"
+postgres = "=0.19.14"
+roo-postgres-case = { path = "../../postgres/rust" }
+
+[[bin]]
+name = "roo-http"
+path = "src/main.rs"

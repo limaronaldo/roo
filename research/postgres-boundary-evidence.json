@@ -1,0 +1,5 @@
+{
+  "ambient_libpq_settings_ignored": true,
+  "mismatched_data_directory_rejected": true,
+  "owned_cluster_stopped": true
+}

@@ -1,0 +1,3 @@
+Recheck after removing RTK from public build script; no business-source changes.
+Java PostgreSQL pure checks: 52
+Java PostgreSQL compiler negatives: private fields and final algorithm rejected

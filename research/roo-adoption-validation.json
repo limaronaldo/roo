@@ -1,0 +1,1764 @@
+{
+  "scope": "Static documentation qualification only; no build, runtime test, HTTP, SQL, cluster, or network actions",
+  "baseline_candidate_id": "798ca514d162ab8d428ab13f2f2154b5eaeea19599d0934522a2148a3a1012bf",
+  "baseline_files": 171,
+  "new_requested_documents": [
+    "docs/09-adoption-guide.md",
+    "case-studies/orders-payments/adoption/relationship-contract.md",
+    "case-studies/orders-payments/adoption/architecture-decision.md",
+    "case-studies/orders-payments/adoption/design-review.md"
+  ],
+  "navigation_paths_changed": [
+    "README.md",
+    "case-studies/orders-payments/README.md"
+  ],
+  "protected_baseline_files_byte_identical": 169,
+  "historical_research_files_byte_identical": 59,
+  "original_templates_byte_identical": true,
+  "navigation_fences": [
+    {
+      "path": "README.md",
+      "blocks": 5,
+      "byte_identical": true
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "blocks": 8,
+      "byte_identical": true
+    }
+  ],
+  "template_coverage": {
+    "relationship-contract": {
+      "sections": [
+        "Context",
+        "Seven fields",
+        "Supporting decisions",
+        "Optional realization and enforcement",
+        "Cross-language interpretation",
+        "Observed evidence",
+        "Remaining assumptions and open questions"
+      ],
+      "all_sections_present": true,
+      "prompt_count": 20,
+      "all_prompts_present": true,
+      "fields": [
+        "Owner / resource custodian",
+        "Stable identity",
+        "Mutation authority",
+        "Access regime",
+        "Validity horizon",
+        "Execution domain",
+        "Failure boundary"
+      ],
+      "candidate_rows": [
+        "Embedded owned value",
+        "Temporary shared or exclusive view",
+        "Stable ID and resolver",
+        "Independent snapshot or copy",
+        "Owned message or command",
+        "Explicit shared ownership and coordination"
+      ]
+    },
+    "architecture-decision": {
+      "sections": [
+        "Problem and invariant",
+        "Relationship Contracts",
+        "Alternatives",
+        "Decision and reasons",
+        "Optional realization",
+        "Failure and recovery",
+        "Evidence and limits",
+        "Consequences"
+      ],
+      "all_sections_present": true,
+      "prompt_count": 7,
+      "all_prompts_present": true
+    },
+    "design-review": {
+      "sections": [
+        "Evidence classes"
+      ],
+      "all_sections_present": true,
+      "prompt_count": 0,
+      "all_prompts_present": true,
+      "questions_retained_and_answered": 12
+    }
+  },
+  "primary_scenario_source": "recover_commit\tadd:100:2;add:50:1;pay:p1:approve:commit;reconcile:ok:none",
+  "primary_scenario_expected_final_snapshot": "recover_commit\tPaid\t250\t1\t0\t1\t0\t1\tApproved\tp1\t-",
+  "primary_intermediate_states": "Source-described; independent semantic review verifies against coordinator/store and tests",
+  "local_links_checked": 277,
+  "anchor_links_checked": 4,
+  "links": [
+    {
+      "source": "README.md",
+      "target": "docs/01-foundations.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/03-concept-atlas.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/04-pattern-catalog.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/05-architecture.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/06-cross-language.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/07-learning-path.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/08-rust-and-object-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/09-adoption-guide.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/http/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/guide-assessment.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/literature.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/agenda.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "templates/architecture-decision.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "templates/design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "docs/laboratory.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/orders-payments-run.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "case-studies/orders-payments/http/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/run-ledger.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "README.md",
+      "target": "research/validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.py",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.sh",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "http/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../docs/09-adoption-guide.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "adoption/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "adoption/architecture-decision.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "adoption/design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "postgres/schema.sql",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/Adapters.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/InMemoryTemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/examples/recovery.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/lib.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/fixture.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.py",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/negative/PrivateMutation.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/negative/OverrideAlgorithm.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/CompositionRunner.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/TemplateRunner.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/fixture.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/main.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/lib.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.py",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.py",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../orders-payments/verify.sh",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/Adapters.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/src/fixture.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "rust/examples/recovery.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../docs/02-relationship-design.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../docs/05-architecture.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/README.md",
+      "target": "../../docs/06-cross-language.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/adoption/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/adoption/architecture-decision.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/adoption/design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../templates/architecture-decision.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../templates/design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/java/src/roo/payments/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/java/src/roo/payments/Adapters.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/java/src/roo/payments/UnitTests.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/adoption/design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "docs/09-adoption-guide.md",
+      "target": "../case-studies/orders-payments/http/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../../../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../../../docs/09-adoption-guide.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "architecture-decision.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../java/src/roo/payments/Adapters.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../java/src/roo/payments/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../postgres/java/src/roo/postgres/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../postgres/java/src/roo/postgres/Store.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../http/java/src/roo/postgres/HttpService.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../../../research/orders-payments-negative-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../../../research/postgres-integration-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../../../research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../../../research/http-integration-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "target": "../../../research/http-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../docs/09-adoption-guide.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../java/src/roo/payments/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../java/src/roo/payments/Adapters.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../postgres/java/src/roo/postgres/Store.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../postgres/java/src/roo/postgres/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../postgres/rust/src/database.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../postgres/schema.sql",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../http/java/src/roo/postgres/HttpProtocol.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../http/rust/src/lib.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../research/orders-payments-negative-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../java/src/roo/payments/UnitTests.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../research/postgres-integration-evidence.json",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../research/orders-payments-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../research/postgres-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../research/http-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../templates/architecture-decision.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../templates/relationship-contract.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "../../../research/orders-payments-sources.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "target": "design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../scenarios.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../expected.tsv",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/Adapters.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/Domain.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/java/src/roo/postgres/Store.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/rust/src/database.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/TemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/InMemoryTemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-checks.log",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/postgres-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/http-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../templates/design-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/README.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../docs/09-adoption-guide.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/application.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/adapters.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/Adapters.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../java/src/roo/payments/InMemoryTemplateApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../rust/src/domain.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/java/src/roo/postgres/Provider.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/rust/src/database.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/java/src/roo/postgres/Store.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../postgres/java/src/roo/postgres/CompositionApplication.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/SPEC.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/java/src/roo/postgres/HttpService.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/java/src/roo/postgres/HttpProtocol.java",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../http/rust/src/main.rs",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/postgres-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/http-validation.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/orders-payments-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/postgres-review.md",
+      "exists": true,
+      "anchor_exists": null
+    },
+    {
+      "source": "case-studies/orders-payments/adoption/design-review.md",
+      "target": "../../../research/http-review.md",
+      "exists": true,
+      "anchor_exists": null
+    }
+  ],
+  "diff_sha256": "ccd363d072e13fe0befd0bfc809421699e9ec8a179f3eb8ef53ef4ee10bfddc7",
+  "result": "PASS",
+  "errors": [],
+  "limits": [
+    "Local links and template completeness do not establish runtime behavior.",
+    "Historical receipts retain their original dates and execution boundaries.",
+    "Independent review checks English clarity, actual symbols, semantic accuracy, and evidence claims."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "scope": "Expansion-only English naming update",
+  "changed_existing_files": [
+    "Cargo.toml",
+    "README.md",
+    "docs/01-foundations.md",
+    "docs/03-concept-atlas.md",
+    "docs/04-pattern-catalog.md"
+  ],
+  "baseline_files_checked": 158,
+  "existing_files_byte_identical": 153,
+  "exact_replacement_checks": true,
+  "original_run_ledger_unchanged": true,
+  "case_study_files_unchanged": true,
+  "lockfiles_unchanged": true,
+  "crate_name": "roo",
+  "cargo_description": "An executable laboratory for Relationship & Ownership Oriented software design",
+  "cargo_metadata_exit_code": 0,
+  "root_cargo_test_exit_code": 0,
+  "root_tests": {
+    "unit": 10,
+    "positive_doctests": 3,
+    "negative_doctests": 4
+  },
+  "local_links_checked": 28,
+  "missing_links": [],
+  "http_postgres_execution": "Not invoked; naming-only change",
+  "historical_http_candidate_preserved": "7111a514cad56aafbd02107d4b7a00c92649f986b799a46c7a051a68fed75af7"
+}

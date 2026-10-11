@@ -1,0 +1,106 @@
+--- before/.github/workflows/roo-track.yml
++++ after/.github/workflows/roo-track.yml
+@@ -39,7 +39,51 @@
+         with:
+           persist-credentials: false
+ 
++      - name: Verify hosted AMD64 runner and source provenance
++        shell: bash
++        run: |
++          python3 - <<'PY'
++          import hashlib
++          import json
++          import os
++          import platform
++          from pathlib import Path
++          import subprocess
++
++          def output(*command):
++              return subprocess.check_output(command, text=True).strip()
++
++          names = ('GITHUB_REPOSITORY', 'GITHUB_WORKFLOW', 'GITHUB_EVENT_NAME',
++                   'GITHUB_REF', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',
++                   'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH')
++          record = {name: os.environ.get(name) for name in names}
++          record['host_machine'] = platform.machine()
++          record['checkout_commit'] = output('git', 'rev-parse', 'HEAD')
++          record['checkout_tree'] = output('git', 'rev-parse', 'HEAD^{tree}')
++          record['docker_architecture'] = output('docker', 'info', '--format', '{{.Architecture}}')
++          paths = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
++          record['source_sha256'] = {
++              path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
++              for path in paths if path
++          }
++          record['checks'] = {
++              'github_hosted': record['RUNNER_ENVIRONMENT'] == 'github-hosted',
++              'linux': record['RUNNER_OS'] == 'Linux',
++              'host_amd64': record['RUNNER_ARCH'] == 'X64' and record['host_machine'] == 'x86_64',
++              'docker_amd64': record['docker_architecture'] in ('x86_64', 'amd64'),
++              'checkout_matches_event': record['checkout_commit'] == record['GITHUB_SHA'],
++          }
++          destination = Path('artifacts/roo-track/hosted')
++          destination.mkdir(parents=True, exist_ok=True)
++          (destination / 'provenance.json').write_text(json.dumps(record, indent=2) + '\n')
++          if not all(record['checks'].values()):
++              raise SystemExit('Hosted AMD64 runner or source provenance check failed')
++          print('PASS hosted Linux AMD64 runner, Docker architecture, and checkout provenance')
++          PY
++
+       - name: Build and qualify the adoption track
++        env:
++          ROO_REQUIRE_AMD64_IMAGE: '1'
+         shell: bash
+         run: bash case-studies/orders-payments/track/compose.sh
+ 
+--- before/case-studies/orders-payments/track/DOCKER.md
++++ after/case-studies/orders-payments/track/DOCKER.md
+@@ -102,6 +102,11 @@
+ container entry point but does not perform the wrapper's host-side evidence
+ export.
+ 
++The wrapper also records a restricted container inspection and image platform.
++It verifies the configured nonroot user, disabled external networking, absent
++mounts and port bindings, dropped capabilities, and no-new-privileges before
++waiting for test completion. This evidence omits container environment values.
++
+ ## GitHub Actions
+ 
+ The [ROO adoption track workflow](../../../.github/workflows/roo-track.yml)
+@@ -111,6 +116,15 @@
+ credential persistence, pins each action to a commit SHA, and uses no secrets.
+ It always attempts to upload `artifacts/roo-track/`, including after a failed
+ qualification; uploaded artifacts are kept for 14 days.
++
++Before qualification, the workflow verifies a GitHub-hosted Linux X64 runner,
++an x86_64 host, an AMD64 Docker engine, and checkout correspondence with the
++event commit. It records those allowlisted values, the run and attempt, Git
++tree, and SHA-256 hashes of the checked-out files in `hosted/provenance.json`
++within the uploaded artifact. The test step requires a Linux AMD64 image.
++Together with the container inspection and existing evaluator receipts, these
++records bind a hosted qualification to its actual architecture, source, and
++isolation boundary.
+ 
+ The workflow definition alone does not establish a hosted run result. Check an
+ actual GitHub Actions job and its uploaded evidence before reporting CI
+--- before/case-studies/orders-payments/track/compose.sh
++++ after/case-studies/orders-payments/track/compose.sh
+@@ -67,6 +67,19 @@
+ owned=true
+ "${compose[@]}" run --detach --no-deps --name "$container" track "${args[@]}" > "$evidence/container-id.txt"
+ docker inspect --format '{{.Image}}' "$container" > "$evidence/image-id.txt"
++docker inspect --format '{"container_id":{{json .Id}},"image_id":{{json .Image}},"running":{{json .State.Running}},"user":{{json .Config.User}},"network_mode":{{json .HostConfig.NetworkMode}},"mounts":{{json .Mounts}},"port_bindings":{{json .HostConfig.PortBindings}},"ports":{{json .NetworkSettings.Ports}},"cap_drop":{{json .HostConfig.CapDrop}},"privileged":{{json .HostConfig.Privileged}},"security_opt":{{json .HostConfig.SecurityOpt}}}' "$container" > "$evidence/container-isolation.json"
++isolation_ok="$(docker inspect --format '{{and (eq .Config.User "10001:10001") (eq .HostConfig.NetworkMode "none") (eq (len .Mounts) 0) (eq (len .HostConfig.PortBindings) 0) (not .HostConfig.Privileged) (eq (len .HostConfig.CapDrop) 1) (eq (index .HostConfig.CapDrop 0) "ALL") (eq (len .HostConfig.SecurityOpt) 1) (eq (index .HostConfig.SecurityOpt 0) "no-new-privileges:true")}}' "$container")"
++if [[ "$isolation_ok" != true ]]; then
++    printf '1\n' > "$evidence/isolation-check-exit-code.txt"
++    echo 'Container isolation check failed; inspect the retained evidence.' >&2
++    exit 1
++fi
++printf '0\n' > "$evidence/isolation-check-exit-code.txt"
++docker image inspect "$(cat "$evidence/image-id.txt")" --format '{{.Os}}/{{.Architecture}}' > "$evidence/image-platform.txt"
++if [[ "${ROO_REQUIRE_AMD64_IMAGE:-0}" == 1 && "$(cat "$evidence/image-platform.txt")" != linux/amd64 ]]; then
++    echo 'Hosted qualification requires a Linux AMD64 image.' >&2
++    exit 1
++fi
+ docker wait "$container" > "$evidence/container-exit-code.txt"
+ docker logs "$container" 2>&1 | tee "$evidence/run.log"
+ set +e

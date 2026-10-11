@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-11",
+  "source_sha256": "0b1edd27561e84a17777f1bf63a87a928a7d8fe9d603fd9f6b7e13fa504e6dd7",
+  "coverage": "15 selected self-contained Rust fences, metadata compilation only. No linkage, execution, async dependency, full-guide or production correctness claim. Wrapper adds only fn main and dead_code allowance.",
+  "checks": [
+    {
+      "original_fence_line": 164,
+      "code_sha256": "6101ef377e5a92a63b48240bdf325861913f3abed524caa2033630913457e8b0",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 218,
+      "code_sha256": "a15cfe1aaa0442e8baa1dbc45a12987949bec53db3624821fcd06898b5db1e3c",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 257,
+      "code_sha256": "e40f521a80732e7ae125c3ec751e9ab239e46ec952e8129aba01bcef41b8ce1a",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 269,
+      "code_sha256": "131cae15f127571cd8cbd9b0d9591ae31bfce7f0ddb2bc2fb62c4d250b6bae02",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 355,
+      "code_sha256": "f1b8b6fed056dd25d5ec15cea2685f2e3637017d4f4b15ab1127a14247ef3f8b",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 375,
+      "code_sha256": "03627e23e399fbef4220ed7d11f4d6649d23d97ed208ab56a5a3340670780873",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 403,
+      "code_sha256": "aa2699385899ca97e49211c2603cb849a50c0256fe5778942aceeab05d587045",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 459,
+      "code_sha256": "7a7c7e3f58de41440994f832dfbf56db07731608df1326678e1aeda61c8b52ad",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 528,
+      "code_sha256": "634dd9f9042318212fe1e395d05a08d98ee4449151b8fa8b6c7aa899b0a6b3e2",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 574,
+      "code_sha256": "2e9ebd250073fcb99d2e5a7861efba53025d2835c739630e8b6e9c2dafb898c9",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 720,
+      "code_sha256": "183d63610b62345c465c52232e320b7e1c5eb4908a1d7cd0343f9a4443c7f369",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 919,
+      "code_sha256": "6094be8d683394238afdef7a84e3de36899fcc1718851ed175bc872ab0c5f2e4",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": "warning: unused variable: `points`\n --> /var/folders/wz/dfc0s429637bwkmp221v3sl80000gn/T/roo-source-fences-nv_x3kum/fence_919.rs:5:5\n  |\n5 | let points: Vec<Point> = vec![Point { x: 1.0, y: 2.0 }];\n  |     ^^^^^^ help: if this is intentional, prefix it with an underscore: `_points`\n  |\n  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted"
+    },
+    {
+      "original_fence_line": 1044,
+      "code_sha256": "f90bfc9acc35b4bdceb0caef5d153e5088ce1c5cf4976238c63534734f706d5f",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 1147,
+      "code_sha256": "a4d8f6f53ba3e0f8f5a530e39c30dcea6b968debc9948f65ebcf0b29f8ca9155",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "original_fence_line": 1489,
+      "code_sha256": "8faf72921b4ad9f14827965946f6e496e213ed6994519fc43198f3502e9630ea",
+      "check": "rustc 1.96.0 edition2024 metadata with fn main wrapper",
+      "exit_code": 0,
+      "diagnostic": ""
+    }
+  ]
+}

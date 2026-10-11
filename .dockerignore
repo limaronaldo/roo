@@ -1,0 +1,24 @@
+# Send only the synthetic case and container infrastructure to the builder.
+**
+!case-studies/
+!case-studies/orders-payments/
+!case-studies/orders-payments/**
+**/target
+**/build
+**/.runtime
+**/.deps
+**/__pycache__
+**/*.pyc
+**/.git
+**/.git/**
+**/research
+**/artifacts
+**/.env
+**/.env.*
+**/*credentials*
+**/*secret*
+**/*.pem
+**/*.key
+**/.ssh
+**/.aws
+**/.config

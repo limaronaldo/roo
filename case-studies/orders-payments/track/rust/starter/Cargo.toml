@@ -1,0 +1,14 @@
+[package]
+name = "roo-track-starter"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.96"
+publish = false
+
+[workspace]
+
+[dependencies]
+orders-payments-case = { path = "../../../rust" }
+
+[lints.rust]
+unsafe_code = "forbid"

@@ -1,0 +1,23 @@
+{
+  "host_cluster_before": {
+    "running": false,
+    "files": {
+      "case-studies/orders-payments/postgres/.runtime/config.json": "e6ae59cb7f4289aba8c57751d565326567e03f20f13af87bc057bbe8d34c3c69",
+      "case-studies/orders-payments/postgres/.runtime/ROO_OWNED_CLUSTER": "e881cd4698cf61bcde9d4ba38b59d71ee5762d85de6f1beed38ea8b633af2482",
+      "case-studies/orders-payments/postgres/.runtime/server.log": "640679f191befed8e784d3b6da4b561aa6dd8435014a56270d2a2a5d0c03adbd"
+    }
+  },
+  "host_cluster_after": {
+    "files": {
+      "case-studies/orders-payments/postgres/.runtime/config.json": "e6ae59cb7f4289aba8c57751d565326567e03f20f13af87bc057bbe8d34c3c69",
+      "case-studies/orders-payments/postgres/.runtime/ROO_OWNED_CLUSTER": "e881cd4698cf61bcde9d4ba38b59d71ee5762d85de6f1beed38ea8b633af2482",
+      "case-studies/orders-payments/postgres/.runtime/server.log": "640679f191befed8e784d3b6da4b561aa6dd8435014a56270d2a2a5d0c03adbd"
+    },
+    "running": false,
+    "pg_ctl_status_exit_code": 3
+  },
+  "host_cluster_preserved": true,
+  "source_candidate_id": "1f2ca6ff019010938513a5f7bece5d6e376640297a3eadabee6ab7d5b20713b4",
+  "all_success_and_failure_run_containers_removed": true,
+  "container_data_exported": false
+}

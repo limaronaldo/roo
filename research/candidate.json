@@ -1,0 +1,154 @@
+{
+  "edition": "0.1",
+  "date": "2026-10-11",
+  "candidate_id": "2e7f4aafab61b8f664a6cd84b3e1183ed9cef4cfd228cdc13c67a21c2f71df2d",
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "853bfefe0c74e4b77ce522a6cd00ee8c5c38723fb2e4c75262b5413c1c703238",
+      "bytes": 38
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "eb26a07f45c43078df345e46694f8f53871ff0cdfa8f214dd45235057ea592e8",
+      "bytes": 147
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "189a2799f4660d9f4ec7848f16045a0fea763ec5486909b4e37ae2b3c8eb580c",
+      "bytes": 242
+    },
+    {
+      "path": "README.md",
+      "sha256": "6f41152031f5e8f7481217fd82d7c5857b3b93516260f79501b6ef8846aac3d5",
+      "bytes": 8540
+    },
+    {
+      "path": "docs/01-foundations.md",
+      "sha256": "f3e8fce919a0e8f8bc85448177cafa6c9a0457bea9aebb9f1f0008677a12a512",
+      "bytes": 15518
+    },
+    {
+      "path": "docs/02-relationship-design.md",
+      "sha256": "9591ac6951dee7cc5e38b291d0ed89d60075748e4b2122180ee683b164137eba",
+      "bytes": 19224
+    },
+    {
+      "path": "docs/03-concept-atlas.md",
+      "sha256": "e518b1bedcced2f615a3a982da3620275dfb197dfd37dd4e99336a75a73730d8",
+      "bytes": 38668
+    },
+    {
+      "path": "docs/04-pattern-catalog.md",
+      "sha256": "d36cc261dca7d2207a5c728ca08de0d66e7c4cd574770b65de98f9def0a53199",
+      "bytes": 32316
+    },
+    {
+      "path": "docs/05-architecture.md",
+      "sha256": "e90eb7294d6f1be7d42d17c7168c3284fdbc528af778870f010a3b5928d7a0a8",
+      "bytes": 23371
+    },
+    {
+      "path": "docs/06-cross-language.md",
+      "sha256": "5f2930df83e693ce7d3e5b53294b433cd5fbd073c4c92a6a7cb6c7aaae171681",
+      "bytes": 26223
+    },
+    {
+      "path": "docs/07-learning-path.md",
+      "sha256": "94e7145df79019624bd8a1e8c3666d88b00707c7e915461688dcb9b8d9e56375",
+      "bytes": 12805
+    },
+    {
+      "path": "docs/laboratory.md",
+      "sha256": "01e192086e1a43b6773182507784b906ebe22fba1e801a3dc1ee221ef89c26e3",
+      "bytes": 6440
+    },
+    {
+      "path": "examples/command_transfer.rs",
+      "sha256": "c8d0b75b92502da3a94961c50ce66ed97b9e3cf51eb2009546f05b06693ffb0d",
+      "bytes": 1456
+    },
+    {
+      "path": "examples/graph_events.rs",
+      "sha256": "dd5c8aa8e7fadc33f8ea41b3de145a9a4c6691c1050e2547fa3f57c267ae32e5",
+      "bytes": 963
+    },
+    {
+      "path": "examples/order_workflow.rs",
+      "sha256": "8707e5f81801842017df93e673e5a29de939c0ea8e9e6eac3b6d6410fa70bf0f",
+      "bytes": 1022
+    },
+    {
+      "path": "research/agenda.md",
+      "sha256": "57decb83a45de1f889fac27395d9c98992b1dbbd2349a96bf6a65f1b62191f43",
+      "bytes": 4222
+    },
+    {
+      "path": "research/literature.md",
+      "sha256": "aa7c60c7de152ced8ab2b1fdb1734955f93e0cbb69c1ba9c29b678fc4c86397f",
+      "bytes": 16924
+    },
+    {
+      "path": "src/events.rs",
+      "sha256": "7a8c4e1afdb2b1a0ee58f5158046d74b061d08e0b9374e5c9abb78b3598a32c2",
+      "bytes": 3576
+    },
+    {
+      "path": "src/graph.rs",
+      "sha256": "15a2be2d167ab2c3f58f0c5bb44af6beebf08996e451eaf74f110ec877cab3cd",
+      "bytes": 4854
+    },
+    {
+      "path": "src/lib.rs",
+      "sha256": "fa7049015f374c08b5ddd42933c9152a063b6cc6fa04cfab540216d82a242540",
+      "bytes": 1937
+    },
+    {
+      "path": "src/order.rs",
+      "sha256": "3fe813576bf77e119bc0842363ef537e6d18ed63ba1e53754acd487c37291ac2",
+      "bytes": 4243
+    },
+    {
+      "path": "src/strategy.rs",
+      "sha256": "ba645fc7a9a3828f3c68690787e6afd17978a95b3763bf69f5da7506bab907d8",
+      "bytes": 2234
+    },
+    {
+      "path": "src/typestate.rs",
+      "sha256": "50bf1e8fd8663847cacee410b857793d58c8fe6e6a519c2979c1e582a2020d34",
+      "bytes": 4133
+    },
+    {
+      "path": "src/view.rs",
+      "sha256": "7fb302ff57d7018d50bc45b5b502d1547679c7996f1c01392aeb55f896089bbc",
+      "bytes": 1879
+    },
+    {
+      "path": "templates/architecture-decision.md",
+      "sha256": "dc201c01d32e5edcaebaa06f9b984681843a4a8567c406768129fb8318b35678",
+      "bytes": 1327
+    },
+    {
+      "path": "templates/design-review.md",
+      "sha256": "7355139483eff409d54ed15ca483e357a9e7c30186e4669fde74e8dfa5f8df7b",
+      "bytes": 1591
+    },
+    {
+      "path": "templates/relationship-contract.md",
+      "sha256": "9d23bf802ba918b30d287300702a1a07e103d4f69f038a98b4ce0a4109ca6004",
+      "bytes": 2275
+    }
+  ],
+  "exclusions": [
+    "__pycache__/**",
+    "research/candidate-initial.json",
+    "research/candidate.json",
+    "research/review.md",
+    "research/run-ledger.md",
+    "research/validation.md",
+    "target/**"
+  ],
+  "note": "Content candidate identity. Operational evidence is excluded to avoid recursive hashing.",
+  "previous_candidate_id": "bef5d75c746513d747349d7c39838eefbadd522661e7e505ee5b175879e0b4a5",
+  "change": "Unify the remaining Liskov-Wing bibliography URL with the retrieved 1994 paper; no executable source changes."
+}

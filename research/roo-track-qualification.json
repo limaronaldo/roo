@@ -1,0 +1,152 @@
+{
+  "scope": "Current executable-track qualification; source identity frozen after implementation",
+  "steps": [
+    {
+      "step": "java-starter-compile",
+      "exit_code": 0,
+      "source_files": 14
+    },
+    {
+      "step": "java-solution-compile",
+      "exit_code": 0,
+      "source_files": 14
+    },
+    {
+      "step": "rust-starter-fmt",
+      "exit_code": 0
+    },
+    {
+      "step": "rust-starter-build",
+      "exit_code": 0
+    },
+    {
+      "step": "rust-starter-clippy",
+      "exit_code": 101
+    },
+    {
+      "step": "java-starter-composition-e1",
+      "exit_code": 1,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-starter-composition-e2",
+      "exit_code": 1,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-starter-composition-e3",
+      "exit_code": 1,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-starter-composition-e4",
+      "exit_code": 1,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-starter-inheritance-e1",
+      "exit_code": 1,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-starter-inheritance-e2",
+      "exit_code": 1,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-starter-inheritance-e3",
+      "exit_code": 1,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-starter-inheritance-e4",
+      "exit_code": 1,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-solution-composition-e1",
+      "exit_code": 0,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-solution-composition-e2",
+      "exit_code": 0,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-solution-composition-e3",
+      "exit_code": 0,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-solution-composition-e4",
+      "exit_code": 0,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-solution-inheritance-e1",
+      "exit_code": 0,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-solution-inheritance-e2",
+      "exit_code": 0,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-solution-inheritance-e3",
+      "exit_code": 0,
+      "expected_result_verified": true
+    },
+    {
+      "step": "java-solution-inheritance-e4",
+      "exit_code": 0,
+      "expected_result_verified": true
+    },
+    {
+      "step": "rust-starter-fmt-qualified",
+      "exit_code": 0
+    },
+    {
+      "step": "rust-starter-build-qualified",
+      "exit_code": 0
+    },
+    {
+      "step": "rust-starter-clippy-qualified",
+      "exit_code": 0
+    },
+    {
+      "step": "rust-solution-fmt-qualified",
+      "exit_code": 0
+    },
+    {
+      "step": "rust-solution-build-qualified",
+      "exit_code": 0
+    },
+    {
+      "step": "rust-solution-clippy-qualified",
+      "exit_code": 0
+    },
+    {
+      "step": "full-verify.sh",
+      "exit_code": 0,
+      "elapsed_seconds": 22.09,
+      "stdout": "case-studies/orders-payments/track/.runtime/qualification/full-verify.stdout",
+      "stderr": "case-studies/orders-payments/track/.runtime/qualification/full-verify.stderr"
+    },
+    {
+      "label": "full verification after e6 independence repair",
+      "command": "bash case-studies/orders-payments/track/verify.sh",
+      "exit_code": 0,
+      "seconds": 27.25,
+      "stdout": "case-studies/orders-payments/track/.runtime/qualification/full-after-independence-fix.stdout.log",
+      "stderr": "case-studies/orders-payments/track/.runtime/qualification/full-after-independence-fix.stderr.log"
+    },
+    {
+      "label": "independent marked PostgreSQL final status after repaired full qualification",
+      "check": "cluster.running(cluster.configuration()) == False",
+      "status": "PASS",
+      "owned_cluster": "stopped; synthetic data retained"
+    }
+  ]
+}

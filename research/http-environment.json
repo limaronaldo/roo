@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-11",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "rust": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+  "cargo": "cargo 1.96.0 (30a34c682 2026-05-25)",
+  "java": "openjdk 26.0.1 2026-04-21\nOpenJDK Runtime Environment (build 26.0.1+8-34)\nOpenJDK 64-Bit Server VM (build 26.0.1+8-34, mixed mode, sharing)",
+  "java_release_target": 21,
+  "postgres": "postgres (PostgreSQL) 18.6 (Homebrew)",
+  "python": "3.14.7",
+  "postgres_cluster_stopped": true,
+  "all_http_processes_stopped": true,
+  "previous_candidate_id": "d1594cd230a03bcad6edbb2b590cbcb3bbcbc5f94604cdc4fbb0af59596bd7ac",
+  "previous_manifest_files_checked": 120,
+  "previous_files_byte_identical": 118,
+  "intentional_navigation_and_cache_changes": [
+    ".gitignore",
+    "README.md"
+  ],
+  "dependency_sha256": {
+    "case-studies/orders-payments/postgres/.deps/postgresql-42.7.14.jar": "73914527305a40cce504b0d3d90b23caf565136912d607ae8ae7c5895512332c",
+    "case-studies/orders-payments/http/.deps/jackson-core-2.22.3.jar": "8a501126a385b25841915d839508f8a66e2a0dbc8a6709d055ef3b3e852b094c",
+    "case-studies/orders-payments/http/rust/Cargo.lock": "06837c1c3d1a5ae46d3d42fce893109b24d34646a0530b909c255ab10a0125d4"
+  },
+  "http_rust_registry_packages": 112,
+  "http_java_pure_protocol_checks": 72,
+  "http_rust_unit_tests": 5,
+  "http_lock_witnesses": 63,
+  "admission_wait_witnesses": 48,
+  "http_qualification_exit_code": 0,
+  "historical_regression_exit_code": 0,
+  "postgreSQL_compiler_negatives": [
+    {
+      "source": "rust/src/lib.rs",
+      "example": 0,
+      "expected": "E0382",
+      "observed": [
+        "E0382"
+      ],
+      "exit_code": 1
+    },
+    {
+      "source": "rust/src/lib.rs",
+      "example": 1,
+      "expected": "E0499",
+      "observed": [
+        "E0499"
+      ],
+      "exit_code": 1
+    },
+    {
+      "source": "rust/src/lib.rs",
+      "example": 2,
+      "expected": "E0597",
+      "observed": [
+        "E0597"
+      ],
+      "exit_code": 1
+    },
+    {
+      "source": "rust/src/lib.rs",
+      "example": 3,
+      "expected": "E0624",
+      "observed": [
+        "E0624"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "in_memory_compiler_negatives": [
+    {
+      "source": "rust/src/lib.rs",
+      "example": 0,
+      "expected": "E0382",
+      "observed": [
+        "E0382"
+      ],
+      "exit_code": 1
+    },
+    {
+      "source": "rust/src/lib.rs",
+      "example": 1,
+      "expected": "E0502",
+      "observed": [
+        "E0502"
+      ],
+      "exit_code": 1
+    },
+    {
+      "source": "rust/src/lib.rs",
+      "example": 2,
+      "expected": "E0624",
+      "observed": [
+        "E0624"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "provider_tokens": null,
+  "cache_tokens": null,
+  "cost": null,
+  "quota": null,
+  "telemetry_note": "Unavailable, not zero; no credential-backed provider telemetry was accessed."
+}

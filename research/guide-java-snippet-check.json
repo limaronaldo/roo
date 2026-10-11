@@ -1,0 +1,9 @@
+{
+  "source_sha256": "0b1edd27561e84a17777f1bf63a87a928a7d8fe9d603fd9f6b7e13fa504e6dd7",
+  "fence_start_line": 209,
+  "code_sha256": "a0ad365bcb42fd308ff7038a5f50536fcfb680a1055a765bc783bab3825ce846",
+  "check": "javac --release 21 -Xlint:all -Werror, classfile compilation only",
+  "exit_code": 0,
+  "diagnostic": "",
+  "limits": "One Java fence; no execution or validation of other partial Java snippets."
+}

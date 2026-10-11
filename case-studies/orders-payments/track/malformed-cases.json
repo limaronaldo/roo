@@ -1,0 +1,370 @@
+[
+  {
+    "case_id": "missing_argument",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0"
+    ]
+  },
+  {
+    "case_id": "extra_argument",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok",
+      "extra"
+    ]
+  },
+  {
+    "case_id": "unknown_exercise",
+    "args": [
+      "e7",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "unknown_phase",
+    "args": [
+      "e1",
+      "unknown",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "wrong_phase_for_exercise",
+    "args": [
+      "e1",
+      "recover",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "unknown_state",
+    "args": [
+      "e1",
+      "add",
+      "Charging",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "unknown_result",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "Success",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "empty_identity",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "punctuated_identity",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "p-1",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "underscore_identity",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "p_1",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "unicode_identity",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "pá",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "long_identity",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "integer_plus",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "+1",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "integer_space",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      " 1",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "integer_decimal",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "1.0",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "integer_unicode",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "１２",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "integer_empty",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "integer_overflow",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "9223372036854775808",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "integer_underflow",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "-9223372036854775809",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "negative_total",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "-1",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "negative_pending",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "-1",
+      "p1",
+      "50",
+      "0",
+      "ok"
+    ]
+  },
+  {
+    "case_id": "bad_lookup",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "p1",
+      "50",
+      "0",
+      "missing"
+    ]
+  },
+  {
+    "case_id": "unused_field_invalid",
+    "args": [
+      "e1",
+      "add",
+      "Draft",
+      "250",
+      "-",
+      "-",
+      "0",
+      "bad/id",
+      "50",
+      "0",
+      "ok"
+    ]
+  }
+]

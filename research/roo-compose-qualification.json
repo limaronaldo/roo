@@ -1,0 +1,78 @@
+{
+  "scope": "Root serialized local Compose execution; remote GitHub Actions not executed",
+  "steps": [
+    {
+      "label": "native ARM64 Compose full track qualification",
+      "command": [
+        "bash",
+        "case-studies/orders-payments/track/compose.sh"
+      ],
+      "exit_code": 1,
+      "seconds": 18.68,
+      "stdout": "case-studies/orders-payments/track/.runtime/compose-qualification/native-full.stdout.log",
+      "stderr": "case-studies/orders-payments/track/.runtime/compose-qualification/native-full.stderr.log"
+    },
+    {
+      "label": "native ARM64 full qualification after explicit ldconfig path repair",
+      "command": [
+        "bash",
+        "case-studies/orders-payments/track/compose.sh"
+      ],
+      "exit_code": 1,
+      "seconds": 6.35,
+      "stdout": "case-studies/orders-payments/track/.runtime/compose-qualification/native-full-2.stdout.log",
+      "stderr": "case-studies/orders-payments/track/.runtime/compose-qualification/native-full-2.stderr.log"
+    },
+    {
+      "label": "native ARM64 full qualification after architect-reviewed PG packaging repair",
+      "command": [
+        "bash",
+        "case-studies/orders-payments/track/compose.sh"
+      ],
+      "exit_code": 1,
+      "seconds": 9.55,
+      "stdout": "case-studies/orders-payments/track/.runtime/compose-qualification/native-full-3.stdout.log",
+      "stderr": "case-studies/orders-payments/track/.runtime/compose-qualification/native-full-3.stderr.log"
+    },
+    {
+      "label": "native ARM64 full qualification after architect-reviewed libpq loader guard",
+      "command": [
+        "bash",
+        "case-studies/orders-payments/track/compose.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 43.34,
+      "stdout": "case-studies/orders-payments/track/.runtime/compose-qualification/native-full-4.stdout.log",
+      "stderr": "case-studies/orders-payments/track/.runtime/compose-qualification/native-full-4.stderr.log"
+    },
+    {
+      "label": "Linux AMD64 full qualification on ARM64 Docker host",
+      "command": [
+        "bash",
+        "case-studies/orders-payments/track/compose.sh"
+      ],
+      "requested_platform": "linux/amd64",
+      "host_architecture": "aarch64",
+      "exit_code": 0,
+      "seconds": 293.7,
+      "stdout": "case-studies/orders-payments/track/.runtime/compose-qualification/amd64-full.stdout.log",
+      "stderr": "case-studies/orders-payments/track/.runtime/compose-qualification/amd64-full.stderr.log"
+    },
+    {
+      "label": "intentional incomplete starter: e1 across all three variants",
+      "command": [
+        "bash",
+        "case-studies/orders-payments/track/compose.sh",
+        "starter",
+        "e1",
+        "all"
+      ],
+      "expected_exit_code": 1,
+      "exit_code": 1,
+      "qualification": "PASS",
+      "seconds": 17.34,
+      "stdout": "case-studies/orders-payments/track/.runtime/compose-qualification/starter-failure.stdout.log",
+      "stderr": "case-studies/orders-payments/track/.runtime/compose-qualification/starter-failure.stderr.log"
+    }
+  ]
+}

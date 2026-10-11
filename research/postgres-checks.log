@@ -1,0 +1,67 @@
+PASS pgJDBC 42.7.14: pinned SHA-256 verified
+Java PostgreSQL pure checks: 52
+Java PostgreSQL compiler negatives: private fields and final algorithm rejected
+   Compiling roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.40s
+     Running unittests src/lib.rs (case-studies/orders-payments/postgres/rust/target/debug/deps/roo_postgres_case-8b0fe1280f7da923)
+
+running 6 tests
+test fixture::tests::numeric_grammar_distinguishes_overflow_from_malformed_text ... ok
+test domain::tests::identities_and_money_validate_at_boundary ... ok
+test domain::tests::rejected_additions_preserve_all_prior_facts ... ok
+test domain::tests::full_request_fingerprints_are_not_just_keys ... ok
+test domain::tests::intents_and_events_own_stable_copied_facts ... ok
+test fixture::tests::full_fixture_is_parsed_before_execution ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (case-studies/orders-payments/postgres/rust/target/debug/deps/roo_postgres-fb5761dc3d49f67b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests roo_postgres_case
+
+running 2 tests
+test src/lib.rs - (line 48) ... ok
+test src/lib.rs - (line 40) ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test src/lib.rs - (line 12) - compile fail ... ok
+test src/lib.rs - (line 22) - compile fail ... ok
+test src/lib.rs - (line 33) - compile fail ... ok
+test src/lib.rs - (line 4) - compile fail ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+all doctests ran in 0.37s; merged doctests compilation took 0.15s
+    Checking roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.24s
+   Compiling roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+    Checking roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+ Documenting roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.49s
+   Generated /Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust/target/doc/roo_postgres_case/index.html and 1 other file
+PASS Rust compiler negatives: 4 intended diagnostics
+Owned PostgreSQL cluster started on loopback
+Shared schema applied to owned test database
+PASS Java composition: 42 shared oracle rows and 10 malformed fixtures
+PASS Java composition: 3 persistent boundary guards
+PASS Java composition: 7 witnessed concurrent schedules
+PASS Java composition: 5 SIGKILL and fresh-process recovery cases
+PASS Java inheritance: 42 shared oracle rows and 10 malformed fixtures
+PASS Java inheritance: 3 persistent boundary guards
+PASS Java inheritance: 7 witnessed concurrent schedules
+PASS Java inheritance: 5 SIGKILL and fresh-process recovery cases
+PASS Rust composition: 42 shared oracle rows and 10 malformed fixtures
+PASS Rust composition: 3 persistent boundary guards
+PASS Rust composition: 7 witnessed concurrent schedules
+PASS Rust composition: 5 SIGKILL and fresh-process recovery cases
+PASS PostgreSQL immediate restart: 12 durable snapshots preserved and recovered
+PASS 5 SQL constraint probes; all three implementations satisfy one shared contract
+Owned PostgreSQL cluster stopped; test data retained

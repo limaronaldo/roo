@@ -1,0 +1,784 @@
+{
+  "run_id": "http_ee4aa7977e71",
+  "variants": {
+    "Java composition": {
+      "concurrency": [
+        "different_payment_keys",
+        "same_payment_key",
+        "different_refund_keys",
+        "add_before_pay",
+        "pay_before_add",
+        "concurrent_relays",
+        "same_refund_key"
+      ],
+      "process_recovery": [
+        {
+          "case": "kill_after_prepare",
+          "signal": "SIGKILL",
+          "gate": "after_prepare",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_after_effect",
+          "signal": "SIGKILL",
+          "gate": "after_effect",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_after_finalize",
+          "signal": "SIGKILL",
+          "gate": "after_finalize",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_after_delivery",
+          "signal": "SIGKILL",
+          "gate": "after_delivery",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_refund_effect",
+          "signal": "SIGKILL",
+          "gate": "after_effect",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "lost_payment_response",
+          "signal": "SIGKILL",
+          "gate": "http_after_snapshot",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "lost_refund_response",
+          "signal": "SIGKILL",
+          "gate": "http_after_snapshot",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "lost_add_response",
+          "signal": "SIGKILL",
+          "gate": "http_after_snapshot",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        }
+      ],
+      "restart_scopes": [
+        "pending",
+        "refunding",
+        "inbox",
+        "paid"
+      ],
+      "startup_rejections": 4,
+      "oracle_rows": 42,
+      "validation_cases": [
+        "empty_body",
+        "malformed_json",
+        "trailing_json",
+        "duplicate_field",
+        "escaped_duplicate",
+        "unknown_field",
+        "array_body",
+        "null_body",
+        "wrong_numeric_type",
+        "missing_field",
+        "invalid_id",
+        "long_id",
+        "long_scope",
+        "missing_scope_segment",
+        "punctuation_route",
+        "decimal_text",
+        "unicode_digit",
+        "long_integer",
+        "invalid_utf8",
+        "oversized_body",
+        "chunked_oversized_body",
+        "wrong_media_type",
+        "missing_media_type",
+        "wrong_charset",
+        "wrong_accept",
+        "wrong_method",
+        "unknown_route",
+        "missing_scope_get",
+        "missing_scope_post",
+        "query_string",
+        "encoded_path",
+        "trailing_slash",
+        "duplicate_content_type",
+        "duplicate_accept",
+        "key_mismatch",
+        "key_on_non_idempotent_add",
+        "duplicate_key_header",
+        "comma_joined_key",
+        "unsupported_drop_header",
+        "get_body",
+        "invalid_control_enum"
+      ],
+      "negotiation_cases": [
+        "media_case_charset_whitespace_wildcard_accept",
+        "absent_accept"
+      ],
+      "ordinary_mode": [
+        "payment_control_disabled",
+        "refund_control_disabled",
+        "lookup_control_disabled",
+        "relay_control_disabled",
+        "probe_disabled",
+        "same_payment_key",
+        "same_refund_key",
+        "put_preserves_existing"
+      ],
+      "admission": {
+        "simultaneously_witnessed_operations": 16,
+        "seventeenth_request": "503 Busy",
+        "all_admitted_completed": true,
+        "capacity_recovered": true
+      },
+      "graceful_drain": {
+        "signal": "SIGTERM",
+        "listener_closed_with_request_active": true,
+        "admitted_request_completed": true,
+        "exit_code": 143,
+        "forced_termination": false
+      }
+    },
+    "Java inheritance": {
+      "concurrency": [
+        "different_payment_keys",
+        "same_payment_key",
+        "different_refund_keys",
+        "add_before_pay",
+        "pay_before_add",
+        "concurrent_relays",
+        "same_refund_key"
+      ],
+      "process_recovery": [
+        {
+          "case": "kill_after_prepare",
+          "signal": "SIGKILL",
+          "gate": "after_prepare",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_after_effect",
+          "signal": "SIGKILL",
+          "gate": "after_effect",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_after_finalize",
+          "signal": "SIGKILL",
+          "gate": "after_finalize",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_after_delivery",
+          "signal": "SIGKILL",
+          "gate": "after_delivery",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_refund_effect",
+          "signal": "SIGKILL",
+          "gate": "after_effect",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "lost_payment_response",
+          "signal": "SIGKILL",
+          "gate": "http_after_snapshot",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "lost_refund_response",
+          "signal": "SIGKILL",
+          "gate": "http_after_snapshot",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "lost_add_response",
+          "signal": "SIGKILL",
+          "gate": "http_after_snapshot",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        }
+      ],
+      "restart_scopes": [
+        "pending",
+        "refunding",
+        "inbox",
+        "paid"
+      ],
+      "startup_rejections": 4,
+      "oracle_rows": 42,
+      "validation_cases": [
+        "empty_body",
+        "malformed_json",
+        "trailing_json",
+        "duplicate_field",
+        "escaped_duplicate",
+        "unknown_field",
+        "array_body",
+        "null_body",
+        "wrong_numeric_type",
+        "missing_field",
+        "invalid_id",
+        "long_id",
+        "long_scope",
+        "missing_scope_segment",
+        "punctuation_route",
+        "decimal_text",
+        "unicode_digit",
+        "long_integer",
+        "invalid_utf8",
+        "oversized_body",
+        "chunked_oversized_body",
+        "wrong_media_type",
+        "missing_media_type",
+        "wrong_charset",
+        "wrong_accept",
+        "wrong_method",
+        "unknown_route",
+        "missing_scope_get",
+        "missing_scope_post",
+        "query_string",
+        "encoded_path",
+        "trailing_slash",
+        "duplicate_content_type",
+        "duplicate_accept",
+        "key_mismatch",
+        "key_on_non_idempotent_add",
+        "duplicate_key_header",
+        "comma_joined_key",
+        "unsupported_drop_header",
+        "get_body",
+        "invalid_control_enum"
+      ],
+      "negotiation_cases": [
+        "media_case_charset_whitespace_wildcard_accept",
+        "absent_accept"
+      ],
+      "ordinary_mode": [
+        "payment_control_disabled",
+        "refund_control_disabled",
+        "lookup_control_disabled",
+        "relay_control_disabled",
+        "probe_disabled",
+        "same_payment_key",
+        "same_refund_key",
+        "put_preserves_existing"
+      ],
+      "admission": {
+        "simultaneously_witnessed_operations": 16,
+        "seventeenth_request": "503 Busy",
+        "all_admitted_completed": true,
+        "capacity_recovered": true
+      },
+      "graceful_drain": {
+        "signal": "SIGTERM",
+        "listener_closed_with_request_active": true,
+        "admitted_request_completed": true,
+        "exit_code": 143,
+        "forced_termination": false
+      }
+    },
+    "Rust composition": {
+      "concurrency": [
+        "different_payment_keys",
+        "same_payment_key",
+        "different_refund_keys",
+        "add_before_pay",
+        "pay_before_add",
+        "concurrent_relays",
+        "same_refund_key"
+      ],
+      "process_recovery": [
+        {
+          "case": "kill_after_prepare",
+          "signal": "SIGKILL",
+          "gate": "after_prepare",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_after_effect",
+          "signal": "SIGKILL",
+          "gate": "after_effect",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_after_finalize",
+          "signal": "SIGKILL",
+          "gate": "after_finalize",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_after_delivery",
+          "signal": "SIGKILL",
+          "gate": "after_delivery",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "kill_refund_effect",
+          "signal": "SIGKILL",
+          "gate": "after_effect",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "lost_payment_response",
+          "signal": "SIGKILL",
+          "gate": "http_after_snapshot",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "lost_refund_response",
+          "signal": "SIGKILL",
+          "gate": "http_after_snapshot",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        },
+        {
+          "case": "lost_add_response",
+          "signal": "SIGKILL",
+          "gate": "http_after_snapshot",
+          "client": "connection lost before response headers",
+          "recovery": "fresh HTTP server"
+        }
+      ],
+      "restart_scopes": [
+        "pending",
+        "refunding",
+        "inbox",
+        "paid"
+      ],
+      "startup_rejections": 4,
+      "oracle_rows": 42,
+      "validation_cases": [
+        "empty_body",
+        "malformed_json",
+        "trailing_json",
+        "duplicate_field",
+        "escaped_duplicate",
+        "unknown_field",
+        "array_body",
+        "null_body",
+        "wrong_numeric_type",
+        "missing_field",
+        "invalid_id",
+        "long_id",
+        "long_scope",
+        "missing_scope_segment",
+        "punctuation_route",
+        "decimal_text",
+        "unicode_digit",
+        "long_integer",
+        "invalid_utf8",
+        "oversized_body",
+        "chunked_oversized_body",
+        "wrong_media_type",
+        "missing_media_type",
+        "wrong_charset",
+        "wrong_accept",
+        "wrong_method",
+        "unknown_route",
+        "missing_scope_get",
+        "missing_scope_post",
+        "query_string",
+        "encoded_path",
+        "trailing_slash",
+        "duplicate_content_type",
+        "duplicate_accept",
+        "key_mismatch",
+        "key_on_non_idempotent_add",
+        "duplicate_key_header",
+        "comma_joined_key",
+        "unsupported_drop_header",
+        "get_body",
+        "invalid_control_enum"
+      ],
+      "negotiation_cases": [
+        "media_case_charset_whitespace_wildcard_accept",
+        "absent_accept"
+      ],
+      "ordinary_mode": [
+        "payment_control_disabled",
+        "refund_control_disabled",
+        "lookup_control_disabled",
+        "relay_control_disabled",
+        "probe_disabled",
+        "same_payment_key",
+        "same_refund_key",
+        "put_preserves_existing"
+      ],
+      "admission": {
+        "simultaneously_witnessed_operations": 16,
+        "seventeenth_request": "503 Busy",
+        "all_admitted_completed": true,
+        "capacity_recovered": true
+      },
+      "graceful_drain": {
+        "signal": "SIGTERM",
+        "listener_closed_with_request_active": true,
+        "admitted_request_completed": true,
+        "exit_code": 0,
+        "forced_termination": false
+      }
+    }
+  },
+  "restart": {
+    "mode": "immediate",
+    "before": "2026-10-11 16:12:57.522516-03|180006|on|on|on",
+    "after": "2026-10-11 16:16:36.164389-03|180006|on|on|on",
+    "wal_recovery_log": [
+      "2026-10-11 16:16:36.168 -03 [77278] LOG:  database system was interrupted; last known up at 2026-10-11 16:12:57 -03",
+      "2026-10-11 16:16:36.311 -03 [77278] LOG:  database system was not properly shut down; automatic recovery in progress",
+      "2026-10-11 16:16:36.313 -03 [77278] LOG:  redo starts at 0/1E84F58",
+      "2026-10-11 16:16:36.320 -03 [77278] LOG:  redo done at 0/1F84F30 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s",
+      "2026-10-11 16:16:36.333 -03 [77251] LOG:  database system is ready to accept connections"
+    ],
+    "preserved_scopes": 12,
+    "surviving_http_pids": {
+      "Java composition": 72272,
+      "Java inheritance": 73997,
+      "Rust composition": 75802
+    },
+    "database_unavailable_responses": 3
+  },
+  "status": "PASS",
+  "barriers": [
+    {
+      "worker": "http_ee4aa7977e71_worker_1d12ed",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_1d12ed:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_0e2524",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_0e2524:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_795dfe",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_795dfe|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_180a1f",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_180a1f:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_468be6",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_468be6:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_795dfe",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_795dfe|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_15d76d",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_15d76d:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_795dfe",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_795dfe|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_8e8514",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_8e8514:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_795dfe",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_795dfe|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_db6cee",
+      "phase": "after_delivery",
+      "observation": "roo:http_ee4aa7977e71_worker_db6cee:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_795dfe",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_795dfe|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_588e96",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_588e96:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_d116ee",
+      "phase": "after_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_d116ee:after_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_999274",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_999274:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_8615ad",
+      "phase": "after_finalize",
+      "observation": "roo:http_ee4aa7977e71_worker_8615ad:after_finalize|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_10e90b",
+      "phase": "after_delivery",
+      "observation": "roo:http_ee4aa7977e71_worker_10e90b:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_da1cad",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_da1cad:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_de1627",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_de1627:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_975093",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_975093:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_50c3c9",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_50c3c9:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_fce014",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_fce014:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_bf7978",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_bf7978:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_07eb9d",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_07eb9d|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_47651f",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_47651f:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_081f00",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_081f00:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_07eb9d",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_07eb9d|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_925622",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_925622:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_07eb9d",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_07eb9d|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_d22ac6",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_d22ac6:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_07eb9d",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_07eb9d|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_4ac51c",
+      "phase": "after_delivery",
+      "observation": "roo:http_ee4aa7977e71_worker_4ac51c:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_07eb9d",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_07eb9d|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_aeb48b",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_aeb48b:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_ea893a",
+      "phase": "after_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_ea893a:after_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_6d69a0",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_6d69a0:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_f1d394",
+      "phase": "after_finalize",
+      "observation": "roo:http_ee4aa7977e71_worker_f1d394:after_finalize|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_174a84",
+      "phase": "after_delivery",
+      "observation": "roo:http_ee4aa7977e71_worker_174a84:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_64d72c",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_64d72c:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_f11db7",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_f11db7:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_1badad",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_1badad:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_ccb267",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_ccb267:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_bf562f",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_bf562f:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_211379",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_211379:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_ff9055",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_ff9055:rust|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_7fb976",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_7fb976:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_ddfc25",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_ddfc25:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_ff9055",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_ff9055:rust|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_fd23cf",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_fd23cf:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_ff9055",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_ff9055:rust|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_c00607",
+      "phase": "inside_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_c00607:inside_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_ff9055",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_ff9055:rust|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_ad2c02",
+      "phase": "after_delivery",
+      "observation": "roo:http_ee4aa7977e71_worker_ad2c02:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_ff9055",
+      "phase": "contender_row_lock",
+      "observation": "roo:http_ee4aa7977e71_worker_ff9055:rust|Lock|transactionid"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_5b4fbf",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_5b4fbf:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_74d1b0",
+      "phase": "after_prepare",
+      "observation": "roo:http_ee4aa7977e71_worker_74d1b0:after_prepare|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_a56fe0",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_a56fe0:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_f83907",
+      "phase": "after_finalize",
+      "observation": "roo:http_ee4aa7977e71_worker_f83907:after_finalize|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_bdf4dd",
+      "phase": "after_delivery",
+      "observation": "roo:http_ee4aa7977e71_worker_bdf4dd:after_delivery|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_abbd55",
+      "phase": "after_effect",
+      "observation": "roo:http_ee4aa7977e71_worker_abbd55:after_effect|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_b14528",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_b14528:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_8465e5",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_8465e5:http_after_snapshot|Lock|advisory"
+    },
+    {
+      "worker": "http_ee4aa7977e71_worker_200479",
+      "phase": "http_after_snapshot",
+      "observation": "roo:http_ee4aa7977e71_worker_200479:http_after_snapshot|Lock|advisory"
+    }
+  ],
+  "all_http_processes_stopped": true
+}

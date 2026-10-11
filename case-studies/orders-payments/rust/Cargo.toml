@@ -1,0 +1,17 @@
+[package]
+name = "orders-payments-case"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.96"
+publish = false
+
+[workspace]
+
+[dependencies]
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[[bin]]
+name = "roo-payments"
+path = "src/main.rs"
