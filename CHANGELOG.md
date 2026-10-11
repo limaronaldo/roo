@@ -8,6 +8,13 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+No changes recorded yet.
+
+## [0.2.0] — 2026-10-11
+
+The eight-field Relationship Contract, with versioned documentation and
+executable chapter examples. This remains a pre-1.0 preview of the method.
+
 ### Changed
 
 - Consolidate the method into one eight-field contract and six-step procedure;
@@ -34,6 +41,25 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 - GitHub Pages documentation with chapter, template, and case-study navigation,
   full-text search, a v0.1.0 release introduction, and automated build/link
   validation before deployment.
+
+### Migration from 0.1.0
+
+- Replace the old **Mutation authority** field with **Coordinator** (the
+  component and operations that preserve an invariant) and **Authorization**
+  (the principal, permitted operations, policy, and revocation rule).
+- Use the eight compact keys: **Custodian, Identity, Coordinator,
+  Authorization, Access, Horizon, Execution, Failure**. Invariant, Evidence,
+  and Open provide context; they are not additional contract fields.
+- Follow the canonical six-step procedure in Chapter 2, then use the same
+  decisions in Java or Rust. A reference, ID, mutable borrow, or capability
+  does not by itself establish caller permission.
+- Existing case-study identifiers, policy inputs, HTTP behavior, and database
+  schema remain compatible. Caller authentication and authorization are still
+  outside the executable teaching case; the separate field makes that gap
+  explicit rather than adding a security implementation.
+- The v0.1.0 tag, original seven-field chapters, navigation, and historical
+  research records remain preserved. The documentation publisher selects
+  v0.2.0 by default and retains v0.1.0 and Development in the version selector.
 
 ## [0.1.0] — 2026-10-11
 
@@ -70,5 +96,6 @@ results retain their original bytes and meaning. Passing the test scenarios
 does not establish every interleaving, physical power-loss behavior, external
 provider behavior, or production readiness.
 
-[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.1.0...main
+[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.2.0...main
+[0.2.0]: https://github.com/limaronaldo/roo/releases/tag/v0.2.0
 [0.1.0]: https://github.com/limaronaldo/roo/releases/tag/v0.1.0

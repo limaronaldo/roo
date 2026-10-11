@@ -162,7 +162,9 @@ expected results. Six exercises run in Docker.
 
 ## Bring it a real design
 
-**v0.1.0 is the first edition (preview).**
+**Pre-1.0 editions are previews.** v0.1.0 is the first edition; v0.2.0
+records the eight-field contract. This shared introduction shows the current
+method; tagged chapters and release notes preserve each edition's decisions.
 The [claims and limits](https://limaronaldo.github.io/roo/dev/docs/claims-and-limits/)
 page maps evidence to its scope;
 [How ROO was made](https://limaronaldo.github.io/roo/dev/docs/how-roo-was-made/)

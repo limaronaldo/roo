@@ -18,7 +18,7 @@ The material was developed with AI assistance, including review by separate
 agents from the same model family. [How ROO was made](docs/how-roo-was-made.md)
 describes that process and the scope of verification.
 
-[Read the documentation](https://limaronaldo.github.io/roo/) ·
+[Read v0.2.0 — eight-field contract (preview)](https://limaronaldo.github.io/roo/) ·
 [v0.1.0 — first edition (preview)](https://limaronaldo.github.io/roo/v0.1.0/) ·
 [Development](https://limaronaldo.github.io/roo/dev/)
 
@@ -99,8 +99,11 @@ explains AMD64 qualification and how to inspect a run's evidence.
 
 ## Project status
 
-v0.1.0 is the **first edition (preview)**. Development refines the method;
-the tagged edition and historical research records retain their original
+v0.2.0 is the **eight-field contract edition (preview)**. Its separate
+Coordinator and Authorization fields replace v0.1.0's combined Mutation
+authority field; see the [migration notes](CHANGELOG.md#migration-from-010).
+v0.1.0 remains the **first edition (preview)**, and Development follows main.
+Tagged editions and historical research records retain their original
 content. Publication of a numeric release tag creates a documentation edition,
 preserves earlier editions, and updates the selector. A version number records
 a source snapshot, rather than certifying maturity.

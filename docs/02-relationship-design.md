@@ -35,7 +35,7 @@ Use `not applicable` with a reason or `not implemented` with its consequence.
 An unknown field is an open design issue. Evidence and assumptions accompany
 the eight decisions; they are not additional relationship fields.
 
-**Development change:** v0.1.0 used seven fields and grouped coordination with
+**Change from v0.1.0:** the first edition used seven fields and grouped coordination with
 caller permission under “Mutation authority.” This edition splits those roles.
 The tagged first edition remains available with its original wording.
 
