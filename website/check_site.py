@@ -102,12 +102,11 @@ def main():
             if location not in indexed:
                 errors.append(f"Navigation page is absent from edition search: {version['id']}/{location}")
         editions.append({"id": version["id"], "pages": len(expected), "release_sources_verified": release_sources, "search_entries": len(search["docs"]), "documentation_commit": manifest["documentation_commit"]})
-    default = next(v for v in versions["versions"] if v["id"] == versions["default"])
-    for location in default["routes"]:
+    for location, target in versions["redirects"].items():
         old = rendered.get(SITE / location / "index.html")
-        if not old or default["url"] + location not in old.links:
+        if not old or target not in old.links:
             errors.append(f"Missing legacy URL redirect: {location}")
-    report = {"status": "FAIL" if errors else "PASS", "editions": editions, "html_files": len(rendered), "local_references": checked, "legacy_redirects": len(default["routes"]), "errors": errors}
+    report = {"status": "FAIL" if errors else "PASS", "editions": editions, "html_files": len(rendered), "local_references": checked, "legacy_redirects": len(versions["redirects"]), "errors": errors}
     (ROOT / ".site-build/validation.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
     if errors:

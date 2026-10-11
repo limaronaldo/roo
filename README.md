@@ -7,9 +7,11 @@
 
 [Read the documentation](https://limaronaldo.github.io/roo/) — browse the
 chapters, templates, and orders/payments studies. Choose
-[**v0.1.0 (stable)**](https://limaronaldo.github.io/roo/v0.1.0/) or
+[**a release edition, starting with v0.1.0**](https://limaronaldo.github.io/roo/v0.1.0/) or
 [**Development (main)**](https://limaronaldo.github.io/roo/dev/); the version
-selector preserves the current page when a counterpart exists.
+selector preserves the current page when a counterpart exists. New stable
+release tags automatically publish an edition, preserve earlier editions,
+and update the selector; the highest numeric release is the default.
 
 **Design relationships with ownership, authority, time, and failure in view.**
 

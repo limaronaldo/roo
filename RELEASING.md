@@ -24,7 +24,8 @@ public contract explicitly. Never move an already published version tag.
 3. Run root Rust checks and syntax/link/version checks appropriate to the change.
 4. Commit the candidate and push its branch. The workflow runs on matching
    branch pushes, pull requests, and manual dispatch; version-tag pushes do
-   not trigger a duplicate run.
+   not trigger duplicate adoption qualification. Documentation has its own
+   tag-driven publication workflow.
 5. Select the actual successful hosted AMD64 run at that exact commit. Verify
    the artifact's provenance, source hashes, Java/Rust matrix, PostgreSQL
    restart/WAL and HTTP-loss receipts, isolation, and cleanup statuses.
@@ -60,3 +61,28 @@ If qualification fails, correct the candidate and obtain a new successful run
 before tagging. If publication outcome is unknown, query the exact tag and
 release before retrying. Do not force-push tags, delete historical evidence,
 or silently replace an asset under an existing release.
+
+## Automatic documentation editions
+
+Pushing a stable `vX.Y.Z` tag requests documentation publication on `main`.
+The publisher discovers all stable tags, reads each release's navigation and
+documents from its exact commit, retains previous editions, updates the
+version selector, and selects the highest numeric version as the default.
+New tags require no manual documentation registry entry. Include the explicit
+`nav` mapping in `website/mkdocs.yml` and every referenced document in the
+qualified candidate. Keep new content and labels in English.
+
+Wait for the separate **ROO documentation** run to finish and verify the new
+edition plus the previous editions on GitHub Pages. A successful **ROO release
+documentation** run only confirms that the publication request was dispatched.
+The workflow rejects changed published tag identities, navigation, and document
+hashes; restore the intended source identity rather than bypassing that check.
+
+A published GitHub Release also requests documentation, and an existing tag
+can be backfilled with `docs-release.yml` dispatched on `main` using its
+`release_tag` input. Use prerelease suffixes for candidates that should not
+become stable documentation. Push stable tags individually; if automation
+creates them with `GITHUB_TOKEN`, explicitly dispatch the documentation
+workflow because ordinary token-generated events do not trigger it.
+See the [documentation maintenance guide](website/pages/maintaining.md) for
+the complete publication, preservation, permissions, and recovery procedure.

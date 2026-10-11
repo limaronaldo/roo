@@ -104,7 +104,7 @@ nav:
           - Track specification: case-studies/orders-payments/track/SPEC.md
           - Docker and CI: case-studies/orders-payments/track/DOCKER.md
   - Project:
-      - Release v0.1.0: RELEASE_NOTES.md
+      - Release notes: RELEASE_NOTES.md
       - Changelog: CHANGELOG.md
       - Contributing: CONTRIBUTING.md
       - Releasing: RELEASING.md

@@ -1,0 +1,39 @@
+name: ROO release documentation
+
+on:
+  push:
+    tags: ['v*']
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing stable tag to publish (vX.Y.Z)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  request-publication:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write # Dispatch only; this job cannot write repository contents or Pages.
+    steps:
+      - name: Check out the publisher from main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Select a stable release tag
+        id: release
+        run: python3 website/release_tags.py event
+      - name: Request serialized publication on main
+        if: steps.release.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: gh workflow run docs.yml --repo "$GITHUB_REPOSITORY" --ref main -f release_tag="$RELEASE_TAG"

@@ -1,5 +1,6 @@
 """Publish pinned release content and working-tree development documentation."""
 
+import argparse
 import hashlib
 import io
 import json
@@ -12,9 +13,10 @@ from html import escape
 from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
-import yaml
 from mkdocs.commands.build import build
 from mkdocs.config import load_config
+
+import release_tags
 
 ROOT = Path(__file__).resolve().parents[1]
 WEBSITE = ROOT / "website"
@@ -52,30 +54,15 @@ def route(page):
     return path.with_suffix("").as_posix() + "/"
 
 
-def registry():
-    data = json.loads((WEBSITE / "versions.json").read_text())
-    ids = [entry["id"] for entry in data["versions"]]
-    if len(ids) != len(set(ids)) or data["default"] not in ids or ids.count("dev") != 1:
-        raise ValueError("Expected unique editions, one development edition, and a valid default")
+def registry(requested_tag=""):
+    data = release_tags.discover(ROOT, requested_tag)
     for entry in data["versions"]:
-        if not re.fullmatch(r"dev|v[0-9]+\.[0-9]+\.[0-9]+", entry["id"]):
-            raise ValueError("Unsafe documentation edition identifier")
-        if entry["id"] == "dev":
-            if entry["source_ref"] != "HEAD" or "source_commit" in entry:
-                raise ValueError("Development must follow the checked-out HEAD")
-        else:
-            if entry["source_ref"] != f"refs/tags/{entry['id']}":
-                raise ValueError("A release edition must name its matching tag")
-            commit = entry["source_commit"]
-            if not re.fullmatch(r"[a-f0-9]{40}", commit) or git("rev-parse", f"{entry['source_ref']}^{{commit}}") != commit:
-                raise ValueError(f"Release tag does not match its frozen commit: {entry['id']}")
-        nav_path = (ROOT / entry["navigation"]).resolve()
-        nav_path.relative_to(WEBSITE.resolve())
-        # Read navigation as data without evaluating MkDocs' Python YAML tags.
-        entry["nav"] = yaml.load(nav_path.read_text(), Loader=yaml.BaseLoader)["nav"]
         entry["pages"] = list(documents(entry["nav"]))
         if len(entry["pages"]) != len(set(entry["pages"])):
             raise ValueError("Duplicate documentation navigation entries")
+        for page in entry["pages"]:
+            if Path(page).is_absolute() or ".." in Path(page).parts or not page.endswith(".md"):
+                raise ValueError(f"Unsafe documentation page: {page}")
         entry["routes"] = [route(page) for page in entry["pages"]]
         if len(entry["routes"]) != len(set(entry["routes"])):
             raise ValueError("Documentation pages collide at a public route")
@@ -95,7 +82,7 @@ def snapshot(entry):
     return target
 
 
-def prepare(entry, source_root, publisher_commit, dirty):
+def prepare(entry, source_root, publisher_commit, dirty, default="v0.1.0"):
     content = BUILD / "content" / entry["id"]
     if content.exists():
         shutil.rmtree(content)
@@ -107,7 +94,7 @@ def prepare(entry, source_root, publisher_commit, dirty):
     def origin(source):
         # The site did not exist at v0.1.0. These three pages and the interface
         # are publisher overlays; all method, template, and case content is tagged.
-        overlay = source.startswith("website/") or source == ".github/workflows/docs.yml"
+        overlay = source.startswith("website/") or source in {".github/workflows/docs.yml", ".github/workflows/docs-release.yml"}
         return (ROOT, publisher_commit, "publisher") if overlay else (source_root, commit, "release" if entry["id"] != "dev" else "development")
 
     def source_path(source):
@@ -165,8 +152,10 @@ def prepare(entry, source_root, publisher_commit, dirty):
         data = path.read_bytes()
         text = data.decode("utf-8")
         if source == "website/pages/index.md":
-            text = text.replace("{{edition_status}}", f"Stable documentation from the {entry['id']} release tag." if entry["id"] != "dev" else "Development documentation from main. Changes here are not part of v0.1.0.")
+            status = f"Release documentation from the {entry['id']} tag." if entry["id"] != "dev" else f"Development documentation from main. Changes here are not part of {default}."
+            text = text.replace("{{edition_status}}", status)
             text = text.replace("{{checkout_ref}}", entry["id"] if entry["id"] != "dev" else "main")
+            text = text.replace("{{release_version}}", entry["id"] if entry["id"] != "dev" else default)
         target = content / page
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(render_links(text, source, page))
@@ -174,6 +163,8 @@ def prepare(entry, source_root, publisher_commit, dirty):
         records.append({"source": source, "page": page, "origin": kind, "commit": ref, "sha256": hashlib.sha256(data).hexdigest()})
     shutil.copytree(WEBSITE / "assets", content / "assets")
     manifest = {"edition": entry["id"], "source_ref": entry["source_ref"], "documentation_commit": commit, "publisher_commit": publisher_commit, "working_tree_dirty": dirty, "pages": records}
+    if entry["id"] != "dev":
+        manifest.update({key: entry[key] for key in ("tag_object", "navigation_sha256") if key in entry})
     (content / "source-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     return content, manifest
 
@@ -191,27 +182,47 @@ def redirect(target):
 </body></html>\n'''
 
 
+def legacy_redirects(data):
+    # Newer editions win; a removed chapter keeps its newest available release.
+    redirects = {}
+    for entry in data["versions"]:
+        if entry["id"] != "dev":
+            for path in entry["routes"]:
+                redirects.setdefault(path, f"/roo/{entry['id']}/{path}")
+    return redirects
+
+
 def main():
-    data = registry()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--release-tag", default="", help="Require this stable tag to be present in the edition set")
+    parser.add_argument("--previous-state", type=Path, help="Fail if any published release identity, navigation, or document changes")
+    args = parser.parse_args()
+    data = registry(args.release_tag)
+    previous = json.loads(args.previous_state.read_text()) if args.previous_state else None
+    if previous is not None:
+        release_tags.verify_previous(data, previous)
     publisher = git("rev-parse", "HEAD")
     dirty = bool(git("status", "--porcelain", "--untracked-files=normal"))
     if SITE.exists():
         shutil.rmtree(SITE)
-    versions = [{"id": e["id"], "label": e["label"], "url": f"/roo/{e['id']}/", "routes": e["routes"]} for e in data["versions"]]
+    versions = [{"id": e["id"], "label": e["label"], "url": f"/roo/{e['id']}/", "routes": e["routes"],
+                 **{key: e[key] for key in ("source_commit", "tag_object", "navigation_sha256") if key in e}} for e in data["versions"]]
     for entry in data["versions"]:
-        content, manifest = prepare(entry, snapshot(entry), publisher, dirty)
+        content, manifest = prepare(entry, snapshot(entry), publisher, dirty, data["default"])
+        if previous is not None:
+            release_tags.verify_manifest(manifest, previous)
         config = load_config(
             config_file=str(WEBSITE / "mkdocs.yml"), docs_dir=str(content), site_dir=str(SITE / entry["id"]),
             site_url=BASE + entry["id"] + "/", nav=entry["nav"],
-            extra={"source_commit": manifest["documentation_commit"], "publisher_commit": publisher, "edition": entry["id"], "edition_label": entry["label"], "versions": versions},
+            extra={"source_commit": manifest["documentation_commit"], "publisher_commit": publisher, "edition": entry["id"], "edition_label": entry["label"], "versions": versions, "default_edition": data["default"]},
         )
         build(config)
-    (SITE / "versions.json").write_text(json.dumps({"default": data["default"], "versions": versions}, indent=2) + "\n")
-    default = next(e for e in data["versions"] if e["id"] == data["default"])
-    for path in default["routes"]:
+    redirects = legacy_redirects(data)
+    (SITE / "versions.json").write_text(json.dumps({"schema": 2, "default": data["default"], "versions": versions, "redirects": redirects}, indent=2) + "\n")
+    for path, destination in redirects.items():
         target = SITE / path / "index.html"
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(redirect(f"/roo/{default['id']}/{path}"))
+        target.write_text(redirect(destination))
     (SITE / "404.html").write_text('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ROO — Page not found</title></head><body><h1>Page not found</h1><p>Choose a documentation edition:</p>' + "".join(f'<p><a href="{v["url"]}">{escape(v["label"])}</a></p>' for v in versions) + '</body></html>\n')
     import check_site
     check_site.main()

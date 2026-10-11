@@ -1,5 +1,5 @@
 {
-  "default": "v0.1.0",
+  "default_policy": "highest-stable-tag",
   "versions": [
     {
       "id": "v0.1.0",

@@ -26,15 +26,15 @@ across languages.
 
 <div class="roo-release" markdown="1">
 
-**v0.1.0 · First public release**
+**{{release_version}} · Release documentation**
 
 The method, three templates, orders/payments studies, and six executable
 exercises are available under **MIT OR Apache-2.0** for original ROO material.
-The release includes source archives and qualification evidence from a
-GitHub-hosted AMD64 runner with isolated PostgreSQL.
+Use the release page and notes for source archives, qualification evidence,
+and the limits of the demonstrated Java/Rust/PostgreSQL scenarios.
 
 [Release notes](../../RELEASE_NOTES.md) ·
-[Download v0.1.0](https://github.com/limaronaldo/roo/releases/tag/v0.1.0) ·
+[Release {{release_version}}](https://github.com/limaronaldo/roo/releases/tag/{{release_version}}) ·
 [License and exceptions](license.md)
 
 </div>
@@ -102,6 +102,6 @@ See [Docker reproduction](../../case-studies/orders-payments/track/DOCKER.md)
 for learner commands and [hosted validation](../../docs/10-github-reproduction.md)
 for the evidence and its limits.
 
-ROO v0.1.0 is an evolving educational method. Its compiler checks and tests
+ROO is an evolving educational method. Its compiler checks and tests
 support specific obligations in bounded scenarios. They do not establish
 production readiness or every possible failure and interleaving.

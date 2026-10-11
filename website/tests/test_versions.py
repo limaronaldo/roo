@@ -1,7 +1,5 @@
 """Regression checks for release isolation and safe edition configuration."""
 
-import copy
-import json
 import sys
 import tempfile
 import unittest
@@ -38,28 +36,16 @@ class VersionTests(unittest.TestCase):
                 self.assertIn("Another unreleased change", (content / "docs/chapter.md").read_text())
                 self.assertNotEqual(first["pages"][0]["sha256"], manifest["pages"][0]["sha256"])
 
-    def test_development_navigation_can_grow_without_changing_release(self):
-        actual = json.loads((site.WEBSITE / "versions.json").read_text())
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            (root / "website/releases").mkdir(parents=True)
-            (root / "website/versions.json").write_text(json.dumps(actual))
-            (root / "website/releases/v0.1.0.yml").write_text("nav:\n  - Chapter: docs/chapter.md\n")
-            (root / "website/mkdocs.yml").write_text("nav:\n  - Chapter: docs/chapter.md\n  - New chapter: docs/new.md\n")
-            with patch.multiple(site, ROOT=root, WEBSITE=root / "website"), patch.object(site, "git", return_value=actual["versions"][0]["source_commit"]):
-                editions = site.registry()["versions"]
-                self.assertEqual(editions[0]["routes"], ["docs/chapter/"])
-                self.assertEqual(editions[1]["routes"], ["docs/chapter/", "docs/new/"])
-                broken = copy.deepcopy(actual)
-                broken["versions"][0]["source_commit"] = "0" * 40
-                (root / "website/versions.json").write_text(json.dumps(broken))
-                with self.assertRaisesRegex(ValueError, "does not match"):
-                    site.registry()
-                broken = copy.deepcopy(actual)
-                broken["versions"][0]["id"] = "../outside"
-                (root / "website/versions.json").write_text(json.dumps(broken))
-                with self.assertRaisesRegex(ValueError, "valid default|Unsafe"):
-                    site.registry()
+    def test_legacy_links_keep_the_newest_release_that_contains_the_page(self):
+        data = {"versions": [
+            {"id": "v0.2.0", "routes": ["", "docs/new/"]},
+            {"id": "v0.1.0", "routes": ["", "docs/old/"]},
+            {"id": "dev", "routes": ["", "docs/unreleased/"]},
+        ]}
+        self.assertEqual(site.legacy_redirects(data), {
+            "": "/roo/v0.2.0/", "docs/new/": "/roo/v0.2.0/docs/new/",
+            "docs/old/": "/roo/v0.1.0/docs/old/",
+        })
 
     def test_readme_and_index_routes_match_mkdocs(self):
         self.assertEqual(site.route("index.md"), "")
