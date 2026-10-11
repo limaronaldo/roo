@@ -1,5 +1,9 @@
 # ROO — Relationship & Ownership Oriented design
 
+[![ROO adoption track](https://github.com/limaronaldo/roo/actions/workflows/roo-track.yml/badge.svg?branch=main)](https://github.com/limaronaldo/roo/actions/workflows/roo-track.yml?query=branch%3Amain)
+[![Release](https://img.shields.io/github/v/release/limaronaldo/roo)](https://github.com/limaronaldo/roo/releases)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
+
 **Design relationships with ownership, authority, time, and failure in view.**
 
 ROO is a proposed, language-independent software design method supported by an executable learning laboratory. It revisits object-oriented concepts and software architecture by making relationships explicit: who retains data, who may change it, how access expires, and how failure is handled. Rust is the laboratory language; Java and the other language mappings show how the same contracts can use different enforcement mechanisms.
@@ -158,6 +162,20 @@ This edition covers a curated set of influential concepts. It does not establish
 
 ## Status and development
 
-Version 0.1 is published research and educational code. The examples are deliberately smaller than production infrastructure and document their limits. The [run record](research/run-ledger.md) and [validation evidence](research/validation.md) distinguish authored material, executed checks and independent review.
+Version 0.1.0 is published research and educational code. The examples are deliberately smaller than production infrastructure and document their limits. The [run record](research/run-ledger.md) and [validation evidence](research/validation.md) distinguish authored material, executed checks and independent review.
 
 Contributions should include the classical intent, Relationship Contract, implementation choices, tradeoffs, source provenance, executable evidence where appropriate, and cross-language implications. A pattern earns its place by solving a concrete design problem.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and checks,
+[CHANGELOG.md](CHANGELOG.md) for release changes, and [RELEASING.md](RELEASING.md)
+for versioning and maintainer instructions. The GitHub source release does not
+publish the private laboratory crates to a package registry.
+
+## License
+
+Original ROO software, documentation, templates, and examples are available
+under either the [MIT License](LICENSE-MIT) or the [Apache License, Version 2.0](LICENSE-APACHE),
+at your option: `MIT OR Apache-2.0`. See [LICENSE](LICENSE) for scope and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for preserved supplied material,
+third-party terms, and dependencies. Historical supplied inputs are preserved
+and are not relicensed by this release.

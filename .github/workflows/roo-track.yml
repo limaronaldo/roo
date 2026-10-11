@@ -13,6 +13,8 @@ on:
       - '.dockerignore'
       - '.github/workflows/roo-track.yml'
   push:
+    branches:
+      - '**'
     paths:
       - 'case-studies/orders-payments/**'
       - 'src/**'
