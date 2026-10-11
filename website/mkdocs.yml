@@ -55,8 +55,9 @@ validation:
     anchors: warn
 extra_css:
   - assets/roo.css
-extra:
-  source_commit: !ENV ROO_DOCS_COMMIT
+extra_javascript:
+  - assets/versions.js
+extra: {}
 copyright: Original ROO material — MIT OR Apache-2.0. Third-party exceptions apply.
 nav:
   - Start here: index.md

@@ -6,7 +6,10 @@
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
 
 [Read the documentation](https://limaronaldo.github.io/roo/) — browse the
-chapters, templates, orders/payments studies, and the **v0.1.0** release.
+chapters, templates, and orders/payments studies. Choose
+[**v0.1.0 (stable)**](https://limaronaldo.github.io/roo/v0.1.0/) or
+[**Development (main)**](https://limaronaldo.github.io/roo/dev/); the version
+selector preserves the current page when a counterpart exists.
 
 **Design relationships with ownership, authority, time, and failure in view.**
 

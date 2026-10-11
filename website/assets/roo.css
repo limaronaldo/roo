@@ -12,6 +12,13 @@
 .md-header { box-shadow: none; }
 .md-banner { background: #e9ddc6; color: #233b33; }
 .md-banner a { text-decoration: underline; }
+.roo-version-bar { display: flex; align-items: center; justify-content: space-between; gap: .7rem 1.5rem; flex-wrap: wrap; }
+.roo-edition-status { font-size: .65rem; }
+.roo-edition-status a { margin-left: .4rem; }
+.roo-version-control { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; font-size: .65rem; }
+.roo-version-control label { font-weight: 700; }
+.roo-version-control select { appearance: auto; background: #fcfaf5; color: #143d35; border: 1px solid #778773; border-radius: .2rem; padding: .3rem .5rem; font: inherit; min-height: 2rem; }
+.roo-version-control select:focus-visible { outline: 3px solid #a74320; outline-offset: 2px; }
 .md-tabs { border-top: 1px solid #ffffff20; }
 .md-typeset h1, .md-typeset h2 { color: #143d35; font-family: Georgia, "Times New Roman", serif; }
 .md-typeset h1 { font-weight: 600; letter-spacing: -.035em; }

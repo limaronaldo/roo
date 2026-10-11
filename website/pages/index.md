@@ -7,6 +7,8 @@ hide:
 
 <p class="roo-eyebrow">RELATIONSHIP &amp; OWNERSHIP ORIENTED DESIGN</p>
 
+**{{edition_status}}**
+
 # Relationships first.
 
 Design who owns data, who may change it, how long access lasts, and what
@@ -88,7 +90,7 @@ Java composition, Java Template Method, and Rust against a shared oracle.
 ## Run the adoption track
 
 ```sh
-git clone --branch v0.1.0 https://github.com/limaronaldo/roo.git
+git clone --branch {{checkout_ref}} https://github.com/limaronaldo/roo.git
 cd roo
 bash case-studies/orders-payments/track/compose.sh
 ```

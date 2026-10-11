@@ -1,12 +1,35 @@
 {% extends "base.html" %}
 {% block announce %}
-  ROO v0.1.0 is available —
-  <a href="https://github.com/limaronaldo/roo/releases/tag/v0.1.0">read the first public release</a>
+  <div class="roo-version-bar">
+    <div class="roo-edition-status">
+      {% if config.extra.edition == 'dev' %}
+        <strong>Development</strong> · Follows main; unreleased changes.
+      {% else %}
+        <strong>{{ config.extra.edition }}</strong> · Stable release documentation.
+      {% endif %}
+      <a href="https://github.com/limaronaldo/roo/releases/tag/v0.1.0">Release v0.1.0</a>
+    </div>
+    <div class="roo-version-control">
+      <label for="roo-version">Version</label>
+      <select id="roo-version" aria-label="Documentation version">
+        {% for version in config.extra.versions %}
+          {% set same_page = page and page.url in version.routes %}
+          <option value="{{ version.url }}{{ page.url if same_page else '' }}" data-same-page="{{ 'true' if same_page else 'false' }}"{% if version.id == config.extra.edition %} selected{% endif %}>{{ version.label }}</option>
+        {% endfor %}
+      </select>
+      <noscript>
+        {% for version in config.extra.versions %}
+          <a href="{{ version.url }}">{{ version.label }}</a>
+        {% endfor %}
+      </noscript>
+    </div>
+  </div>
 {% endblock %}
 {% block footer %}
   {{ super() }}
   <div class="roo-source">
-    v0.1.0 edition · Documentation source
+    {{ config.extra.edition_label }} · Documentation source
     <a href="https://github.com/limaronaldo/roo/commit/{{ config.extra.source_commit }}">{{ config.extra.source_commit[:7] }}</a>
+    · <a href="{{ 'source-manifest.json' | url }}">Source manifest</a>
   </div>
 {% endblock %}

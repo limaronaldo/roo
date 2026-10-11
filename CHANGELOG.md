@@ -8,6 +8,10 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+- Versioned GitHub Pages documentation with a pinned v0.1.0 content edition,
+  a Development edition following main, an accessible version selector,
+  edition-local search, source manifests, and redirects from existing URLs.
+
 - GitHub Pages documentation with chapter, template, and case-study navigation,
   full-text search, a v0.1.0 release introduction, and automated build/link
   validation before deployment.

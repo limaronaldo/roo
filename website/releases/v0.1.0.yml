@@ -1,0 +1,53 @@
+# Frozen navigation for the v0.1.0 documentation edition.
+nav:
+  - Start here: index.md
+  - Chapters:
+      - Overview: overview.md
+      - 1. Foundations: docs/01-foundations.md
+      - 2. Relationship design: docs/02-relationship-design.md
+      - 3. Concept atlas: docs/03-concept-atlas.md
+      - 4. Pattern catalog: docs/04-pattern-catalog.md
+      - 5. Software architecture: docs/05-architecture.md
+      - 6. Cross-language transfer: docs/06-cross-language.md
+      - 7. Learning path: docs/07-learning-path.md
+      - 8. Rust and object design: docs/08-rust-and-object-design.md
+      - 9. Practical adoption: docs/09-adoption-guide.md
+      - 10. GitHub reproduction: docs/10-github-reproduction.md
+      - Rust laboratory: docs/laboratory.md
+  - Templates:
+      - Relationship Contract: templates/relationship-contract.md
+      - Architecture decision: templates/architecture-decision.md
+      - Design review: templates/design-review.md
+  - Case studies:
+      - Orders and payments:
+          - case-studies/orders-payments/README.md
+          - Shared specification: case-studies/orders-payments/SPEC.md
+          - Java implementations: case-studies/orders-payments/java/README.md
+          - Rust implementation: case-studies/orders-payments/rust/README.md
+      - Completed templates:
+          - Relationship Contract: case-studies/orders-payments/adoption/relationship-contract.md
+          - Architecture decision: case-studies/orders-payments/adoption/architecture-decision.md
+          - Design review: case-studies/orders-payments/adoption/design-review.md
+      - PostgreSQL:
+          - case-studies/orders-payments/postgres/README.md
+          - Persistence specification: case-studies/orders-payments/postgres/SPEC.md
+          - Java implementation: case-studies/orders-payments/postgres/java/README.md
+          - Rust implementation: case-studies/orders-payments/postgres/rust/README.md
+      - HTTP APIs:
+          - case-studies/orders-payments/http/README.md
+          - HTTP specification: case-studies/orders-payments/http/SPEC.md
+          - Java API: case-studies/orders-payments/http/java/README.md
+          - Rust API: case-studies/orders-payments/http/rust/README.md
+      - Executable adoption track:
+          - case-studies/orders-payments/track/README.md
+          - Six exercises: case-studies/orders-payments/track/EXERCISES.md
+          - Track specification: case-studies/orders-payments/track/SPEC.md
+          - Docker and CI: case-studies/orders-payments/track/DOCKER.md
+  - Project:
+      - Release v0.1.0: RELEASE_NOTES.md
+      - Changelog: CHANGELOG.md
+      - Contributing: CONTRIBUTING.md
+      - Releasing: RELEASING.md
+      - License: license.md
+      - Third-party notices: THIRD_PARTY_NOTICES.md
+      - Maintaining this site: maintaining.md

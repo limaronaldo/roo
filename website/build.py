@@ -1,29 +1,36 @@
-"""Render allowlisted repository documents without changing their sources."""
+"""Publish pinned release content and working-tree development documentation."""
 
 import hashlib
+import io
 import json
-import os
 import posixpath
 import re
 import shutil
 import subprocess
-import sys
+import tarfile
+from html import escape
 from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import yaml
+from mkdocs.commands.build import build
+from mkdocs.config import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
 WEBSITE = ROOT / "website"
 BUILD = ROOT / ".site-build"
-CONTENT = BUILD / "content"
 SITE = BUILD / "site"
+BASE = "https://limaronaldo.github.io/roo/"
 CUSTOM = {
     "index.md": "website/pages/index.md",
     "overview.md": "README.md",
     "license.md": "website/pages/license.md",
     "maintaining.md": "website/pages/maintaining.md",
 }
+
+
+def git(*args):
+    return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
 
 def documents(nav):
@@ -38,54 +45,99 @@ def documents(nav):
                     yield value
 
 
-def prepare():
-    # BaseLoader reads navigation as data, without evaluating YAML Python tags.
-    config = yaml.load((WEBSITE / "mkdocs.yml").read_text(), Loader=yaml.BaseLoader)
-    pages = list(documents(config["nav"]))
-    if len(pages) != len(set(pages)):
-        raise ValueError("Duplicate documentation navigation entries")
-    sources = {page: (ROOT / CUSTOM.get(page, page)).resolve() for page in pages}
-    for source in sources.values():
-        relative = source.relative_to(ROOT)
-        if relative.parts[0] not in {"docs", "templates", "case-studies", "website"} and len(relative.parts) != 1:
-            raise ValueError(f"Unexpected documentation source: {relative}")
-        if not source.is_file() or source.suffix != ".md" or source.is_symlink():
-            raise ValueError(f"Expected a regular Markdown source: {relative}")
-        if any(part in relative.parts for part in ("research", ".runtime", ".deps", "target", "build")):
-            raise ValueError(f"Excluded documentation source: {relative}")
+def route(page):
+    path = Path(page)
+    if path.name in {"index.md", "README.md"}:
+        return "" if path.parent == Path(".") else path.parent.as_posix() + "/"
+    return path.with_suffix("").as_posix() + "/"
+
+
+def registry():
+    data = json.loads((WEBSITE / "versions.json").read_text())
+    ids = [entry["id"] for entry in data["versions"]]
+    if len(ids) != len(set(ids)) or data["default"] not in ids or ids.count("dev") != 1:
+        raise ValueError("Expected unique editions, one development edition, and a valid default")
+    for entry in data["versions"]:
+        if not re.fullmatch(r"dev|v[0-9]+\.[0-9]+\.[0-9]+", entry["id"]):
+            raise ValueError("Unsafe documentation edition identifier")
+        if entry["id"] == "dev":
+            if entry["source_ref"] != "HEAD" or "source_commit" in entry:
+                raise ValueError("Development must follow the checked-out HEAD")
+        else:
+            if entry["source_ref"] != f"refs/tags/{entry['id']}":
+                raise ValueError("A release edition must name its matching tag")
+            commit = entry["source_commit"]
+            if not re.fullmatch(r"[a-f0-9]{40}", commit) or git("rev-parse", f"{entry['source_ref']}^{{commit}}") != commit:
+                raise ValueError(f"Release tag does not match its frozen commit: {entry['id']}")
+        nav_path = (ROOT / entry["navigation"]).resolve()
+        nav_path.relative_to(WEBSITE.resolve())
+        # Read navigation as data without evaluating MkDocs' Python YAML tags.
+        entry["nav"] = yaml.load(nav_path.read_text(), Loader=yaml.BaseLoader)["nav"]
+        entry["pages"] = list(documents(entry["nav"]))
+        if len(entry["pages"]) != len(set(entry["pages"])):
+            raise ValueError("Duplicate documentation navigation entries")
+        entry["routes"] = [route(page) for page in entry["pages"]]
+        if len(entry["routes"]) != len(set(entry["routes"])):
+            raise ValueError("Documentation pages collide at a public route")
+    return data
+
+
+def snapshot(entry):
+    if entry["id"] == "dev":
+        return ROOT
+    target = BUILD / "sources" / entry["id"]
+    if target.exists():
+        shutil.rmtree(target)
+    target.mkdir(parents=True)
+    archive = subprocess.check_output(["git", "archive", entry["source_commit"]], cwd=ROOT)
+    with tarfile.open(fileobj=io.BytesIO(archive)) as files:
+        files.extractall(target, filter="data")
+    return target
+
+
+def prepare(entry, source_root, publisher_commit, dirty):
+    content = BUILD / "content" / entry["id"]
+    if content.exists():
+        shutil.rmtree(content)
+    content.mkdir(parents=True)
+    commit = publisher_commit if entry["id"] == "dev" else entry["source_commit"]
+    sources = {page: CUSTOM.get(page, page) for page in entry["pages"]}
     reverse = {source: page for page, source in sources.items()}
-    commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    if not re.fullmatch(r"[a-f0-9]{40}", commit):
-        raise ValueError("Expected an exact Git source commit")
-    if CONTENT.exists():
-        shutil.rmtree(CONTENT)
-    CONTENT.mkdir(parents=True)
+
+    def origin(source):
+        # The site did not exist at v0.1.0. These three pages and the interface
+        # are publisher overlays; all method, template, and case content is tagged.
+        overlay = source.startswith("website/") or source == ".github/workflows/docs.yml"
+        return (ROOT, publisher_commit, "publisher") if overlay else (source_root, commit, "release" if entry["id"] != "dev" else "development")
+
+    def source_path(source):
+        base, _, _ = origin(source)
+        path = base / source
+        path.resolve().relative_to(base.resolve())
+        return path
 
     def destination(url, source, page):
         parts = urlsplit(url)
         if parts.scheme or parts.netloc or not parts.path:
             return url
-        target = (source.parent / unquote(parts.path)).resolve()
-        target.relative_to(ROOT)
-        if not target.exists():
-            raise ValueError(f"Missing source link in {source.relative_to(ROOT)}: {url}")
+        target = posixpath.normpath(posixpath.join(posixpath.dirname(source), unquote(parts.path)))
+        path = source_path(target)
+        if not path.exists():
+            raise ValueError(f"Missing source link in {source}: {url}")
         if target in reverse:
-            path = posixpath.relpath(reverse[target], posixpath.dirname(page) or ".")
-            return urlunsplit(("", "", path, parts.query, parts.fragment))
-        kind = "tree" if target.is_dir() else "blob"
-        path = quote(target.relative_to(ROOT).as_posix(), safe="/")
-        return urlunsplit(("https", "github.com", f"/limaronaldo/roo/{kind}/{commit}/{path}", parts.query, parts.fragment))
+            relative = posixpath.relpath(reverse[target], posixpath.dirname(page) or ".")
+            return urlunsplit(("", "", relative, parts.query, parts.fragment))
+        _, ref, _ = origin(target)
+        kind = "tree" if path.is_dir() else "blob"
+        return urlunsplit(("https", "github.com", f"/limaronaldo/roo/{kind}/{ref}/{quote(target, safe='/')}", parts.query, parts.fragment))
 
     def render_links(text, source, page):
-        # Mermaid treats literal semicolons as statements in sequence diagrams.
-        # Escape message punctuation only in the generated publication copy.
+        # Escape Mermaid punctuation only in the generated publication copy.
         text = re.sub(
             r"(?m)^(```mermaid\n)(sequenceDiagram\b[\s\S]*?)(^```)",
-            lambda m: m[1] + re.sub(r"(\#(?:[0-9]+|[A-Za-z]+);)|;", lambda s: s[1] or "#59;", m[2]) + m[3],
-            text,
+            lambda m: m[1] + re.sub(r"(\#(?:[0-9]+|[A-Za-z]+);)|;", lambda s: s[1] or "#59;", m[2]) + m[3], text,
         )
-        lines = []
-        fence = None
+        lines, fence = [], None
         for line in text.splitlines(keepends=True):
             marker = re.match(r"^\s{0,3}(`{3,}|~{3,})", line)
             if marker:
@@ -94,9 +146,7 @@ def prepare():
                     fence = value
                 elif value[0] == fence[0] and len(value) >= len(fence):
                     fence = None
-                lines.append(line)
-                continue
-            if fence is None:
+            elif fence is None:
                 line = re.sub(r"(\]\()([^\s)]+)(\))", lambda m: m[1] + destination(m[2], source, page) + m[3], line)
                 line = re.sub(r"^(\[[^\]]+\]:\s*)(\S+)", lambda m: m[1] + destination(m[2], source, page), line)
             lines.append(line)
@@ -104,29 +154,73 @@ def prepare():
 
     records = []
     for page, source in sources.items():
-        data = source.read_bytes()
-        target = CONTENT / page
+        relative = Path(source)
+        path = source_path(source)
+        if relative.parts[0] not in {"docs", "templates", "case-studies", "website"} and len(relative.parts) != 1:
+            raise ValueError(f"Unexpected documentation source: {source}")
+        if not path.is_file() or path.suffix != ".md" or path.is_symlink():
+            raise ValueError(f"Expected a regular Markdown source: {source}")
+        if any(part in relative.parts for part in ("research", ".runtime", ".deps", "target", "build")):
+            raise ValueError(f"Excluded documentation source: {source}")
+        data = path.read_bytes()
+        text = data.decode("utf-8")
+        if source == "website/pages/index.md":
+            text = text.replace("{{edition_status}}", f"Stable documentation from the {entry['id']} release tag." if entry["id"] != "dev" else "Development documentation from main. Changes here are not part of v0.1.0.")
+            text = text.replace("{{checkout_ref}}", entry["id"] if entry["id"] != "dev" else "main")
+        target = content / page
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(render_links(data.decode("utf-8"), source, page))
-        records.append({"source": source.relative_to(ROOT).as_posix(), "page": page, "sha256": hashlib.sha256(data).hexdigest()})
-    shutil.copytree(WEBSITE / "assets", CONTENT / "assets")
-    manifest = {"release_edition": "v0.1.0", "documentation_commit": commit, "pages": records}
-    (CONTENT / "source-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    os.environ["ROO_DOCS_COMMIT"] = commit
-    return pages
+        target.write_text(render_links(text, source, page))
+        _, ref, kind = origin(source)
+        records.append({"source": source, "page": page, "origin": kind, "commit": ref, "sha256": hashlib.sha256(data).hexdigest()})
+    shutil.copytree(WEBSITE / "assets", content / "assets")
+    manifest = {"edition": entry["id"], "source_ref": entry["source_ref"], "documentation_commit": commit, "publisher_commit": publisher_commit, "working_tree_dirty": dirty, "pages": records}
+    (content / "source-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    return content, manifest
+
+
+def redirect(target):
+    # Query strings and fragment links survive the migration from flat URLs.
+    canonical = BASE.rstrip("/") + target.removeprefix("/roo")
+    return f'''<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROO documentation has moved</title><meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url={escape(target, quote=True)}">
+<link rel="canonical" href="{escape(canonical, quote=True)}"></head>
+<body><p>ROO documentation has moved. <a href="{escape(target, quote=True)}">Continue to the stable documentation</a>.</p>
+<script>const target = new URL({json.dumps(target)}, location.origin); target.search = location.search; target.hash = location.hash; location.replace(target.href);</script>
+</body></html>\n'''
 
 
 def main():
-    os.chdir(ROOT)
-    pages = prepare()
-    subprocess.run([sys.executable, "-m", "mkdocs", "build", "--strict", "--config-file", str(WEBSITE / "mkdocs.yml")], check=True)
-    subprocess.run([sys.executable, str(WEBSITE / "check_site.py")], check=True)
+    data = registry()
+    publisher = git("rev-parse", "HEAD")
+    dirty = bool(git("status", "--porcelain", "--untracked-files=normal"))
+    if SITE.exists():
+        shutil.rmtree(SITE)
+    versions = [{"id": e["id"], "label": e["label"], "url": f"/roo/{e['id']}/", "routes": e["routes"]} for e in data["versions"]]
+    for entry in data["versions"]:
+        content, manifest = prepare(entry, snapshot(entry), publisher, dirty)
+        config = load_config(
+            config_file=str(WEBSITE / "mkdocs.yml"), docs_dir=str(content), site_dir=str(SITE / entry["id"]),
+            site_url=BASE + entry["id"] + "/", nav=entry["nav"],
+            extra={"source_commit": manifest["documentation_commit"], "publisher_commit": publisher, "edition": entry["id"], "edition_label": entry["label"], "versions": versions},
+        )
+        build(config)
+    (SITE / "versions.json").write_text(json.dumps({"default": data["default"], "versions": versions}, indent=2) + "\n")
+    default = next(e for e in data["versions"] if e["id"] == data["default"])
+    for path in default["routes"]:
+        target = SITE / path / "index.html"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(redirect(f"/roo/{default['id']}/{path}"))
+    (SITE / "404.html").write_text('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ROO — Page not found</title></head><body><h1>Page not found</h1><p>Choose a documentation edition:</p>' + "".join(f'<p><a href="{v["url"]}">{escape(v["label"])}</a></p>' for v in versions) + '</body></html>\n')
+    import check_site
+    check_site.main()
     preview = BUILD / "preview" / "roo"
     if preview.exists():
         shutil.rmtree(preview)
     preview.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(SITE, preview)
-    print(f"PASS documentation build: {len(pages)} pages; preview at http://localhost:8000/roo/")
+    print("PASS versioned documentation; preview at http://localhost:8000/roo/")
 
 
 if __name__ == "__main__":
