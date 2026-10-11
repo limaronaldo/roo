@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "tested_commit": "0c3e2bb1bae85a2dcd6ed0ad0d98a06af27048a5",
+  "hosted_run_id": 38176774573,
+  "hosted_attempt": 1,
+  "baseline_files": 238,
+  "preserved_baseline_files": 234,
+  "changed_baseline_paths": [
+    ".github/workflows/roo-track.yml",
+    "README.md",
+    "case-studies/orders-payments/track/DOCKER.md",
+    "case-studies/orders-payments/track/compose.sh"
+  ],
+  "preserved_historical_research_files": 91,
+  "post_qualification_tracked_changes": [
+    "README.md",
+    "research/roo-github-publication-run.md"
+  ],
+  "executable_sources_match_tested_commit": true,
+  "host_cluster_running": false,
+  "host_cluster_metadata_unchanged": true,
+  "host_cluster_hashes": {
+    "case-studies/orders-payments/postgres/.runtime/config.json": "e6ae59cb7f4289aba8c57751d565326567e03f20f13af87bc057bbe8d34c3c69",
+    "case-studies/orders-payments/postgres/.runtime/ROO_OWNED_CLUSTER": "e881cd4698cf61bcde9d4ba38b59d71ee5762d85de6f1beed38ea8b633af2482",
+    "case-studies/orders-payments/postgres/.runtime/server.log": "640679f191befed8e784d3b6da4b561aa6dd8435014a56270d2a2a5d0c03adbd"
+  },
+  "local_document_links": "PASS",
+  "static_checks": [
+    {
+      "label": "workflow syntax",
+      "command": [
+        "actionlint",
+        ".github/workflows/roo-track.yml"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "wrapper syntax",
+      "command": [
+        "bash",
+        "-n",
+        "case-studies/orders-payments/track/compose.sh"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "workflow_invocations": 1,
+  "manual_dispatches": 0,
+  "repository_visibility": "public"
+}

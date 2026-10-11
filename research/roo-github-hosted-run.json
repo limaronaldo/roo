@@ -1,0 +1,108 @@
+{
+  "scope": "Actual hosted GitHub Actions execution and exact attempt artifact",
+  "repository": "limaronaldo/roo",
+  "repository_url": "https://github.com/limaronaldo/roo",
+  "run": {
+    "id": 38176774573,
+    "name": "ROO adoption track",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "0c3e2bb1bae85a2dcd6ed0ad0d98a06af27048a5",
+    "head_branch": "main",
+    "run_attempt": 1,
+    "html_url": "https://github.com/limaronaldo/roo/actions/runs/38176774573",
+    "created_at": "2026-10-11T21:32:10Z",
+    "updated_at": "2026-10-11T21:34:21Z",
+    "run_started_at": "2026-10-11T21:32:10Z",
+    "path": ".github/workflows/roo-track.yml"
+  },
+  "jobs": [
+    {
+      "id": 114580714003,
+      "name": "Java and Rust qualification with isolated PostgreSQL",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-11T21:32:13Z",
+      "completed_at": "2026-10-11T21:34:21Z",
+      "html_url": "https://github.com/limaronaldo/roo/actions/runs/38176774573/job/114580714003",
+      "runner_id": 1000005808,
+      "runner_name": "GitHub Actions 1000005808",
+      "runner_group_name": "GitHub Actions",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-11T21:32:14Z",
+          "completed_at": "2026-10-11T21:32:15Z"
+        },
+        {
+          "name": "Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-11T21:32:15Z",
+          "completed_at": "2026-10-11T21:32:15Z"
+        },
+        {
+          "name": "Verify hosted AMD64 runner and source provenance",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-11T21:32:15Z",
+          "completed_at": "2026-10-11T21:32:19Z"
+        },
+        {
+          "name": "Build and qualify the adoption track",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-11T21:32:19Z",
+          "completed_at": "2026-10-11T21:34:19Z"
+        },
+        {
+          "name": "Preserve qualification evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-11T21:34:19Z",
+          "completed_at": "2026-10-11T21:34:19Z"
+        },
+        {
+          "name": "Post Check out source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-11T21:34:19Z",
+          "completed_at": "2026-10-11T21:34:20Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-11T21:34:20Z",
+          "completed_at": "2026-10-11T21:34:20Z"
+        }
+      ]
+    }
+  ],
+  "artifact": {
+    "id": 11715399803,
+    "name": "roo-track-38176774573-1",
+    "size_in_bytes": 63520,
+    "digest": "sha256:004d2b533874c1ad4ed409f414cc9fa68b6be157730d2c4e5bed52882334ad2f",
+    "expired": false,
+    "created_at": "2026-10-11T21:34:19Z",
+    "updated_at": "2026-10-11T21:34:19Z",
+    "expires_at": "2026-10-25T21:34:19Z"
+  },
+  "download_sha256": "sha256:004d2b533874c1ad4ed409f414cc9fa68b6be157730d2c4e5bed52882334ad2f",
+  "download_digest_matches": true,
+  "local_artifact_directory": "artifacts/roo-hosted/38176774573/attempt-1"
+}

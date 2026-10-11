@@ -10,6 +10,20 @@ ROO does not introduce a language, compiler, object runtime, or inheritance exte
 
 ROO originally stood for Rust Object Oriented. The expansion changed because the method applies beyond Rust; Rust remains the laboratory language.
 
+## Run the adoption track
+
+The [public repository](https://github.com/limaronaldo/roo) includes equivalent
+orders/payments exercises in Java composition, Java Template Method, and Rust
+composition. Run them with an isolated PostgreSQL lifecycle using Docker:
+
+```sh
+bash case-studies/orders-payments/track/compose.sh
+```
+
+See the [Docker and CI guide](case-studies/orders-payments/track/DOCKER.md) for
+learner commands and the [GitHub reproduction guide](docs/10-github-reproduction.md)
+for hosted AMD64 execution, evidence, and published validation.
+
 ## The central idea
 
 A class diagram describes structure. A **Relationship Contract** adds the operational meaning of each connection:
@@ -144,6 +158,6 @@ This edition covers a curated set of influential concepts. It does not establish
 
 ## Status and development
 
-Version 0.1 is local research and educational code. The examples are deliberately smaller than production infrastructure and document their limits. The [run record](research/run-ledger.md) and [validation evidence](research/validation.md) distinguish authored material, executed checks and independent review.
+Version 0.1 is published research and educational code. The examples are deliberately smaller than production infrastructure and document their limits. The [run record](research/run-ledger.md) and [validation evidence](research/validation.md) distinguish authored material, executed checks and independent review.
 
 Contributions should include the classical intent, Relationship Contract, implementation choices, tradeoffs, source provenance, executable evidence where appropriate, and cross-language implications. A pattern earns its place by solving a concrete design problem.

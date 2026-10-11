@@ -1,0 +1,1465 @@
+{
+  "repository": "limaronaldo/roo",
+  "url": "https://github.com/limaronaldo/roo",
+  "visibility": "public",
+  "default_branch": "main",
+  "published_commit": "0c3e2bb1bae85a2dcd6ed0ad0d98a06af27048a5",
+  "tree": "1eed4114192508f0890982b107e456ac71d37e41",
+  "remote_branch_matches_commit": true,
+  "remote_tree_matches_local": true,
+  "tracked_files": 242,
+  "files": [
+    {
+      "path": ".dockerignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3a28fe3935a3497ba8ac0eba68ef80fe3b52cc6"
+    },
+    {
+      "path": ".github/workflows/roo-track.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5312a824c5ab814c3a437b104816ab5645688714"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "13bbca495799a21b458fed7debcc595893209fe5"
+    },
+    {
+      "path": "Cargo.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5af12f16c2a81dfd5540a9b79d9b12286e9fc92c"
+    },
+    {
+      "path": "Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f36f1d2adb504a02aa05faec1090522c7f4d04d4"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1f172538b6a003b435deefb9ae60e6692aba4682"
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "70d402584e4cba4bccfcf0576ef941736fd53976"
+    },
+    {
+      "path": "case-studies/orders-payments/SPEC.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c177e68c7b4ec8c6914d6d35f250b8bc3bb78978"
+    },
+    {
+      "path": "case-studies/orders-payments/adoption/architecture-decision.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d81b557887d923de82e48e32e5daaecc8e05636d"
+    },
+    {
+      "path": "case-studies/orders-payments/adoption/design-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "90d6585bc2483af31752a79acbec6bfb79f2670b"
+    },
+    {
+      "path": "case-studies/orders-payments/adoption/relationship-contract.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "69ad3035105471aec5bddeaacec443c1a74d705e"
+    },
+    {
+      "path": "case-studies/orders-payments/expected.tsv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60f6a556fc1d0a1c7d101607807c1176dda9331a"
+    },
+    {
+      "path": "case-studies/orders-payments/http/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d977a866a63d486ac92e8e235071435dabfa8c8"
+    },
+    {
+      "path": "case-studies/orders-payments/http/SPEC.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "67801d6fe8efb2299e147baf0972a189ae19ac18"
+    },
+    {
+      "path": "case-studies/orders-payments/http/fetch_json.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cf183e5f55579d93bc8140b3a4fa2a34748dd8a9"
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "74157a3ce18a8a9c74f8648ceeb8a716d8c1844f"
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/build.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d7429f1e2c1449c70406bf66aa888fa4fb2c0009"
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/run.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ac6516c3c0c1028bf08be47de5cdbda1a95a5a95"
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpCompositionServer.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6bfc6e266439a47f28c90b55a663ff263ef2b4b4"
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpProtocol.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "56a9951bdc1bb6c1e279ccda0be3590d3e88a3da"
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpService.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3e680d60a3946b6ac3f33e467fe45af92a25c8b"
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpTemplateServer.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "caf616aff9cff756489d7fbc64ae224a1bc653f2"
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/src/roo/postgres/HttpUnitTests.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "831e91324cf37bf8e1f18e8b66ad3c975cd9cc02"
+    },
+    {
+      "path": "case-studies/orders-payments/http/regression.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bcb603e50e2de7232c27c895ce3f0022bf079568"
+    },
+    {
+      "path": "case-studies/orders-payments/http/regression.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aed5767bb410cfe86da13046883248527f294b81"
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/Cargo.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "58b49242e124fc46d06357335b67347ef8a8f196"
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "842d515fbe467e4869eb1f9ab27b924184aa2967"
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "10fa0d31fab33363b0548113c1a0674bfecd384b"
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/src/lib.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b5c2f7c33885d30686b29bef93929d23fc8ae2e7"
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/src/main.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ee580ee8932c04238fc55f882889b0e8bd633a0"
+    },
+    {
+      "path": "case-studies/orders-payments/http/schema.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da8a2a2dbc5443d2575c167ed5de7b751027a991"
+    },
+    {
+      "path": "case-studies/orders-payments/http/support.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f63721d7d70115c5f3ced7f6048472e9e1279b28"
+    },
+    {
+      "path": "case-studies/orders-payments/http/verify.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "36c0b1c91a7784fd9ee7e9689e1ffb816dd26152"
+    },
+    {
+      "path": "case-studies/orders-payments/http/verify.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1186525d37c7aa4e7792b699b390efab12f0085f"
+    },
+    {
+      "path": "case-studies/orders-payments/java/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c520a97eb65512b7d6cbc7a5c03c3bcadb30a3f2"
+    },
+    {
+      "path": "case-studies/orders-payments/java/build.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3c0f685dee2a293e07a87494367aebc319117a99"
+    },
+    {
+      "path": "case-studies/orders-payments/java/negative/OverrideAlgorithm.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "20ec0bc38515cd7f6ce6998c054237428072740b"
+    },
+    {
+      "path": "case-studies/orders-payments/java/negative/PrivateMutation.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3318a92cdb3dafacbe6f3274be9f0c96b7f77842"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/Adapters.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0b11113c70a552c9aebe6148d1215981268ee8d7"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/Application.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "14b858c5b6009d1eb042e5dda6b8b8df5edba85b"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/CompositionApplication.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60abba572ff52d65b0b61d280127e40315ba1f1e"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/CompositionRunner.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "50b39e3acaa0974fd124a06b416dbf31c7368481"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/Domain.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c473badf8e2782e5026cda54fffa2f7f292ede02"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/FixtureRunner.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2778dd91765d893896e708276fcb99084eb90833"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/InMemoryTemplateApplication.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d07af734707a8bd95a60c65958f0d21cf6b56e61"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/TemplateApplication.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7035d536432f1c120a3b28a4c5e377d8daa03140"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/TemplateRunner.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dfdf996dec21b65b7b9b8722794c4d77bd844cdf"
+    },
+    {
+      "path": "case-studies/orders-payments/java/src/roo/payments/UnitTests.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb1070600bfe985ea4b2e052681d2f31c0e6b748"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4776ff141282f6df9c281d09091632cdf0da989"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/SPEC.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "637b0b57f5d7b4ea0cd50a9a338fa380e989d8e5"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/cluster.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "932126f64e751972fa59c264ecc030b15c88d887"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/fetch_jdbc.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "92e24adc41c7812d231cd67b5327688b5e775e4d"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a1e23071f627cc99ea01a70560c387747ba9cff"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/build.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c04a57ff686da76ee05bc024b0dce0219fde23d"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/negative/OverrideAlgorithm.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c1510a951a64c7998a309b5dd5200427851a9a40"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/negative/PrivateMutation.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5ba9ec2521a4aec07831f8aca8f02e9191cab91"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Action.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9de4cd258ddb75547fd509b37d737da33d79856b"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Application.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0b4ad16bcb7166150e3f216a90493b86669779f5"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/CompositionApplication.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db51d1c23a434a7e6c27bfe96b8e5a0aa802e3aa"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/CompositionRunner.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b3ed3f159d6633743065874e27253872e8fd262"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Database.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "33bcf29b80fc495ef38c4cbb324eb6f3cd7237f2"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Domain.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "96f36fad3979aa79981fbd3400f1343d0c8055ee"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/JdbcTemplateApplication.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "af5adf8f1fedcb475898cae7c886636e3ffda1c3"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Provider.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e6458511ed8653e01ecea7e522b6ccd587c5373f"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Runner.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a42efc6689c40c354feb1f7b3f02d2ae795b792b"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/Store.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f7cb6475bf41ccf445e5c8a49cc805004f5b25f8"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/TemplateApplication.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "13c967fa0d416df0e6bef6f0559f3cd21af32d19"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/TemplateRunner.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "660e8d13df614e6effeaf595637e35000dcd2052"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/src/roo/postgres/UnitTests.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ddc472d1effbfb517d8ca3ad045ef4aa1fd6b903"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/Cargo.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "26b7ce33c0ee39b14a155fe719461378e4ecb66c"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "155381e69981981c768b1f71731950b345c9a9fe"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d58c4cd6b7639a6732224c86b2d0b2cc45cd2b48"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/database.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c9b412be39a79555be84a0a79eb93b7d0c63cf56"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/domain.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b3c32a3ab558466adea0ed54f747ebe97eeeb4b"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/fixture.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7809781f054cb0d35025014f469fa75fb0426174"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/lib.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8c171b8093c81e9481a2723d77d14e00ff071b76"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/src/main.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db4cb899287d5f68da6556ff09646becb5ed679a"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/schema.sql",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb0ebadf68eecff34d98c65ec41853fe5ded9b3e"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/verify.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d466bf878c4451cf1e6305d06c2201496556c40a"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/verify.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "313293529a542aae1a76b2326ae044a824b86c63"
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/verify_rust_negative.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b470aec520239e9f37bfea008b7924567ecfb45"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/Cargo.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "584dd55566667548ce5408119b644923d5f33eac"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7da9cfd4ac5aeda4234d5d4a8ed358c42e103630"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6443ddf3340495c7a06c896d349d6f422f973964"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/examples/recovery.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "73436f98ab3cd4a95ce811aef1b9a52ebc696857"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/adapters.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dab555450a7740d144aaa6eddada84a7cc89fbca"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/application.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4bb7fa9b43c6aabc228140703bb4d47c24807d19"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/domain.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "685c2067ab57c1899fc9e9052e4883f0451d17e1"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/fixture.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5da965aaad03012f6f144e433fbe23e06d78c965"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/lib.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "34e18b92d65ec13b7379415386d5ef66d41502ff"
+    },
+    {
+      "path": "case-studies/orders-payments/rust/src/main.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c8640c865f308c1df854638476cf0463963d5f05"
+    },
+    {
+      "path": "case-studies/orders-payments/scenarios.tsv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4fc8a4a3ad6f0943ca0040fcbd4044b312c19796"
+    },
+    {
+      "path": "case-studies/orders-payments/track/DOCKER.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa6f5322917481ac8cc28ef8bf1b324695f9371d"
+    },
+    {
+      "path": "case-studies/orders-payments/track/EXERCISES.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d3e12595cf6702c07195df4378f28283ba2e6b8c"
+    },
+    {
+      "path": "case-studies/orders-payments/track/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "139a4f8432629be089aa60ce8327a5a1a3c57dc9"
+    },
+    {
+      "path": "case-studies/orders-payments/track/SPEC.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "72c622eb37ccfc36b5ee9c9f391414ac252fd9c5"
+    },
+    {
+      "path": "case-studies/orders-payments/track/build.sh",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "f1802c7586ebb4f9182b44210c4940a6fab64023"
+    },
+    {
+      "path": "case-studies/orders-payments/track/check_independence.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b77bc5664f5c9ce2722fef2813aa19497d2930d"
+    },
+    {
+      "path": "case-studies/orders-payments/track/compose.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "34ecb1320d3390440962f205c2933ab4c7a5b835"
+    },
+    {
+      "path": "case-studies/orders-payments/track/docker/Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "336d3076dd43af3b6afd8a56f84fa3616adade65"
+    },
+    {
+      "path": "case-studies/orders-payments/track/docker/entrypoint.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "de6df45aeefa54255243254067f67173667df871"
+    },
+    {
+      "path": "case-studies/orders-payments/track/docker/evidence.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a72ae7f8d51ac5810ea1d4b2be49f1df8de3bff1"
+    },
+    {
+      "path": "case-studies/orders-payments/track/java/common/roo/payments/TrackInput.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2423bf8a67fb068084cfdb0bdf1c333095e0d5da"
+    },
+    {
+      "path": "case-studies/orders-payments/track/java/common/roo/payments/TrackMain.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "58a392fa5d7a0ac38404e5a80e308a12edf408e3"
+    },
+    {
+      "path": "case-studies/orders-payments/track/java/common/roo/payments/TrackNative.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d9884ce4bce24a82c2d0588789c7422d246a130"
+    },
+    {
+      "path": "case-studies/orders-payments/track/java/solution/roo/payments/LearnerPolicy.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "461fd65164b20b0fb57067967c372e424a16b380"
+    },
+    {
+      "path": "case-studies/orders-payments/track/java/starter/roo/payments/LearnerPolicy.java",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc07de893263189f47cf3ef03a85cc3dc4721201"
+    },
+    {
+      "path": "case-studies/orders-payments/track/malformed-cases.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "df46ed56f6b84cbebd34f8bebb1bdd6fa45e6068"
+    },
+    {
+      "path": "case-studies/orders-payments/track/policy-cases.tsv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c7ad06d200238e89bc8dde0d068daea5cbd40106"
+    },
+    {
+      "path": "case-studies/orders-payments/track/rust/shared.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4dc5977f7aa2a4da7fb759d0a075a1aee1c099bf"
+    },
+    {
+      "path": "case-studies/orders-payments/track/rust/solution/Cargo.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f4ac4f6331d6c2beb012fc8685756a34d09b79a"
+    },
+    {
+      "path": "case-studies/orders-payments/track/rust/solution/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5fb7374156ff9a935af11aed0301026230dc3a78"
+    },
+    {
+      "path": "case-studies/orders-payments/track/rust/solution/src/learner.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "67484a56ef5163360fe297b6b120812583cd4213"
+    },
+    {
+      "path": "case-studies/orders-payments/track/rust/solution/src/main.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6ba38b85d0fa82b172143c6ec9ccf68017e9578a"
+    },
+    {
+      "path": "case-studies/orders-payments/track/rust/starter/Cargo.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b40950dd5213ee996144149f9281d4858e4ce1b"
+    },
+    {
+      "path": "case-studies/orders-payments/track/rust/starter/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3190cdf746a11f4b5c251612b894441f112b55c7"
+    },
+    {
+      "path": "case-studies/orders-payments/track/rust/starter/src/learner.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fc725f0434058406b32e82fd5c53205cad18d367"
+    },
+    {
+      "path": "case-studies/orders-payments/track/rust/starter/src/main.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6ba38b85d0fa82b172143c6ec9ccf68017e9578a"
+    },
+    {
+      "path": "case-studies/orders-payments/track/verify.py",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "003775d6f71764c7b6d0c10672b2be95022c8e58"
+    },
+    {
+      "path": "case-studies/orders-payments/track/verify.sh",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "34c5aabe9709e4344984c2eba8b885080fd2cd97"
+    },
+    {
+      "path": "case-studies/orders-payments/verify.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eff45b83ac26903f90a98ca5ac157a1afb27bf5f"
+    },
+    {
+      "path": "case-studies/orders-payments/verify.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0dcea98a77b29e9afb4d08f9c23e089dff6d3ad3"
+    },
+    {
+      "path": "case-studies/orders-payments/verify_rust_negative.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "142869f80bdaa2b873f7353381e9819c07eb0e50"
+    },
+    {
+      "path": "compose.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c58370dd0bcd282fa8fcbc3b6e2c79c018156ee"
+    },
+    {
+      "path": "docs/01-foundations.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "369025a66f21077fa702ea255d3098f2742f9a7f"
+    },
+    {
+      "path": "docs/02-relationship-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f3cad3aaa2ccbecbebf6aafdaf6b704d50f5efd0"
+    },
+    {
+      "path": "docs/03-concept-atlas.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "de79beb4ff02d9e16e47a0111611c5239bba4c90"
+    },
+    {
+      "path": "docs/04-pattern-catalog.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "82b42c99eeb0ffd7ed6e4161eea6c9c52380b252"
+    },
+    {
+      "path": "docs/05-architecture.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "02d775e527ee75836457fa59e426ca035c5bdc3d"
+    },
+    {
+      "path": "docs/06-cross-language.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "75e6bbeb82186140d677c180629097c5bad2455c"
+    },
+    {
+      "path": "docs/07-learning-path.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "16541c4bc62fe8445074f32e85e05d026e272c0a"
+    },
+    {
+      "path": "docs/08-rust-and-object-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e6117119fb981a04b10ebe015b4f74064bf70800"
+    },
+    {
+      "path": "docs/09-adoption-guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "491a867a22a169713db0ff7a437107eb86ec49d6"
+    },
+    {
+      "path": "docs/laboratory.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "68d44407a2bdd0f79d7586898521d350d0308801"
+    },
+    {
+      "path": "examples/command_transfer.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "18f113e284bed1dc331df9bd845b0cfb8f8bc8ea"
+    },
+    {
+      "path": "examples/graph_events.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "07c1cb8311e71ba885fa17cfd7bb86bf9a5cf6a4"
+    },
+    {
+      "path": "examples/order_workflow.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ef124e1a5dd62c11ab2357bd2d218ebb94859b40"
+    },
+    {
+      "path": "research/agenda.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e47d22bf8841e568a8e6db2d90b0313bc74af68"
+    },
+    {
+      "path": "research/candidate-initial.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ea67e222f4a49136b5e0fbacb9b5bc292da01fc8"
+    },
+    {
+      "path": "research/candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b8f917e85022395a5b2342f12f95561dfec67edf"
+    },
+    {
+      "path": "research/guide-assessment.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "01d0da1d2a9c271c31bdfe3f19a4b98bd57aa95a"
+    },
+    {
+      "path": "research/guide-java-snippet-check.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d8c259319b14abf20ba36d565fe5c402b1b3ab01"
+    },
+    {
+      "path": "research/guide-snippet-checks.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8aa06b43bb833517bc5ccdde756cb52fdb3bf177"
+    },
+    {
+      "path": "research/http-candidate-initial.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "508e4eb5f075104c93bc712587100268e735a59d"
+    },
+    {
+      "path": "research/http-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "508e4eb5f075104c93bc712587100268e735a59d"
+    },
+    {
+      "path": "research/http-checks.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "abaa96c4d7f9a4987e20a547326daec1947f8518"
+    },
+    {
+      "path": "research/http-environment.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "53d6a7196ecdc6966c7217613246c4684e2a55df"
+    },
+    {
+      "path": "research/http-integration-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0ed772dc9cd523eecdc16c342fabf8de51779ae7"
+    },
+    {
+      "path": "research/http-postgres-regression-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "beba88c4977274139563393cfcc1f21a3f113806"
+    },
+    {
+      "path": "research/http-regression.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "913d33f6af84ae61b5b7a439ed0b84f3c57d305d"
+    },
+    {
+      "path": "research/http-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c902a3cd00a9cc746cbc05a58f63336765e8d349"
+    },
+    {
+      "path": "research/http-run.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff6dd8a64eacca38a8d27a2f39e2079cf3483275"
+    },
+    {
+      "path": "research/http-security.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8995fac5c944efe85193224f0af246ee5dcb26d8"
+    },
+    {
+      "path": "research/http-sources.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8773650e6f8f2f4a2c82640af7443df5d2bb1022"
+    },
+    {
+      "path": "research/http-validation.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f0fcc39dd0bb0369907ac8ba2c78da216923b777"
+    },
+    {
+      "path": "research/literature.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6b956f4989138dd921bca8be4fb2d4e332873cbd"
+    },
+    {
+      "path": "research/orders-payments-candidate-initial.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d407b131c1906efe34dc182ac0ba6b54d0f45e63"
+    },
+    {
+      "path": "research/orders-payments-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d407b131c1906efe34dc182ac0ba6b54d0f45e63"
+    },
+    {
+      "path": "research/orders-payments-checks.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8277d221bfb0effc8361564b3b52bf70ea4f6999"
+    },
+    {
+      "path": "research/orders-payments-negative-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c77629d1a6a13286a6b0126a30248704377828a"
+    },
+    {
+      "path": "research/orders-payments-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ae0aba33e2475979c44352faed3a89c821f38bc"
+    },
+    {
+      "path": "research/orders-payments-run.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ef63e244cf34f8688fc54dcad85924ceef0c1b50"
+    },
+    {
+      "path": "research/orders-payments-security.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "426e32318a5f326c97177ee877cdb9e60fb8d9e8"
+    },
+    {
+      "path": "research/orders-payments-sources.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "834c469f3e040a2c96ca93a8571fb441251206a3"
+    },
+    {
+      "path": "research/orders-payments-validation.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "691c8a9228bd8e85c57d7336f62fda83a9377730"
+    },
+    {
+      "path": "research/postgres-boundary-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8522290044375f3718d962465bc0bfe4f49fcbaf"
+    },
+    {
+      "path": "research/postgres-build-portability.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0b0d206eac00f1c7f7fdf2bc924cbe524901706"
+    },
+    {
+      "path": "research/postgres-candidate-initial.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4084587be4d83c564cf0faec4296ce2f0b54d7d7"
+    },
+    {
+      "path": "research/postgres-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e3538e27eadf22f241b52e37f2fa2814ddb8ae0d"
+    },
+    {
+      "path": "research/postgres-checks.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "45f7f6bcfaa3acd04c903306348b94acf9768b37"
+    },
+    {
+      "path": "research/postgres-environment.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "39316f66f64b08d42791233581ba5d252558da48"
+    },
+    {
+      "path": "research/postgres-integration-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c2cfd0c307a6d31e426386a0f9024137d1960855"
+    },
+    {
+      "path": "research/postgres-regression.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c6d004d385f84417e99d4a6a088a9b5eca04418"
+    },
+    {
+      "path": "research/postgres-review-initial.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6b35cddcc9d455d43246ced07f3307b448490e7d"
+    },
+    {
+      "path": "research/postgres-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30358550aa75826514dff5ef89b48cf1e7616f14"
+    },
+    {
+      "path": "research/postgres-run.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b4c085464c3f1ad5016ba89ce6fa40670e9458c"
+    },
+    {
+      "path": "research/postgres-security.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "772baad6f1d4b22829b4aabb5b050f25188ce7b1"
+    },
+    {
+      "path": "research/postgres-sources.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b574031aa1794435f73c65a0f8336f41a64c16c7"
+    },
+    {
+      "path": "research/postgres-validation.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e48da32f2cec78b58a1b220367f636bda7b84f6b"
+    },
+    {
+      "path": "research/review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "69f50fbf89f75ce4033826a5c6b9800131e9a8da"
+    },
+    {
+      "path": "research/roo-adoption-baseline.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d7f4182e73497dfac13b080029992b1f2e8fd62"
+    },
+    {
+      "path": "research/roo-adoption-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "891da379237dd84b36e072bc6364c57d7235f8a7"
+    },
+    {
+      "path": "research/roo-adoption-changes.diff",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "964a6497a75600a47ee9b0dc7d215ca0a37616db"
+    },
+    {
+      "path": "research/roo-adoption-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ce18fdf98b46c8aa385b9e1f2dc83de0948ea27"
+    },
+    {
+      "path": "research/roo-adoption-run.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "26bde325f0d2e78d2d762658416a86fc13a302a1"
+    },
+    {
+      "path": "research/roo-adoption-validation.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "825fd33f4db589388a0e964b60c57e195896ae46"
+    },
+    {
+      "path": "research/roo-compose-amd64-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b127989d1d3682f80f91b93e382db2055f2b83f"
+    },
+    {
+      "path": "research/roo-compose-baseline.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc74258a3b1efdd38ba6d30950a4ec7d97b8144f"
+    },
+    {
+      "path": "research/roo-compose-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ead8f5ce9ecffbd4bd832c2e46ffb0100e0fe528"
+    },
+    {
+      "path": "research/roo-compose-changes.diff",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d1123b102508a187c9cf6148ae0997058cedd31a"
+    },
+    {
+      "path": "research/roo-compose-failure-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6ed40120cb2494c9336e6626df81b91bda28e70"
+    },
+    {
+      "path": "research/roo-compose-isolation-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "651f0e61f5f73a271ebf98f47ba8f6c6d3f75fcf"
+    },
+    {
+      "path": "research/roo-compose-native-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d7d5be94ae8a151e011ffbbe2c2ccdcef1e075f2"
+    },
+    {
+      "path": "research/roo-compose-pins.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3130aed17263ee0ad7362ce572438421c49cf1ca"
+    },
+    {
+      "path": "research/roo-compose-qualification.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7e82420abcefd66639a25657cfa2bc22df3818cd"
+    },
+    {
+      "path": "research/roo-compose-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "abb60cac7a49f8cc3cc9eb5a5fffcbe9551515ff"
+    },
+    {
+      "path": "research/roo-compose-run.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "920cb1a5d8a85e308e97c6f8b43e6d129a9c149f"
+    },
+    {
+      "path": "research/roo-compose-source-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "26ef71fd75fc300c87dddf3fb8feb8ac9ef3c302"
+    },
+    {
+      "path": "research/roo-compose-source-changes.diff",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "138607b9041a6584bb76d98ca9c1b5a9bdf677e9"
+    },
+    {
+      "path": "research/roo-compose-static-validation.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1332f759660969cedf90829e3b61b356e1e74237"
+    },
+    {
+      "path": "research/roo-compose-validation.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "56556b8d7b97375c54f03c81538b0f07898a3dac"
+    },
+    {
+      "path": "research/roo-github-publication-baseline.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41a5d9c65763b198e2e812b648b6b420e0dd93d4"
+    },
+    {
+      "path": "research/roo-github-publication-run.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e741597d469ccfca4cf8559b34dc6836fb43bba"
+    },
+    {
+      "path": "research/roo-github-publication-source-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c79282cdae06f2e67b092efca5675260b4c2607"
+    },
+    {
+      "path": "research/roo-github-publication-source-changes.diff",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a85bb7979f42a51a04c9ce707ffe8de2c5a5aef7"
+    },
+    {
+      "path": "research/roo-method-baseline.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ac00f44cd9452296c78cdc750d38d021d7b759ed"
+    },
+    {
+      "path": "research/roo-method-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32784b1106180a7d7cd9887120d78fbb6832e582"
+    },
+    {
+      "path": "research/roo-method-changes.diff",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fc75635167216c8d9e742d426732de6010985623"
+    },
+    {
+      "path": "research/roo-method-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4badf4f73e1cd476cc8573ae2ffe10320a252c78"
+    },
+    {
+      "path": "research/roo-method-run.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "622edbba5f218cabbe853608e3a018c471feebbc"
+    },
+    {
+      "path": "research/roo-method-validation.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "07fa86047b59d00981e3caf7c1727b65caedb668"
+    },
+    {
+      "path": "research/roo-name-baseline.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "25e94aa07cc85f7352ec5b716f609dc57e0b2b42"
+    },
+    {
+      "path": "research/roo-name-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5dd1bdf67dada34e2a009a19ef25167efaf01d75"
+    },
+    {
+      "path": "research/roo-name-changes.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ca32b1e0e40f2bea2130b9333aff4e563e23b100"
+    },
+    {
+      "path": "research/roo-name-checks.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7d8224cfc4cf8a9687f22c44e7959e9a0ce3a8fb"
+    },
+    {
+      "path": "research/roo-name-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "08bf4dad756f4d53042d150f60f250d95b4b6013"
+    },
+    {
+      "path": "research/roo-name-run.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "913ffbd8e543ea18071257bf24f8c6d323067a37"
+    },
+    {
+      "path": "research/roo-name-validation.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "57447b08c418fb970d4743cc905ffad15c40b8f9"
+    },
+    {
+      "path": "research/roo-track-baseline.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "288ffc94144a4670de366286c66b39adbdf11a80"
+    },
+    {
+      "path": "research/roo-track-candidate.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a9368561df035e37caefc82943bcc2df2820cb0f"
+    },
+    {
+      "path": "research/roo-track-changes.diff",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b02475f8aedbcf6251a99d545c470311c1fe960a"
+    },
+    {
+      "path": "research/roo-track-independence-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cf6921268afdd7fef9ca93f1eced1db67860d4ae"
+    },
+    {
+      "path": "research/roo-track-qualification.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a73efdfab5a36bcda69a48bdd1b461b98531e0d6"
+    },
+    {
+      "path": "research/roo-track-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a8b80531e326b837d5ad8bc718bd8cbf33c7111"
+    },
+    {
+      "path": "research/roo-track-run.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f5c65f4e3effc2db64680e77055be2cca7825130"
+    },
+    {
+      "path": "research/roo-track-solution-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "92dbfad9885fa914ff9b2d6e61db704c12e0eb3d"
+    },
+    {
+      "path": "research/roo-track-starter-evidence.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "55222e9e3b3bd30f7d2b6bda43a35b262c335cd3"
+    },
+    {
+      "path": "research/roo-track-validation.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d91e1b2ab1b03a879e1f96b8dc962ec0b5329464"
+    },
+    {
+      "path": "research/roo-track-validation.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7240154141dcbc23f6f45251399965f81ecfeb64"
+    },
+    {
+      "path": "research/run-ledger.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d989b44d3381a41dbee9c203577788213d3b8dfa"
+    },
+    {
+      "path": "research/sources/RUST_VS_OO_GUIA_COMPLETO_2026.original.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "234536a1e037225b153e9eb808c4520c8a240132"
+    },
+    {
+      "path": "research/validation.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b39adfcebc9bff73524feccc4eeff01c1049aa9"
+    },
+    {
+      "path": "src/events.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d506d4c7b26cbcefb23d4ee979ff2e55a055c369"
+    },
+    {
+      "path": "src/graph.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "42d7d9aa8ce867ef8dd0cc66343cf9ecd99dc715"
+    },
+    {
+      "path": "src/lib.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b00019026ff11ddce1fe91c73dce191b1f0c4bb3"
+    },
+    {
+      "path": "src/order.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "851f830c0347d23ac38a81f4c9039de9d2708d91"
+    },
+    {
+      "path": "src/strategy.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "236bf7d9187238b7f6934a9b8ce2ec90e0fbb419"
+    },
+    {
+      "path": "src/typestate.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "62f7be83c85157f63e13ecd61c88a7da68ce9ff9"
+    },
+    {
+      "path": "src/view.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "86269386cf52b6aa830b7b323ea327078f5de74e"
+    },
+    {
+      "path": "templates/architecture-decision.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9886a6d7f5f5d8f758ab95fab06b643c34618ee7"
+    },
+    {
+      "path": "templates/design-review.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "290d2b1a39d03905ff41f53bec5f363d1f414600"
+    },
+    {
+      "path": "templates/relationship-contract.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d7ebe89ffbf7ecf351428d3b3af32a8bb30942a"
+    }
+  ]
+}

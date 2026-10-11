@@ -1,0 +1,250 @@
+--- before/.github/workflows/roo-track.yml
++++ after/.github/workflows/roo-track.yml
+@@ -39,7 +39,51 @@
+         with:
+           persist-credentials: false
+ 
++      - name: Verify hosted AMD64 runner and source provenance
++        shell: bash
++        run: |
++          python3 - <<'PY'
++          import hashlib
++          import json
++          import os
++          import platform
++          from pathlib import Path
++          import subprocess
++
++          def output(*command):
++              return subprocess.check_output(command, text=True).strip()
++
++          names = ('GITHUB_REPOSITORY', 'GITHUB_WORKFLOW', 'GITHUB_EVENT_NAME',
++                   'GITHUB_REF', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',
++                   'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH')
++          record = {name: os.environ.get(name) for name in names}
++          record['host_machine'] = platform.machine()
++          record['checkout_commit'] = output('git', 'rev-parse', 'HEAD')
++          record['checkout_tree'] = output('git', 'rev-parse', 'HEAD^{tree}')
++          record['docker_architecture'] = output('docker', 'info', '--format', '{{.Architecture}}')
++          paths = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
++          record['source_sha256'] = {
++              path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
++              for path in paths if path
++          }
++          record['checks'] = {
++              'github_hosted': record['RUNNER_ENVIRONMENT'] == 'github-hosted',
++              'linux': record['RUNNER_OS'] == 'Linux',
++              'host_amd64': record['RUNNER_ARCH'] == 'X64' and record['host_machine'] == 'x86_64',
++              'docker_amd64': record['docker_architecture'] in ('x86_64', 'amd64'),
++              'checkout_matches_event': record['checkout_commit'] == record['GITHUB_SHA'],
++          }
++          destination = Path('artifacts/roo-track/hosted')
++          destination.mkdir(parents=True, exist_ok=True)
++          (destination / 'provenance.json').write_text(json.dumps(record, indent=2) + '\n')
++          if not all(record['checks'].values()):
++              raise SystemExit('Hosted AMD64 runner or source provenance check failed')
++          print('PASS hosted Linux AMD64 runner, Docker architecture, and checkout provenance')
++          PY
++
+       - name: Build and qualify the adoption track
++        env:
++          ROO_REQUIRE_AMD64_IMAGE: '1'
+         shell: bash
+         run: bash case-studies/orders-payments/track/compose.sh
+ 
+--- before/case-studies/orders-payments/track/DOCKER.md
++++ after/case-studies/orders-payments/track/DOCKER.md
+@@ -102,6 +102,11 @@
+ container entry point but does not perform the wrapper's host-side evidence
+ export.
+ 
++The wrapper also records a restricted container inspection and image platform.
++It verifies the configured nonroot user, disabled external networking, absent
++mounts and port bindings, dropped capabilities, and no-new-privileges before
++waiting for test completion. This evidence omits container environment values.
++
+ ## GitHub Actions
+ 
+ The [ROO adoption track workflow](../../../.github/workflows/roo-track.yml)
+@@ -111,6 +116,15 @@
+ credential persistence, pins each action to a commit SHA, and uses no secrets.
+ It always attempts to upload `artifacts/roo-track/`, including after a failed
+ qualification; uploaded artifacts are kept for 14 days.
++
++Before qualification, the workflow verifies a GitHub-hosted Linux X64 runner,
++an x86_64 host, an AMD64 Docker engine, and checkout correspondence with the
++event commit. It records those allowlisted values, the run and attempt, Git
++tree, and SHA-256 hashes of the checked-out files in `hosted/provenance.json`
++within the uploaded artifact. The test step requires a Linux AMD64 image.
++Together with the container inspection and existing evaluator receipts, these
++records bind a hosted qualification to its actual architecture, source, and
++isolation boundary.
+ 
+ The workflow definition alone does not establish a hosted run result. Check an
+ actual GitHub Actions job and its uploaded evidence before reporting CI
+--- before/case-studies/orders-payments/track/compose.sh
++++ after/case-studies/orders-payments/track/compose.sh
+@@ -67,6 +67,19 @@
+ owned=true
+ "${compose[@]}" run --detach --no-deps --name "$container" track "${args[@]}" > "$evidence/container-id.txt"
+ docker inspect --format '{{.Image}}' "$container" > "$evidence/image-id.txt"
++docker inspect --format '{"container_id":{{json .Id}},"image_id":{{json .Image}},"running":{{json .State.Running}},"user":{{json .Config.User}},"network_mode":{{json .HostConfig.NetworkMode}},"mounts":{{json .Mounts}},"port_bindings":{{json .HostConfig.PortBindings}},"ports":{{json .NetworkSettings.Ports}},"cap_drop":{{json .HostConfig.CapDrop}},"privileged":{{json .HostConfig.Privileged}},"security_opt":{{json .HostConfig.SecurityOpt}}}' "$container" > "$evidence/container-isolation.json"
++isolation_ok="$(docker inspect --format '{{and (eq .Config.User "10001:10001") (eq .HostConfig.NetworkMode "none") (eq (len .Mounts) 0) (eq (len .HostConfig.PortBindings) 0) (not .HostConfig.Privileged) (eq (len .HostConfig.CapDrop) 1) (eq (index .HostConfig.CapDrop 0) "ALL") (eq (len .HostConfig.SecurityOpt) 1) (eq (index .HostConfig.SecurityOpt 0) "no-new-privileges:true")}}' "$container")"
++if [[ "$isolation_ok" != true ]]; then
++    printf '1\n' > "$evidence/isolation-check-exit-code.txt"
++    echo 'Container isolation check failed; inspect the retained evidence.' >&2
++    exit 1
++fi
++printf '0\n' > "$evidence/isolation-check-exit-code.txt"
++docker image inspect "$(cat "$evidence/image-id.txt")" --format '{{.Os}}/{{.Architecture}}' > "$evidence/image-platform.txt"
++if [[ "${ROO_REQUIRE_AMD64_IMAGE:-0}" == 1 && "$(cat "$evidence/image-platform.txt")" != linux/amd64 ]]; then
++    echo 'Hosted qualification requires a Linux AMD64 image.' >&2
++    exit 1
++fi
+ docker wait "$container" > "$evidence/container-exit-code.txt"
+ docker logs "$container" 2>&1 | tee "$evidence/run.log"
+ set +e
+--- before/README.md
++++ after/README.md
+@@ -9,6 +9,20 @@
+ ROO does not introduce a language, compiler, object runtime, or inheritance extension. Version 0.1 is a first edition of the method, a literature map, reusable design worksheets, and a small standard-library-only Rust library. It is intended to grow through worked examples and evidence.
+ 
+ ROO originally stood for Rust Object Oriented. The expansion changed because the method applies beyond Rust; Rust remains the laboratory language.
++
++## Run the adoption track
++
++The [public repository](https://github.com/limaronaldo/roo) includes equivalent
++orders/payments exercises in Java composition, Java Template Method, and Rust
++composition. Run them with an isolated PostgreSQL lifecycle using Docker:
++
++```sh
++bash case-studies/orders-payments/track/compose.sh
++```
++
++See the [Docker and CI guide](case-studies/orders-payments/track/DOCKER.md) for
++learner commands and the [GitHub reproduction guide](docs/10-github-reproduction.md)
++for hosted AMD64 execution, evidence, and published validation.
+ 
+ ## The central idea
+ 
+@@ -144,6 +158,6 @@
+ 
+ ## Status and development
+ 
+-Version 0.1 is local research and educational code. The examples are deliberately smaller than production infrastructure and document their limits. The [run record](research/run-ledger.md) and [validation evidence](research/validation.md) distinguish authored material, executed checks and independent review.
++Version 0.1 is published research and educational code. The examples are deliberately smaller than production infrastructure and document their limits. The [run record](research/run-ledger.md) and [validation evidence](research/validation.md) distinguish authored material, executed checks and independent review.
+ 
+ Contributions should include the classical intent, Relationship Contract, implementation choices, tradeoffs, source provenance, executable evidence where appropriate, and cross-language implications. A pattern earns its place by solving a concrete design problem.
+--- /dev/null
++++ after/docs/10-github-reproduction.md
+@@ -0,0 +1,110 @@
++# GitHub publication and hosted AMD64 reproduction
++
++ROO is published at [limaronaldo/roo](https://github.com/limaronaldo/roo).
++The method remains independent of language: one relationship and failure
++contract is realized through Java composition, Java Template Method, and Rust
++composition. The shared adoption evaluator checks equivalent behavior in all
++three implementations.
++
++## Reproduce locally
++
++```sh
++git clone https://github.com/limaronaldo/roo.git
++cd roo
++bash case-studies/orders-payments/track/compose.sh
++```
++
++Docker, its Compose plugin, Bash, and common POSIX utilities are the host
++requirements. The image build retrieves the pinned dependencies; runtime
++qualification uses no external network. PostgreSQL runs inside the disposable
++nonroot test container and uses loopback only. No host database installation,
++published database port, host data mount, or persistent database volume is
++required. See the [Docker guide](../case-studies/orders-payments/track/DOCKER.md)
++for individual starter/solution exercise commands and package pin limits.
++
++## Execute on GitHub
++
++The [workflow](../.github/workflows/roo-track.yml) starts automatically on
++matching pushes and pull requests. It can also be dispatched from the Actions
++tab or the authenticated GitHub CLI:
++
++```sh
++gh workflow run roo-track.yml --repo limaronaldo/roo --ref main
++```
++
++Use one matching run for a given commit; an automatically started push run is
++already an actual workflow execution. The job uses `ubuntu-24.04` and verifies
++the GitHub-hosted environment, Linux X64 runner, x86_64 host, AMD64 Docker
++engine, and checkout SHA before building. The qualification step requires a
++Linux AMD64 image and calls the same wrapper as the local command.
++
++The wrapper inspects the actual container and enforces UID 10001:10001,
++network mode `none`, no mounts or port bindings, dropped capabilities, and
++no-new-privileges. The evaluator owns PostgreSQL start, stop, immediate
++restart, and WAL recovery inside that container. A separate external
++PostgreSQL service would not satisfy this test lifecycle.
++
++## Inspect the evidence
++
++The workflow uploads `roo-track-<run-id>-<attempt>` even when qualification
++fails. Select the exact run and attempt; uploaded artifacts expire after
++14 days. Download with:
++
++```sh
++gh run download RUN_ID --repo limaronaldo/roo --name roo-track-RUN_ID-ATTEMPT --dir artifacts/hosted-run
++```
++
++`hosted/provenance.json` records the event, commit, tree, runner architecture,
++Docker architecture, and SHA-256 hashes of the checked-out files. The separate
++run directory contains the actual image platform, restricted container
++inspection, source identity, tool/package versions, test receipts, logs, and
++exit statuses. Compare baked source hashes with the selected commit, not a
++later checkout. Environment credentials and PostgreSQL data files are not
++exported.
++
++For an untouched checkout, a passing full qualification includes:
++
++- 18 starter groups reported RED, with overall `EXPECTED_INCOMPLETE`.
++- 18 solution groups reported PASS: six exercises in each of three variants.
++- Three e6-only PASS groups while e2 remains incomplete.
++- Shared policy/input checks, witnessed PostgreSQL concurrency, process-death
++  recovery, immediate restart/WAL redo, and HTTP response-loss recovery.
++- Successful isolation check, test, collection, export, cleanup, and wrapper
++  statuses.
++
++Edited starters should use the learner commands rather than the full
++untouched-starter qualification. A green job alone is insufficient: reconcile
++the receipts and source identity in its exact artifact.
++
++## Publication validation
++
++The initial published executable commit is
++[`0c3e2bb1bae85a2dcd6ed0ad0d98a06af27048a5`](https://github.com/limaronaldo/roo/commit/0c3e2bb1bae85a2dcd6ed0ad0d98a06af27048a5).
++Its actual hosted execution is
++[run 38176774573, attempt 1](https://github.com/limaronaldo/roo/actions/runs/38176774573).
++The job and its artifact reconciliation passed on the actual hosted AMD64
++runner. All 18 solution groups and three independent e6 groups passed; the
++untouched starter produced its 18 expected RED groups. The receipts include
++15 solution lock witnesses, three Pending scopes retained through immediate
++PostgreSQL restart/WAL redo, and six HTTP response-loss recoveries. The e6-only
++check adds six lock witnesses and six response-loss recoveries while e2 remains
++incomplete. All eight recorded exit statuses, including the isolation check,
++were zero.
++
++The artifact archive's SHA-256 matched the GitHub API digest. Its 242 checkout
++hashes, 117 baked case-study hashes, and 19 evaluator/learner hashes per receipt
++matched the tested commit. The running container inspection confirmed the
++documented nonroot/network/mount/port/capability boundary. The retained cleanup
++status and named-container removal log confirm scoped cleanup.
++
++See the [hosted run metadata](../research/roo-github-hosted-run.json),
++[self-contained receipts and evidence](../research/roo-github-hosted-evidence.json),
++and [independent publication review](../research/roo-github-publication-review.md).
++The subsequent publication update contains documentation and evidence only;
++the executable workflow, Compose configuration, case-study source, evaluator,
++and dependency locks remain identical to the tested commit.
++
++The scenarios are educational, bounded checks of concurrency and recovery.
++They do not establish every interleaving, physical power-loss behavior,
++external payment-provider behavior, or production readiness. Historical
++local/emulated runs remain separate evidence from this hosted execution.
