@@ -8,9 +8,16 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import build as site
+from release_tags import edition_label
 
 
 class VersionTests(unittest.TestCase):
+    def test_preview_labels_do_not_imply_maturity(self):
+        self.assertEqual(edition_label("v0.1.0", "v0.1.0"), "v0.1.0 (first edition · preview)")
+        self.assertEqual(edition_label("v0.1.0", "v0.2.0"), "v0.1.0 (first edition · preview · archived)")
+        self.assertEqual(edition_label("v0.2.0", "v0.2.0"), "v0.2.0 (preview)")
+        self.assertEqual(edition_label("v1.0.0", "v1.0.0"), "v1.0.0 (release)")
+
     def test_working_tree_changes_do_not_enter_release_content(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "working"
@@ -58,6 +65,8 @@ class VersionTests(unittest.TestCase):
         self.assertIn('href="/roo/v0.1.0/docs/01-foundations/"', html)
         self.assertIn("target.hash = location.hash", html)
         self.assertIn("target.search = location.search", html)
+        self.assertNotIn("has moved", html)
+        self.assertNotIn("stable documentation", html)
 
 
 if __name__ == "__main__":

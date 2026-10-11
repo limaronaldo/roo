@@ -143,7 +143,7 @@ arbitrary DSNs. The harness controls the dedicated private cluster and schema.
 Use pgJDBC 42.7.14 (artifact SHA-256
 `73914527305a40cce504b0d3d90b23caf565136912d607ae8ae7c5895512332c`)
 and synchronous Rust `postgres = "=0.19.14"` without optional features.
-Integrity and transitive lockfile evidence are recorded by the integrator;
+Integrity and transitive lockfile evidence are recorded with the validation evidence;
 dependency availability is not proof of executed acceptance. Java compiles
 with JDK 26 targeting release 21; Rust targets installed 1.96, edition 2024.
 
@@ -191,7 +191,7 @@ app order -> outbox ordering, no provider -> app or inbox -> app lock nesting.
 
 ## Acceptance and proof limits
 
-The integrator runs both languages against all original oracle rows and common
+The test harness runs both languages against all original oracle rows and common
 malformed input cases. Meaningful unit checks cover arithmetic/identity parsing,
 unchanged rejected candidates and the same domain boundaries. Database checks
 attempt invalid scalar/state rows and duplicate event/refund keys. Common

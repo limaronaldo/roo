@@ -174,10 +174,10 @@ def redirect(target):
     canonical = BASE.rstrip("/") + target.removeprefix("/roo")
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ROO documentation has moved</title><meta name="robots" content="noindex">
+<title>Open ROO documentation</title><meta name="robots" content="noindex">
 <meta http-equiv="refresh" content="0; url={escape(target, quote=True)}">
 <link rel="canonical" href="{escape(canonical, quote=True)}"></head>
-<body><p>ROO documentation has moved. <a href="{escape(target, quote=True)}">Continue to the stable documentation</a>.</p>
+<body><p><a href="{escape(target, quote=True)}">Open the release documentation</a>.</p>
 <script>const target = new URL({json.dumps(target)}, location.origin); target.search = location.search; target.hash = location.hash; location.replace(target.href);</script>
 </body></html>\n'''
 

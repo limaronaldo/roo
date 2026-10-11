@@ -76,7 +76,7 @@ Separate four questions that often get collapsed into “ownership”:
   charge records. Memory retention and cleanup are local responsibilities.
 - **Identity:** `O1`, `p1`, and `payment:p1` identify different domain concepts.
   An object reference, memory address, or database connection is not that identity.
-- **Mutation authority:** domain transitions and the coordinator decide legal
+- **Invariant coordinator:** domain transitions and the coordinator decide legal
   changes; having a reference to a store must not enable arbitrary status writes.
 - **Authorization:** which customer or operator may request pay or refund is
   a separate product/security policy. This synthetic case does not implement it.
@@ -84,7 +84,7 @@ Separate four questions that often get collapsed into “ownership”:
 A request scope or synthetic database scope is not an authorization boundary.
 Record the missing authorization decision explicitly in a real adoption.
 
-## 3. Fill all seven relationship fields
+## 3. Fill all eight relationship fields
 
 For the relationship **application → persisted payment intent → provider**,
 complete each field with an operational decision. A language keyword is not a
@@ -95,7 +95,8 @@ or failure rules; order/lines and event/consumer deserve their own analysis.
 |---|---|
 | Owner / resource custodian | Store retains the intent with Pending; provider independently retains its complete key record and charge. Coordinator uses both capabilities. |
 | Stable identity | PaymentId `p1` names the operation; request fingerprint includes OrderId `O1`, USD, and 250. EventId is deterministically `payment:p1`. Never substitute a new key during recovery. |
-| Mutation authority | Domain transitions validate changes; application orders preparation and finalization; store commits the local invariant. Provider alone decides and records its effect. Caller authorization remains separate. |
+| Invariant coordinator | Domain transitions validate changes; application orders preparation and finalization; store commits the local invariant. Provider alone decides and records its effect. Caller authorization remains separate. |
+| Authorization | Not implemented in this teaching case; a live system needs an authenticated caller policy. |
 | Access regime | Work on a detached candidate, read the committed intent, send immutable request facts, and return explicit observations. Callers receive snapshots or read-only values rather than mutable order internals. |
 | Validity horizon | Candidate observations can become stale after a commit. Intent facts stay fixed once prepared. In-memory provider records last for the entire scenario, with no expiry; this is not restart durability or a real provider retention policy. |
 | Execution domain | Base case is one single-threaded scenario. PostgreSQL adds per-order transaction coordination; HTTP adds overlapping requests using that database authority. |
@@ -266,21 +267,11 @@ verification procedures and evidence links. Those records describe historical
 runs; this guide does not report a new test run. A SPEC states requirements.
 A successful build and an executed scenario are different evidence.
 
-Use this small adoption backlog in an existing project:
-
-1. **Choose:** name one operation, failure, allowed/forbidden outcomes, and
-   observation boundary. Done when a teammate can predict the failure trace.
-2. **Describe:** fill the seven fields and separate custody, identity, mutation
-   authority, and authorization. Done when each has a named responsible party.
-3. **Decide:** compare viable alternatives and map the policy to existing Java,
-   Rust, storage, or protocol mechanisms. Done when extension costs are explicit.
-4. **Constrain:** close one bypass or expose one explicit recovery operation.
-   Done when callers cannot silently violate the selected invariant through it.
-5. **Demonstrate:** add the smallest meaningful scenario and intermediate
-   assertions. Done when the forbidden outcome is checked at the failure point.
-6. **Review:** classify defects, unverified questions, and optional improvements;
-   assign unresolved retention/authorization/operations decisions. Done when the
-   accepted scope and evidence limits are recorded in the decision and review.
+Follow the [six-step decision procedure](02-relationship-design.md#23-the-six-step-decision-procedure)
+with this slice: payment finalization recovery. A useful first increment closes
+one bypass or exposes one recovery operation, then demonstrates the forbidden
+outcome at the failure point. Record accepted scope and unresolved policy in
+the architecture decision and design review.
 
 Expand to adjacent relationships only when their different identity, lifecycle,
 coordination, or failure rules require it. The useful result is a reviewable

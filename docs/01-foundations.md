@@ -97,7 +97,7 @@ For example, a quoting operation can receive a price reader rather than a reposi
 Rust visibility and types can restrict available calls, but an application must still authenticate principals and enforce context-dependent policy.
 An `&mut Payment` proves an access condition; it does not prove the caller is entitled to issue a refund.
 
-## 1.5 Seven core commitments
+## 1.5 Core commitments
 
 1. **Name the scenario and invariant before the mechanism.** State the expected and forbidden outcomes and participating state before selecting a language representation, storage model, or protocol.
 2. **Separate custody, responsibility, identity, and authorization.** Record these independently even when one component performs all four roles.
@@ -107,7 +107,7 @@ An `&mut Payment` proves an access condition; it does not prove the caller is en
 6. **Design time and failure with structure.** Document suspension, cancellation, stale observations, and partial external success as part of the relationship.
 7. **Match the guarantee to evidence.** Separate compiler/static checks, runtime checks, database guarantees, protocol evidence, and human review; record assumptions and the scope of tests explicitly.
 
-These are heuristics, not absolute bans.
+This is ROO's single commitment list; the [canonical contract and procedure](02-relationship-design.md) turn it into a review artifact. These are heuristics, not absolute bans.
 Shared mutable caches, cyclic graphs, dynamic plugins, and inheritance in other languages can be appropriate.
 ROO asks their contracts to make the resulting coordination cost visible.
 The simplest representation is the one that meets the real requirements with comprehensible guarantees, not necessarily the one with the fewest types.
@@ -164,7 +164,11 @@ Each clock needs its own checks.
 
 Ownership and alias control predate Rust and this proposal.
 Clarke, Potter, and Noble's *Ownership Types for Flexible Alias Protection* (OOPSLA 1998) is a canonical ownership-types reference; its publisher record is [DOI 10.1145/286936.286947](https://doi.org/10.1145/286936.286947).
-The publisher blocked full-text retrieval during this edition's research, so this chapter makes no detailed comparison with that calculus.
+Its ownership annotations constrain reference visibility and access paths in
+an object-based calculus. The paper proves soundness and representation
+containment for that system. ROO instead records design obligations across
+memory, policy, storage, and protocols; its worksheet is not a type system.
+See the [full paper, sections 2–5](https://cs.ioc.ee/ewscs/2010/mycroft/clarke-etal-oopsla98.pdf).
 
 Separation logic provides assertions for disjoint storage and local reasoning through a frame rule.
 That is an important conceptual antecedent to asking which state an operation can affect; a ROO relationship table is not a separation-logic proof. [Reynolds, 2002](https://www.cs.cmu.edu/~jcr/seplogic.pdf)

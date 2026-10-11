@@ -104,6 +104,8 @@ nav:
           - Track specification: case-studies/orders-payments/track/SPEC.md
           - Docker and CI: case-studies/orders-payments/track/DOCKER.md
   - Project:
+      - Claims and limits: docs/claims-and-limits.md
+      - How ROO was made: docs/how-roo-was-made.md
       - Release notes: RELEASE_NOTES.md
       - Changelog: CHANGELOG.md
       - Contributing: CONTRIBUTING.md

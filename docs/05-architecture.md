@@ -110,7 +110,8 @@ First decide that Order controls its line transitions, the request has a dedupli
 |---|---|
 | Owner / resource custodian | Command belongs to request; aggregate belongs to use-case execution; adapter controls transaction resource; durable store retains committed state. |
 | Stable identity | `OrderId` identifies the order; `RequestId` deduplicates one operation; a remote `ReservationId` identifies reservation state. |
-| Mutation authority | Authorized callers request acceptance; `Order` methods guard local transitions; transaction capability coordinates writes; remote inventory service alone changes remote stock. |
+| Invariant coordinator | `Order` methods guard local transitions; transaction capability coordinates writes; remote inventory service alone changes remote stock. |
+| Authorization | The application must verify the principal's permission to place this order and request inventory reservation. This is a design requirement, not an implemented policy in this exercise. |
 | Access regime | Operation-scoped access for decisions; transferred payload custody across queues; scoped transaction access. Rust realizes local access with short borrows and queue payloads with owned values. |
 | Validity horizon | Local access ends with the operation; quoted price and reservation each have explicit expiry/version rules; durable identities survive reload. |
 | Execution domain | Local domain decision; adapter calls may suspend; durable worker coordinates recovery if remote effects are involved. |

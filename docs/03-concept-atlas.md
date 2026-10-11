@@ -4,18 +4,13 @@
 
 ROO means **Relationship & Ownership Oriented design**: a language-independent method for making domain responsibilities, relationships, identity, authority, and lifecycle decisions explicit. Useful object-oriented concepts are inputs to that method. Rust is the executable laboratory used here to explore one implementation; Java and other languages can realize the same domain decisions through their own mechanisms.
 
-This atlas starts with domain intent and invariants, decides the relationships needed to preserve them, and only then asks how a language expresses those decisions. It is not a Java-to-Rust syntax conversion, a complete language reference, or a proof that a model is correct. The working sequence is:
-
-1. State the responsibility and behavioral contract in domain terms.
-2. Assign domain responsibility, resource custody, mutation authority, access, identity, validity, execution, and failure boundaries for each relation.
-3. Choose an implementation in the target language; the Rust laboratory uses structs, enums, generic bounds, trait objects, and module boundaries.
-4. Record the tradeoff and the domain rules that still need tests, review, or runtime checks.
+Use the [canonical contract and six-step procedure](02-relationship-design.md)
+to frame each concept below. The [foundations commitments](01-foundations.md#15-core-commitments)
+explain the method's intent.
 
 **Portable reading.** In Java, C#, C++, and other languages, keep the same questions about identity, mutation authority, collaborator lifetime, and who closes a resource. Map the answers to each language's own mechanisms, such as `AutoCloseable`, RAII, or managed references. Rust makes more aliasing and lifetime constraints visible in types; it does not make the underlying responsibility irrelevant elsewhere.
 
 For every stored relation, distinguish **domain identity** (which entity this is) from **memory ownership** (which value controls its lifetime). A database key does not own an object in memory; an `Arc` does not by itself establish domain identity. Rust's ownership checks constrain aliasing and lifetimes, while domain invariants and behavioral promises remain design responsibilities. The [Rust Book](https://doc.rust-lang.org/stable/book/ch04-01-what-is-ownership.html) and [Rust Reference](https://doc.rust-lang.org/reference/) describe language rules; this atlas adds a design reading of those rules.
-
-Record seven fields for each important relation: **Owner/resource custodian; Stable identity; Mutation authority; Access regime; Validity horizon; Execution domain; Failure boundary.** The custodian retains or releases a resource; the domain role answers for a business rule. A durable identity survives replacement of a representation, while authorization decides which principal may act. Neither a reference, a key, nor custody alone grants business authorization. Access may be exclusive, shared, read-only, or mediated; validity may end at a call, workflow, lease, or explicit revocation; execution and failure boundaries must describe asynchronous and distributed relations too.
 
 The entries follow **Classical intent → Relationship decision → Rust translation → Rust ownership mapping → Tradeoff.** Any model sketch below is conceptual pseudocode, not a claim that a snippet was compiled. The executable laboratory, when available, is the source of compile evidence; this atlas makes no compiler claim.
 

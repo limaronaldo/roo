@@ -6,7 +6,7 @@ method, and Rust ownership is one way to realize its relationship contracts.
 Begin with timeout-after-effect: the order remains Pending and the same
 PaymentId supports reconciliation when the caller cannot know the provider
 outcome. The [shared case](../README.md) and [contract](../SPEC.md) fix that
-invariant; chapter 2's [Relationship Contract](../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
+invariant; chapter 2's [Relationship Contract](../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../templates/relationship-contract.md) guide custody,
 domain responsibility, stable identity, mutation authority, access lifetime,
 execution, and failure decisions. This in-memory PaymentId lasts one scenario,
@@ -37,7 +37,7 @@ as closed result values in the output. The complete input is parsed structurally
 before execution; no partial TSV is emitted for a rejected fixture.
 
 These commands are instructions, not a claim that they were executed. The
-integrator's validation record establishes which checks actually ran.
+dated validation record establishes which checks actually ran.
 
 ## Follow the code
 
@@ -63,14 +63,14 @@ and supply the idempotency guarantee themselves.
 
 ## Relationship contracts
 
-| Relationship | Owner / custodian | Identity | Mutation authority | Access regime | Validity horizon | Execution domain | Failure boundary |
-|---|---|---|---|---|---|---|---|
-| Order to lines | Order owns its vector | Embedded values, no external line IDs | Private validated add operation through application | Owned values; observers receive counts/totals | Lines retained for order; frozen at Pending | One synchronous coordinator | Checked candidate arithmetic before installing any line |
-| Application to Store | Caller owns Store | One O1 committed snapshot | Exclusive application capability; store replaces candidate | Short `&mut Store`; shared observation outside call | Application borrow ends before caller observes store | Single thread, no suspension | Failed replacement installs neither order nor events |
-| Order to payment/refund intent | Order owns immutable request snapshots | Separate PaymentId/RefundId correlated with OrderId | Private preparation and finalization | Owned copies for provider calls | Retained through terminal order state | Two separate local transactions around remote call | Preparation failure precedes remote effect; final failure keeps persisted intent |
-| Application to Provider | Caller owns independent simulator | Typed operation key plus complete request fingerprint | Application sends only persisted request; fixture probe separate | Short exclusive borrow; lookup read-only | Complete key records retained for fresh scenario | Same thread, independent effect boundary | Unknown observation never fabricates a terminal record; stable retry/reconcile |
-| Store to event | Store owns committed facts and ack flags | EventId derived from typed intent | Domain constructs fact; store commits it with terminal state | Owned facts, shared read views | Retained for scenario, independent of transient candidate | Local candidate commit and later relay | Failed commit installs no event; send/ack failure retains pending record |
-| Relay to Consumer | Caller owns consumer and dedup set | EventId | Deliver capability; fact payload immutable | Borrowed event copied into consumer on first delivery | Seen IDs retained for entire scenario | Single synchronous relay | Lost ack causes redelivery; duplicate fact has no second application |
+| Relationship | Owner / custodian | Identity | Invariant coordinator | Authorization | Access regime | Validity horizon | Execution domain | Failure boundary |
+|---|---|---|---|---|---|---|---|---|
+| Order to lines | Order owns its vector | Embedded values, no external line IDs | Private validated add operation through application | Not implemented; synthetic callers only | Owned values; observers receive counts/totals | Lines retained for order; frozen at Pending | One synchronous coordinator | Checked candidate arithmetic before installing any line |
+| Application to Store | Caller owns Store | One O1 committed snapshot | Exclusive application capability; store replaces candidate | Not implemented; synthetic callers only | Short `&mut Store`; shared observation outside call | Application borrow ends before caller observes store | Single thread, no suspension | Failed replacement installs neither order nor events |
+| Order to payment/refund intent | Order owns immutable request snapshots | Separate PaymentId/RefundId correlated with OrderId | Private preparation and finalization | Not implemented; synthetic callers only | Owned copies for provider calls | Retained through terminal order state | Two separate local transactions around remote call | Preparation failure precedes remote effect; final failure keeps persisted intent |
+| Application to Provider | Caller owns independent simulator | Typed operation key plus complete request fingerprint | Application sends only persisted request; fixture probe separate | Not implemented; synthetic callers only | Short exclusive borrow; lookup read-only | Complete key records retained for fresh scenario | Same thread, independent effect boundary | Unknown observation never fabricates a terminal record; stable retry/reconcile |
+| Store to event | Store owns committed facts and ack flags | EventId derived from typed intent | Domain constructs fact; store commits it with terminal state | Not implemented; synthetic callers only | Owned facts, shared read views | Retained for scenario, independent of transient candidate | Local candidate commit and later relay | Failed commit installs no event; send/ack failure retains pending record |
+| Relay to Consumer | Caller owns consumer and dedup set | EventId | Deliver capability; fact payload immutable | Not implemented; synthetic callers only | Borrowed event copied into consumer on first delivery | Seen IDs retained for entire scenario | Single synchronous relay | Lost ack causes redelivery; duplicate fact has no second application |
 
 `Order`, `Store`, and their resource bindings are not Copy. Compiler-negative
 doctests in `lib.rs` demonstrate use after transfer (`E0382`), overlapping shared
@@ -78,7 +78,7 @@ and exclusive access (`E0502`), and inaccessible domain transitions (`E0624`).
 Positive doctests demonstrate permitted composition and the runner boundary.
 A compiler rejection is evidence about that access pattern, not evidence about
 payment uniqueness, transaction durability, or all distributed interleavings.
-The integrator checks the actual diagnostic codes independently of rustdoc's
+The negative-test harness checks the actual diagnostic codes independently of rustdoc's
 compile-fail acceptance.
 
 ## Runtime evidence and limits
@@ -93,7 +93,7 @@ retry and identity conflict; stable fact identity; consumer deduplication and
 outbox ordering after send/ack failures.
 
 The complete shared fixture comparison is separate acceptance evidence owned by
-the integrator. No test here proves every interleaving. This is a deterministic
+the verification harness. No test here proves every interleaving. This is a deterministic
 single-threaded in-memory model with no real charges, database, disk durability,
 network, concurrency, authentication, fraud, PCI compliance, process crash, or
 provider retention-window validation. Ownership enforces local access rules;

@@ -1,76 +1,156 @@
 ---
 hide:
+  - navigation
   - toc
 ---
 
-<div class="roo-hero" markdown="1">
+<div class="roo-home-hero" markdown="1">
 
-<p class="roo-eyebrow">RELATIONSHIP &amp; OWNERSHIP ORIENTED DESIGN</p>
-
-**{{edition_status}}**
+<div class="roo-home-intro" markdown="1">
 
 # Relationships first.
 
-Design who owns data, who may change it, how long access lasts, and what
-happens when an operation fails. Then choose the language and mechanisms
-that uphold those decisions.
+ROO (Relationship & Ownership Oriented design) is a proposed practitioner method for deciding what
+each important connection in a design means: who keeps the data, who coordinates
+its rules, who may request a change, how long access lasts, and what survives a failure. Decide that
+first, then pick the classes, references, locks, or messages that uphold it,
+in Java, Rust, or any other language.
 
-ROO is a **language-independent design method** with executable Java and Rust
-studies. Rust provides compiler feedback; the relationship decisions apply
-across languages.
+Maintained by [Ronaldo Martins](https://github.com/limaronaldo).
 
-[Start with the foundations](../../docs/01-foundations.md){ .md-button .md-button--primary }
-[Adopt ROO in a project](../../docs/09-adoption-guide.md){ .md-button }
-
-</div>
-
-<div class="roo-release" markdown="1">
-
-**{{release_version}} · Release documentation**
-
-The method, three templates, orders/payments studies, and six executable
-exercises are available under **MIT OR Apache-2.0** for original ROO material.
-Use the release page and notes for source archives, qualification evidence,
-and the limits of the demonstrated Java/Rust/PostgreSQL scenarios.
-
-[Release notes](../../RELEASE_NOTES.md) ·
-[Release {{release_version}}](https://github.com/limaronaldo/roo/releases/tag/{{release_version}}) ·
-[License and exceptions](license.md)
+[Try it on one relationship](#try-it){ .md-button .md-button--primary }
+[Read the foundations](../../docs/01-foundations.md){ .md-button }
 
 </div>
 
-## Choose a path
+<figure class="roo-contract">
+<div class="roo-diagram" role="img" aria-label="Class diagram: an arrow from Order to PaymentAttempt">
+<span class="roo-class"><span class="roo-class__name">Order</span></span>
+<span class="roo-edge"></span>
+<span class="roo-class"><span class="roo-class__name">PaymentAttempt</span></span>
+</div>
+<div class="roo-attach" aria-hidden="true"></div>
+<div class="roo-note">
+<dl>
+<dt>custodian</dt>
+<dd>Local store retains intent; provider independently retains its result.</dd>
+<dt>identity</dt>
+<dd>A scoped attempt ID binds immutable order, currency, and amount facts.</dd>
+<dt>coordinator</dt>
+<dd>Application sequences prepare, provider call, and finalization; domain operations validate transitions.</dd>
+<dt>authorization</dt>
+<dd>Not implemented in the teaching case. A live service needs authenticated caller policy.</dd>
+<dt>access</dt>
+<dd>Order retains an attempt ID and a read-only status observation.</dd>
+<dt>horizon</dt>
+<dd>Intent survives recovery; a status observation can become stale while still readable.</dd>
+<dt>execution</dt>
+<dd>Persist intent, call the provider, then finalize locally. Short local transactions do not span the provider call.</dd>
+<dt>failure</dt>
+<dd>A timeout may follow a charge. Retain Pending and reconcile by the same attempt ID; recovery must not add a charge.</dd>
+</dl>
+</div>
+<figcaption>A class diagram draws the arrow. A Relationship Contract writes down the eight decisions it leaves out.
+This is the <a href="https://limaronaldo.github.io/roo/dev/docs/02-relationship-design/">current development contract</a>;
+tagged chapters retain their original wording.</figcaption>
+</figure>
+
+</div>
+
+<div class="roo-home-body" markdown="1">
+
+## Three clocks, not one
+
+Holding a value doesn’t mean it is still true. ROO separates three ways that
+access can expire, because each one needs its own check.
+
+<figure class="roo-clocks">
+<p class="roo-clocks__setup">At 10:00, a fulfillment job loads order 1042 and starts packing it.</p>
+<div class="roo-clock roo-clock--memory">
+<p class="roo-clock__name">Memory validity</p>
+<div class="roo-clock__track" aria-hidden="true"><span class="roo-clock__bar"></span></div>
+<p class="roo-clock__text">The job’s copy stays safe to read until the job ends at 10:05.</p>
+</div>
+<div class="roo-clock roo-clock--business">
+<p class="roo-clock__name">Business validity</p>
+<div class="roo-clock__track" aria-hidden="true"><span class="roo-clock__bar"><span class="roo-clock__end">10:02</span></span></div>
+<p class="roo-clock__text">The customer cancelled at 10:02. The copy is still readable, but the order is no longer open.</p>
+</div>
+<div class="roo-clock roo-clock--freshness">
+<p class="roo-clock__name">Observation freshness</p>
+<div class="roo-clock__track" aria-hidden="true"><span class="roo-clock__bar"><span class="roo-clock__end">10:01</span></span></div>
+<p class="roo-clock__text">The shipping address changed at 10:01. From then on, the copy shows the old one.</p>
+</div>
+<div class="roo-clock__axis" aria-hidden="true"><span>10:00</span><span>10:05</span></div>
+</figure>
+
+Lifetimes and garbage collectors manage the first clock. The other two are
+managed only where the design says how; that is what the `horizon` line in a
+contract is for.
+
+## Try it on one relationship { #try-it }
+
+Pick one arrow in a system you know, preferably one that crosses a process, a
+transaction, a lifecycle, or a trust boundary. Fill in the eight fields. A line you can’t
+fill is an open design decision, not permission to assume.
+
+```text
+Relationship: Source -> Target [cardinality]
+Invariant: allowed result; forbidden result; when state must agree
+Custodian: who retains the resource and releases it
+Identity: key, scope, version, reuse, and deletion rules, or value only
+Coordinator: component and operations that preserve the invariant
+Authorization: principal, permitted operations, policy, and revocation rule
+Access: observation, controlled command, snapshot, lookup, sharing, or transfer
+Horizon: memory validity, business lifecycle, and freshness limits
+Execution: task, process, transaction, and overlap coordination
+Failure: surviving effects, retry, reconciliation, and compensation
+Evidence: observed checks and references
+Open: unresolved requirements and assumptions
+```
+
+No installs. Paste the result into a pull request or an architecture decision
+record. Follow the [canonical six-step procedure](https://limaronaldo.github.io/roo/dev/docs/02-relationship-design/#23-the-six-step-decision-procedure).
+The [Relationship Contract worksheet](../../templates/relationship-contract.md)
+is the edition's reusable form; the
+[payment recovery contract](../../case-studies/orders-payments/adoption/relationship-contract.md)
+is a finished one to compare against.
+
+</div>
+
+## Go deeper
 
 <div class="roo-paths" markdown="1">
 
 <div markdown="1">
 
-### Understand the method
+### Learn the method
 
-Read the foundations, relationship design, OO concept atlas, and pattern
-catalog. Continue through architecture and cross-language mappings.
+Foundations and relationship design first, then classical OO concepts, all 23
+GoF patterns, and architecture, each translated into relationship decisions.
 
-[Explore the chapters](../../docs/01-foundations.md)
-
-</div>
-
-<div markdown="1">
-
-### Make a design decision
-
-Use the Relationship Contract, architecture decision, and design review
-templates. Compare your choices with completed orders/payments examples.
-
-[Use the templates](../../templates/relationship-contract.md)
+[Read the foundations](../../docs/01-foundations.md)
 
 </div>
 
 <div markdown="1">
 
-### Run the evidence
+### Review a design
 
-Follow one domain from in-memory objects to PostgreSQL and HTTP. Compare
-Java composition, Java Template Method, and Rust against a shared oracle.
+A worksheet, an architecture decision template, and a design review guide,
+each paired with a completed orders/payments example.
+
+[Open the templates](../../templates/relationship-contract.md)
+
+</div>
+
+<div markdown="1">
+
+### Check the evidence
+
+One orders/payments domain, from in-memory objects to PostgreSQL restarts and
+lost HTTP responses, built in Java and Rust and checked against the same
+expected results. Six exercises run in Docker.
 
 [Open the case study](../../case-studies/orders-payments/README.md)
 
@@ -78,30 +158,22 @@ Java composition, Java Template Method, and Rust against a shared oracle.
 
 </div>
 
-## One domain, increasing obligations
+<div class="roo-home-close" markdown="1">
 
-| Stage | Design questions | Read next |
-|---|---|---|
-| In memory | Who owns the order? Where can mutation occur? When is composition or inheritance useful? | [Orders and payments](../../case-studies/orders-payments/README.md) |
-| PostgreSQL | What is durable? Who coordinates concurrent changes? How do uncertain payments recover? | [Persistence and recovery](../../case-studies/orders-payments/postgres/README.md) |
-| HTTP | Which requests are safe to retry? What happens when a response is lost? | [HTTP APIs](../../case-studies/orders-payments/http/README.md) |
-| Practice | Can each design decision pass the same tests in Java and Rust? | [Six executable exercises](../../case-studies/orders-payments/track/EXERCISES.md) |
+## Bring it a real design
 
-## Run the adoption track
+**v0.1.0 is the first edition (preview).**
+The [claims and limits](https://limaronaldo.github.io/roo/dev/docs/claims-and-limits/)
+page maps evidence to its scope;
+[How ROO was made](https://limaronaldo.github.io/roo/dev/docs/how-roo-was-made/)
+describes AI-assisted authorship and same-family agent review.
+Original material uses [MIT OR Apache-2.0](license.md).
+What ROO needs most is evidence from real systems: if you write a contract for a design of yours, share what it caught
+and what it missed.
 
-```sh
-git clone --branch {{checkout_ref}} https://github.com/limaronaldo/roo.git
-cd roo
-bash case-studies/orders-payments/track/compose.sh
-```
+[Share a case](https://github.com/limaronaldo/roo/issues/new?title=Case%20report%3A%20){ .md-button .md-button--primary }
+[Read the release notes](../../RELEASE_NOTES.md){ .md-button }
 
-You need Docker, Compose, Bash, and common POSIX utilities. The evaluator
-owns PostgreSQL inside the isolated container. The untouched starter is
-expected to be incomplete; the solution is expected to pass.
-See [Docker reproduction](../../case-studies/orders-payments/track/DOCKER.md)
-for learner commands and [hosted validation](../../docs/10-github-reproduction.md)
-for the evidence and its limits.
+[Release {{release_version}}](https://github.com/limaronaldo/roo/releases/tag/{{release_version}})
 
-ROO is an evolving educational method. Its compiler checks and tests
-support specific obligations in bounded scenarios. They do not establish
-production readiness or every possible failure and interleaving.
+</div>

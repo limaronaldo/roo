@@ -3,7 +3,7 @@
   "versions": [
     {
       "id": "v0.1.0",
-      "label": "v0.1.0 (stable)",
+      "label": "v0.1.0 (first edition \u00b7 preview)",
       "source_ref": "refs/tags/v0.1.0",
       "source_commit": "56374f78a7e78566e9edfcbb6aa281fe838eeb4d",
       "navigation": "website/releases/v0.1.0.yml"

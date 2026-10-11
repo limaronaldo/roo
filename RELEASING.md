@@ -64,7 +64,10 @@ or silently replace an asset under an existing release.
 
 ## Automatic documentation editions
 
-Pushing a stable `vX.Y.Z` tag requests documentation publication on `main`.
+Pushing a numeric `vX.Y.Z` tag requests documentation publication on `main`.
+Here “stable tag” distinguishes this format from a prerelease suffix; it does
+not certify method maturity. Pre-1.0 editions are labeled as previews, with
+v0.1.0 identified as the first edition.
 The publisher discovers all stable tags, reads each release's navigation and
 documents from its exact commit, retains previous editions, updates the
 version selector, and selects the highest numeric version as the default.

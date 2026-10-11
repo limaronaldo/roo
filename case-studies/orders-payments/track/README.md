@@ -163,21 +163,14 @@ and the [Rust shared runner](rust/shared.rs); native checks that exercise the
 existing in-memory applications live in [Java's `TrackNative`](java/common/roo/payments/TrackNative.java)
 and the same Rust runner.
 
-## Keep the seven fields neutral
+## Keep the eight fields neutral
 
 Before thinking about Java or Rust syntax, answer the seven Relationship
 Contract fields for the operation. The filled contract linked above gives the
 case answers; use the blank worksheet when applying ROO elsewhere.
 
-| Field | Question to answer |
-|---|---|
-| Owner / resource custodian | Who retains this resource and handles its local lifecycle? |
-| Stable identity | What identity lets the operation be recognized after a retry or process restart? |
-| Mutation authority | Which operation may change state, and who preserves the invariant? |
-| Access regime | Are callers observing a snapshot, transferring facts, or sharing mutable access? |
-| Validity horizon | When can an observation become stale, or an intent cease to be valid? |
-| Execution domain | Where must overlapping operations coordinate: call, process, service, or transaction? |
-| Failure boundary | Which effects may survive a failure, and who owns inspection, retry, or recovery? |
+Use the [canonical field questions](../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
+rather than a separate track-specific definition.
 
 For this case, `p1` is the stable payment operation identity, while the order,
 provider effect, and outbox fact have different custodians and lifetimes. The

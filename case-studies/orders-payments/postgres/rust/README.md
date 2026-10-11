@@ -8,7 +8,7 @@ Begin with a provider record committed before a failed finalization: the
 persisted intent and same typed operation identity must support recovery in a
 fresh process. The [frozen PostgreSQL contract](../SPEC.md) and
 [original case](../../README.md) set the behavior. Chapter 2's
-[Relationship Contract](../../../../docs/02-relationship-design.md#21-the-seven-field-relationship-contract)
+[Relationship Contract](../../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../../templates/relationship-contract.md) help decide who
 retains resources, who owns domain decisions, which identities survive restart,
 and where mutation, access, execution, and failure boundaries lie. Rust bounds
@@ -22,7 +22,7 @@ Rust 1.96. The `roo-postgres` binary accepts `fixtures PATH`, `init SCOPE`,
 `step SCOPE ACTION`, and `snapshot SCOPE`. Successful output is the shared
 11-column TSV; errors are bounded stderr diagnostics and nonzero exit codes.
 
-The integrator creates the dedicated synthetic cluster and installs
+The test harness creates the dedicated synthetic cluster and installs
 `../schema.sql` before using these commands. The runner requires all four
 structured environment values and rejects any host other than 127.0.0.1 or
 user/database other than roo_test. It does not read DATABASE_URL.
@@ -88,7 +88,7 @@ boundaries, typed identities, copied terminal facts, and complete request
 fingerprints. Positive doctests and intended compile-fail examples demonstrate
 move-after-use, a Client's exclusive Transaction borrow, the transaction's
 borrowed lifetime, and private terminal transitions. These compiler restrictions
-do not establish distributed invariants. The integrator owns fixture/oracle,
+do not establish distributed invariants. The shared verification harness owns fixture/oracle,
 malformed input, database, concurrency, process-kill and PostgreSQL restart
 acceptance. This README describes commands and implementation; executed results
 must be recorded separately. No production readiness, physical power-loss or

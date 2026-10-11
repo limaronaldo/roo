@@ -22,6 +22,19 @@ def version_key(name):
     return tuple(int(part) for part in match.groups())
 
 
+def edition_label(name, latest):
+    """Version identifies a snapshot; pre-1.0 editions remain previews."""
+    if name == "v0.1.0":
+        status = "first edition · preview"
+    elif version_key(name)[0] == 0:
+        status = "preview"
+    else:
+        status = "release"
+    if name != latest:
+        status += " · archived"
+    return f"{name} ({status})"
+
+
 def git(root, *args):
     return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
 
@@ -76,7 +89,7 @@ def discover(root, requested_tag=""):
             nav_origin = f"{commit}:website/mkdocs.yml"
         nav = navigation(text)
         nav_hash = hashlib.sha256(json.dumps(nav, sort_keys=True).encode()).hexdigest()
-        entries.append({"id": name, "label": f"{name} ({'stable' if name == names[0] else 'archived'})",
+        entries.append({"id": name, "label": edition_label(name, names[0]),
                         "source_ref": ref, "source_commit": commit, "tag_object": tag_object,
                         "navigation": nav_origin, "navigation_sha256": nav_hash, "nav": nav})
     dev = next(entry for entry in policy["versions"] if entry["id"] == "dev")

@@ -8,6 +8,21 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+### Changed
+
+- Consolidate the method into one eight-field contract and six-step procedure;
+  separate invariant coordination from caller authorization throughout the
+  current chapters, templates, and case documentation.
+- Shorten the overview and worksheet, center the homepage on a worked payment
+  relationship and three clocks, and identify pre-1.0 editions as previews.
+- Describe AI-assisted authorship and same-family agent review accurately;
+  collect evidence boundaries in Claims and limits.
+
+### Added
+
+- Compile and execute chapter Rust and Java examples directly from Markdown
+  in documentation CI, with checks against unclassified or skipped fences.
+
 - Automatic documentation editions from stable release tags, with tagged
   navigation, semantic ordering, preservation checks against published sources,
   serialized publication on main, and an idempotent release dispatcher.

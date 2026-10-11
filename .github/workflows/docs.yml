@@ -9,6 +9,10 @@ on:
       - 'templates/**'
       - 'case-studies/orders-payments/**/*.md'
       - '*.md'
+      - 'scripts/check_doc_examples.py'
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'LICENSE*'
       - '.github/workflows/docs.yml'
       - '.github/workflows/docs-release.yml'
@@ -19,6 +23,10 @@ on:
       - 'templates/**'
       - 'case-studies/orders-payments/**/*.md'
       - '*.md'
+      - 'scripts/check_doc_examples.py'
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - 'LICENSE*'
       - '.github/workflows/docs.yml'
       - '.github/workflows/docs-release.yml'
@@ -58,6 +66,14 @@ jobs:
         run: |
           python -m unittest discover -s website/tests -v
           node --test website/tests/versions.test.cjs
+      - name: Compile and execute chapter examples in Rust and Java
+        env:
+          RUSTUP_TOOLCHAIN: '1.96.0'
+        run: |
+          rustup toolchain install 1.96.0 --profile minimal
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          python scripts/check_doc_examples.py
       - name: Capture the published release preservation baseline
         run: python website/release_tags.py capture --output .site-build/previous-publication.json
       - name: Build and validate every release edition and development
