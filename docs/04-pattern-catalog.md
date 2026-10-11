@@ -301,7 +301,7 @@ one instance.
 
 ## ROO review checklist for a proposed translation
 
-Before retaining a pattern label in a design, record the seven relationship fields above and answer these questions in plain terms. Begin with domain intent and invariants; then use the Rust-specific questions to review a laboratory mapping:
+Before retaining a pattern label in a design, complete the [eight-field Relationship Contract](02-relationship-design.md#21-the-eight-field-relationship-contract) and answer these questions in plain terms. Begin with domain intent and invariants; then use the Rust-specific questions to review a laboratory mapping:
 
 1. Which axis varies: data shape, algorithm, policy, lifecycle, representation, or
    coordination?

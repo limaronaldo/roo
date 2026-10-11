@@ -165,7 +165,7 @@ and the same Rust runner.
 
 ## Keep the eight fields neutral
 
-Before thinking about Java or Rust syntax, answer the seven Relationship
+Before thinking about Java or Rust syntax, answer the eight Relationship
 Contract fields for the operation. The filled contract linked above gives the
 case answers; use the blank worksheet when applying ROO elsewhere.
 

@@ -27,7 +27,7 @@ result, and what to do when a response disappears.
 
 ROO (Relationship & Ownership Oriented design) is a language-independent method.
 Here it asks how the same scenario and invariants hold when a caller can lose a
-response. Keep the seven relationship fields and decide which identity the next
+response. Keep the eight relationship fields and decide which identity the next
 request must reuse, who can perform a
 transition, and which committed facts survive that loss. Java and Rust realize
 the local request handling; the accepted PostgreSQL adapters realize persistence
@@ -509,10 +509,10 @@ PostgreSQL and the test harness can witness the actual database lock wait.
 
 The matrix applies the eight fields from
 [ROO relationship design](../../../docs/02-relationship-design.md): owner or
-resource custodian, stable identity, mutation authority, access regime, validity
-horizon, execution domain, and failure boundary. Memory custody, domain
-responsibility, and durable database identity are named separately where they
-differ.
+resource custodian, stable identity, invariant coordinator, authorization,
+access regime, validity horizon, execution domain, and failure boundary. Memory
+custody, domain responsibility, durable database identity, and caller permission
+are named separately where they differ.
 
 | Relationship | Owner / custodian | Stable identity | Invariant coordinator | Authorization | Access regime | Validity horizon | Execution domain | Failure boundary |
 |---|---|---|---|---|---|---|---|---|
@@ -709,6 +709,6 @@ check where the server was stopped, what the client observed, and what recovery 
 | [Historical regression runner](regression.sh) | Rechecks the original in-memory, PostgreSQL, and ROO cases with new receipts |
 | [Accepted PostgreSQL Java adapters](../postgres/java/src/roo/postgres/Database.java) | Structured loopback connections, short transaction policy, database gates |
 | [Accepted PostgreSQL Rust API](../postgres/rust/src/database.rs) | `Database::{init,step,snapshot}` and existing persistence protocol |
-| [ROO relationship contract](../../../docs/02-relationship-design.md) | Seven-field review frame used in the matrix above |
+| [ROO relationship contract](../../../docs/02-relationship-design.md) | Eight-field review frame used in the matrix above |
 | [Architecture boundaries](../../../docs/05-architecture.md) | Memory/resource, transaction, semantic, and deployment boundaries |
 | [Cross-language guide](../../../docs/06-cross-language.md) | Java and Rust access, identity, and concurrency distinctions |
