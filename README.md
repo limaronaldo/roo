@@ -1,8 +1,12 @@
 # ROO — Relationship & Ownership Oriented design
 
 [![ROO adoption track](https://github.com/limaronaldo/roo/actions/workflows/roo-track.yml/badge.svg?branch=main)](https://github.com/limaronaldo/roo/actions/workflows/roo-track.yml?query=branch%3Amain)
+[![Documentation](https://github.com/limaronaldo/roo/actions/workflows/docs.yml/badge.svg?branch=main)](https://limaronaldo.github.io/roo/)
 [![Release](https://img.shields.io/github/v/release/limaronaldo/roo)](https://github.com/limaronaldo/roo/releases)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
+
+[Read the documentation](https://limaronaldo.github.io/roo/) — browse the
+chapters, templates, orders/payments studies, and the **v0.1.0** release.
 
 **Design relationships with ownership, authority, time, and failure in view.**
 

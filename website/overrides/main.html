@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block announce %}
+  ROO v0.1.0 is available —
+  <a href="https://github.com/limaronaldo/roo/releases/tag/v0.1.0">read the first public release</a>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+  <div class="roo-source">
+    v0.1.0 edition · Documentation source
+    <a href="https://github.com/limaronaldo/roo/commit/{{ config.extra.source_commit }}">{{ config.extra.source_commit[:7] }}</a>
+  </div>
+{% endblock %}

@@ -8,7 +8,9 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
-No changes recorded yet.
+- GitHub Pages documentation with chapter, template, and case-study navigation,
+  full-text search, a v0.1.0 release introduction, and automated build/link
+  validation before deployment.
 
 ## [0.1.0] — 2026-10-11
 
