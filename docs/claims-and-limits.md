@@ -1,5 +1,12 @@
 # Claims and limits
 
+The [method](02-relationship-design.md), [design cases](../case-studies/orders-payments/DESIGN.md),
+and [implementations](implementations.md) have different claims. Java, Rust,
+PostgreSQL, and HTTP are qualified only to the extent of their recorded checks.
+Other [technology candidates](technology-selection.md) are design alternatives,
+with no additional implementation or qualification implied by this reorganization.
+
+
 ROO is a practitioner-method proposal with an executable teaching laboratory.
 v0.1.0 is the first edition (preview); a published snapshot is not a maturity
 certification. The project has no documented field study demonstrating that

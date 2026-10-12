@@ -1,5 +1,5 @@
 site_name: ROO
-site_description: Relationship & Ownership Oriented design — a language-independent method, with Java and Rust laboratories.
+site_description: Relationship & Ownership Oriented design — a method independent of language, runtime, database, and protocol.
 site_url: https://limaronaldo.github.io/roo/
 repo_url: https://github.com/limaronaldo/roo
 repo_name: limaronaldo/roo
@@ -61,34 +61,41 @@ extra: {}
 copyright: Original ROO material — MIT OR Apache-2.0. Third-party exceptions apply.
 nav:
   - Start here: index.md
-  - Chapters:
+  - Method:
       - Overview: overview.md
-      - 1. Foundations: docs/01-foundations.md
-      - 2. Relationship design: docs/02-relationship-design.md
-      - 3. Concept atlas: docs/03-concept-atlas.md
-      - 4. Pattern catalog: docs/04-pattern-catalog.md
-      - 5. Software architecture: docs/05-architecture.md
-      - 6. Cross-language transfer: docs/06-cross-language.md
-      - 7. Learning path: docs/07-learning-path.md
-      - 8. Rust and object design: docs/08-rust-and-object-design.md
-      - 9. Practical adoption: docs/09-adoption-guide.md
-      - 10. GitHub reproduction: docs/10-github-reproduction.md
-      - Rust laboratory: docs/laboratory.md
+      - Foundations: docs/01-foundations.md
+      - Relationship Contract: docs/02-relationship-design.md
+      - Software architecture: docs/05-architecture.md
+      - Technology selection: docs/technology-selection.md
   - Templates:
       - Relationship Contract: templates/relationship-contract.md
       - Architecture decision: templates/architecture-decision.md
       - Design review: templates/design-review.md
-  - Case studies:
-      - Authorization and revocation: case-studies/orders-payments/authorization/README.md
-      - Orders and payments:
-          - case-studies/orders-payments/README.md
-          - Shared specification: case-studies/orders-payments/SPEC.md
-          - Java implementations: case-studies/orders-payments/java/README.md
-          - Rust implementation: case-studies/orders-payments/rust/README.md
+  - Design cases:
+      - Payment recovery: case-studies/orders-payments/DESIGN.md
+      - Authorization and revocation: case-studies/orders-payments/authorization/DESIGN.md
+      - Practical adoption: docs/09-adoption-guide.md
       - Completed templates:
           - Relationship Contract: case-studies/orders-payments/adoption/relationship-contract.md
           - Architecture decision: case-studies/orders-payments/adoption/architecture-decision.md
           - Design review: case-studies/orders-payments/adoption/design-review.md
+  - Implementations:
+      - Implementation index: docs/implementations.md
+      - Language mappings:
+          - Concept atlas: docs/03-concept-atlas.md
+          - Pattern catalog: docs/04-pattern-catalog.md
+          - Cross-language transfer: docs/06-cross-language.md
+          - Rust relationship mapping: docs/rust-relationship-mapping.md
+          - Rust and object design: docs/08-rust-and-object-design.md
+          - Rust laboratory: docs/laboratory.md
+          - Guided learning laboratory: docs/07-learning-path.md
+      - In-memory orders and payments:
+          - case-studies/orders-payments/README.md
+          - Shared specification: case-studies/orders-payments/SPEC.md
+          - Java implementations: case-studies/orders-payments/java/README.md
+          - Rust implementation: case-studies/orders-payments/rust/README.md
+      - Local authorization:
+          - case-studies/orders-payments/authorization/README.md
       - PostgreSQL:
           - case-studies/orders-payments/postgres/README.md
           - Persistence specification: case-studies/orders-payments/postgres/SPEC.md
@@ -105,9 +112,11 @@ nav:
           - Six exercises: case-studies/orders-payments/track/EXERCISES.md
           - Track specification: case-studies/orders-payments/track/SPEC.md
           - Docker and CI: case-studies/orders-payments/track/DOCKER.md
-  - Project:
+  - Evidence:
       - Claims and limits: docs/claims-and-limits.md
       - How ROO was made: docs/how-roo-was-made.md
+      - GitHub reproduction: docs/10-github-reproduction.md
+  - Project:
       - Release notes: RELEASE_NOTES.md
       - Changelog: CHANGELOG.md
       - Contributing: CONTRIBUTING.md

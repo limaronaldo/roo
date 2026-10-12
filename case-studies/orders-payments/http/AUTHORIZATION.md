@@ -1,5 +1,15 @@
 # Operation permissions over HTTP
 
+**Reference implementation: Java/Rust HTTP APIs with PostgreSQL.** Start with
+the [technology-neutral authorization case](../authorization/DESIGN.md) for
+policy, decision boundaries, and revocation outcomes. The
+[canonical method](../../../docs/02-relationship-design.md) asks those questions
+without requiring this store, transport, or locking mechanism.
+
+The sections below specify one tested realization. Their exact operations,
+policy rows, transaction order, and HTTP outcomes remain its contract.
+
+
 A caller can observe an allowed operation, lose permission, and then send the
 request. Java composition, Java Template Method, and Rust composition now make
 the execution decision for each operation against current PostgreSQL policy. A detached observation

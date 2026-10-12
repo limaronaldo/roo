@@ -61,13 +61,14 @@ Open: revisit identity if returns or fulfillment require independent line tracki
 
 The [worksheet](../templates/relationship-contract.md) provides a blank form.
 A complete [payment-recovery example](../case-studies/orders-payments/adoption/relationship-contract.md)
-maps the same decisions to Java composition, Java inheritance, and Rust.
+records the decision before its implementation mappings. The [design case](../case-studies/orders-payments/DESIGN.md) introduces the states and failure outcomes without a toolchain.
 Add longer explanations only where a consequential tradeoff needs them.
 
-The [authorization example](../case-studies/orders-payments/authorization/README.md)
-implements the separate caller-permission field in Java and Rust. It tests a
-revocation after observation but before execution; the earlier observation
-cannot authorize a later order approval.
+The [authorization design case](../case-studies/orders-payments/authorization/DESIGN.md)
+defines a caller-permission policy with revocation after observation but before
+execution. Under that policy, an earlier observation cannot authorize a later
+order approval. The [laboratory](../case-studies/orders-payments/authorization/README.md)
+provides implementation and test evidence for that selected policy.
 
 ## 2.3 The six-step decision procedure
 
@@ -85,43 +86,43 @@ cannot authorize a later order approval.
 6. **Record evidence and decide.** Link checks actually observed and unresolved
    assumptions; accept the tradeoff with its scope or leave the decision open.
 
-A representation decision follows the contract. The middle column gives language-independent policies; the next column offers Rust realizations:
+A representation decision follows the contract. Compare policies before
+selecting language or storage mechanisms:
 
-| Requirement | Relationship policy | Initial Rust candidate | Cost or limitation to examine |
-|---|---|---|---|
-| Part exists only inside its whole | Whole retains and controls parts | Owned field, `Vec<T>`, or `Box<T>` | Moving/removing the part must respect whole invariants |
-| Read during one operation | Temporary observation | `&T` or iterator/view | Provider must outlive access; interior effects may still exist |
-| Exclusive local update | One updater during the operation | `&mut T` | Exclusive access does not authorize every business operation |
-| Independent entity or arbitrary graph edge | Resolve identity through a custodian | Typed ID plus owner/repository lookup | Existence, stale handles, permissions, and versions need checking |
-| Independent retained observation | Retain a separate snapshot | Owned snapshot | Memory independence trades away automatic freshness |
-| Transfer to another coordinator | Transfer command custody | Move an owned command/value | Define outcome on rejection and cancellation |
-| Shared retained immutable data | Shared retention with immutable content | `Rc<T>` locally or `Arc<T>` across suitable threads | Reference counts affect retention; immutability needs an actual type contract |
-| Shared mutable local graph | Checked local access | `Rc<RefCell<T>>`, if required | Dynamic borrow conflicts, cycles, and reentrancy |
-| Shared mutable concurrent state | Synchronize participating access | `Arc<Mutex<T>>` or another synchronization design | Lock duration, deadlock, poisoning, contention, and business races |
-| Single mutation coordinator | Commands go to one coordinator | Actor/task owning state and accepting commands | Queueing, acknowledgement, shutdown, retries, and delivery semantics |
+| Requirement | Relationship policy | Cost or limitation to examine |
+|---|---|---|
+| Part exists only inside its whole | Whole retains and controls parts | Removal must preserve the whole's invariants |
+| Read during one operation | Temporary observation | Provider retention, hidden effects, and freshness |
+| Exclusive local update | One updater during the operation | Local exclusivity and caller permission are separate |
+| Independent entity or graph edge | Resolve identity through its custodian | Missing targets, reuse, permissions, and versions |
+| Independently retained observation | Retain a detached snapshot | Memory independence does not preserve freshness |
+| Transfer to another coordinator | Transfer command custody | Rejection, cancellation, and acknowledgement |
+| Shared retained data | Define retention and permitted changes | Aliasing, synchronization, cycles, and release |
+| One mutation coordinator | Submit commands to a defined execution domain | Capacity, delivery, shutdown, and recovery |
 
-These are candidates, not equivalences: an ID graph can also live inside one aggregate, and an actor can own a graph.
-`Arc` makes reference-count updates thread-safe; it does not automatically make arbitrary inner data safe for concurrent use. [Standard library: Arc](https://doc.rust-lang.org/std/sync/struct.Arc.html)
+The [Rust mapping](rust-relationship-mapping.md#candidate-representations)
+provides concrete language candidates. [Technology selection](technology-selection.md)
+asks the corresponding questions about runtimes, stores, and protocols.
 
 ## 2.4 Worked commerce relationship matrix
 
 Assume a small ordering application, one currency per Order, local validation before persistence, and an external payment provider.
 LineItems belong to one Order; Customers and Payments have independent durable identity.
-The teaching case has no caller authorization implementation; a real service must supply that policy.
+This baseline design leaves caller policy open. The separate [authorization design case](../case-studies/orders-payments/authorization/DESIGN.md) supplies an operation/revocation policy; it is not a prerequisite for every domain model.
 A submitted order retains commercial snapshots needed to explain its historical total.
 Events are immutable descriptions of committed transitions, copied or transferred to consumers.
 These are teaching assumptions, not universal commerce rules or a production payment design.
 
 | Relationship | Custodian / identity | Coordination, authorization, and access | Horizon and execution | Failure / consistency |
 |---|---|---|---|---|
-| Order → LineItem | Order owns item values; line ID local to Order if needed | Order coordinates mutation; callers get shared views | Until removal/drop; commercial data frozen at submission; local operation | Reject invalid quantity/currency/overflow before installing change; persist aggregate consistently |
+| Order → LineItem | Order owns item values; line ID local to Order if needed | Order coordinates mutation; callers get shared views | Until removal or release; commercial data frozen at submission; local operation | Reject invalid quantity/currency/overflow before installing change; persist aggregate consistently |
 | Order → Customer | Order owns CustomerId and checkout snapshot; customer store owns customer state | Customer service mutates Customer; Order resolves authorized read view | ID may outlive any loaded Customer; snapshot is intentionally historical | Missing/deleted customer has explicit policy; no automatic cascade from Order deletion |
-| Order → Payment | Order retains PaymentId/status observation; payment component owns attempt state | Payment component controls authorization/capture/refund; Order requests commands | Separate lifecycles; calls can cross tasks/processes | Timeout may mean unknown provider outcome; reconcile using stable attempt identity |
-| Payment → Order | Payment stores OrderId and agreed amount snapshot | Lookup or message; no unrestricted mutable back-reference | Durable correlation; authorization checks on every command | Reject amount/version mismatch; handle missing Order according to retention policy |
+| Order → Payment | Order retains PaymentId/status observation; payment component owns attempt state | Payment component controls charge/capture/refund; Order requests commands | Separate lifecycles; calls can cross tasks/processes | Timeout may mean unknown provider outcome; reconcile using stable attempt identity |
+| Payment → Order | Payment stores OrderId and agreed amount snapshot | Lookup or message; no unrestricted mutable back-reference | Durable correlation; caller-policy decision boundary must be stated | Reject amount/version mismatch; handle missing Order according to retention policy |
 | Order → Event | Order operation produces event value; outbox/log takes custody if persisted | Event payload fixed after construction; publisher has delivery capability | Event retention independent of loaded Order | State and outbox require a real transaction if atomicity is claimed; duplicate delivery needs consumer policy |
 | Event → Customer/Order/Payment | Event owns copied IDs and minimal necessary facts | Consumer resolves through its authorized API or uses historical facts | Durable fact, potentially stale relative to current state | Missing entity is representable; replay does not imply permission to repeat the original effect |
 
-The matrix shows why a Customer field is not automatically `&Customer` and why Payment should not automatically be an Order-owned mutable child.
+The matrix shows why Customer navigation needs an access contract and why Payment need not be an Order-controlled mutable child.
 Independent retention and failure semantics often make IDs and messages more accurate than long-lived pointers.
 In a purely local application with no independent payment lifecycle, an owned Payment value may instead satisfy the actual requirements.
 Record the requirement before adopting the teaching model.
@@ -141,93 +142,85 @@ publish committed transition events through the delivery mechanism
 This is pseudocode for responsibilities, not a guarantee supplied by the lab.
 Without a transaction joining the persisted Order and request record, there is a failure gap.
 Without provider support and a defined deduplication policy, a stable request key alone cannot guarantee one charge.
-No Rust move, borrow, or destructor closes those gaps.
+Local memory mechanisms do not close those store or provider failure gaps.
 
 ## 2.5 Cycles and graphs
 
-A domain graph can be cyclic without its memory-ownership graph being cyclic.
-Customer-to-Order and Order-to-Customer navigation can use IDs into independently owned stores.
-A tree can own its descendants and use weak back-links when upward navigation is truly needed.
-An arena can own all nodes while edges contain handles; then the arena is the resource custodian and the node graph describes connectivity.
+A cyclic domain graph does not require mutual resource retention. Navigation
+can use identity lookup, checked handles, or links whose targets may expire.
+If both ends retain each other, specify how the cycle terminates and resources
+are released. The [Rust mapping](rust-relationship-mapping.md#cycles-suspension-and-cancellation)
+examines concrete reference-counting and handle mechanisms.
 
-When both ends must keep each other alive, explain the termination protocol explicitly.
-Strong `Rc` or `Arc` cycles prevent ordinary reference-count reclamation.
-Weak pointers do not retain the target strongly; upgrading must account for a target that no longer exists. [Standard library: Arc cycles and Weak](https://doc.rust-lang.org/std/sync/struct.Arc.html#breaking-cycles-with-weak)
+When a store reuses positions, a bare position can name a replacement entity.
+A checked handle may include store identity, position, and generation. Define
+validation, exhaustion, serialization, and missing-target outcomes; a local
+handle is not automatically a durable identifier.
 
-Do not call a weak link a reliable lifetime guarantee.
-Do not call an arena handle a Rust reference: lookup is a checked operation with its own validity rule.
-Neither IDs nor weak pointers establish business permission to navigate an edge.
-
-For an arena that reuses slots, a bare index can accidentally name a replacement object.
-A generational handle can contain `(arena_identity, slot, generation)`; resolution checks the arena, occupancy, and generation before returning access.
-Typed handles prevent some category mix-ups; generations detect some reuse, while arena identity prevents accidental cross-arena interpretation.
-The API must prevent forging unchecked handles or must validate untrusted handles every time.
-Choose a generation exhaustion policy: reject reuse or retire a slot rather than silently wrap into an old handle's generation.
-Specify whether serialization is supported; a process-local arena handle is usually not a durable entity ID.
-
-Deletion also needs an edge policy: reject deletion while referenced, remove incoming edges, retain tombstones, or allow explicit dangling logical edges.
-An arena lookup returning `None` is memory-safe and can still violate a domain rule if callers silently omit required nodes.
-Graph algorithms require their own cycle detection, traversal limits, and mutation semantics.
-The borrow checker does not prove a directed graph is acyclic.
+Deletion also needs an edge policy: reject while referenced, remove incoming
+edges, retain a tombstone, or allow a representable missing target. Memory-safe
+lookup can still violate a business rule. Specify traversal limits, cycle
+detection, and overlapping mutation where the graph requires them.
 
 ## 2.6 Lifecycle boundaries are not transaction boundaries
 
-An aggregate can describe who owns a part's business lifecycle.
-A transaction describes which persisted changes become visible atomically under a storage system's actual guarantees.
-A Rust value's scope describes resource retention in one execution.
-They can align in a simple program, but none implies the other two.
+A business lifecycle defines when a participant may exist or change. A local
+resource scope defines retention in one execution. A transaction defines which
+changes become visible together under an actual storage contract. Align them
+only when the implementation makes that alignment true.
 
-Dropping an in-memory Order does not delete its database row.
-Dropping a payment request does not undo a provider charge.
-Holding `&mut Order` does not serialize changes made by another process to the same durable Order.
-Use persistence versions, conditional updates, transactions, or another stated coordination protocol when durable concurrency requires them.
+Releasing a loaded Order does not delete stored state or undo a provider
+charge. Exclusive local access does not coordinate another process updating
+the same order. Choose a durable coordination protocol for that boundary.
 
-For a consuming transition returning `Result<SubmittedOrder, Error>`, decide what happens to the rejected draft.
-Return it with the error if callers need to repair and retry; alternatively, keep mutation borrowed and guarantee no change on validation failure.
-If mutation can fail after partial installation, document partial state or use a candidate value and commit only after validation.
-Memory ownership makes such choices expressible; it does not select rollback semantics automatically.
+For a rejected transition, state whether the original input is returned,
+retained unchanged, partially changed, or consumed. If repair and retry are
+required, preserve enough state to support them. A detached candidate can keep
+validation separate from installation; the store must still establish its
+claimed commit behavior.
 
 ## 2.7 Suspension, concurrency, and reentrancy
 
-An asynchronous operation may retain inputs in its future across suspension.
-Borrowing across `.await` can be valid when lifetimes and the executor's requirements permit it; it may still hold access longer than the design intends.
-Review the retained state and capabilities, not merely whether the function is written `async`. [Standard library: Future](https://doc.rust-lang.org/std/future/trait.Future.html)
+At each wait or handoff, identify retained state, active guards, and capabilities.
+An operation may remain memory-valid while its business facts or permissions
+change. Revalidate at the boundary named in the contract.
 
-As a v0.1 default, gather a minimal owned command or snapshot, release local guards, then perform slow external work.
-On return, revalidate any facts whose version or permissions could have changed.
-A deliberate transaction or lock spanning an external operation needs a stronger latency, cancellation, and contention justification.
-The future's cancellation can drop local state while a remote operation has already succeeded.
-Represent an uncertain external result explicitly instead of claiming rollback from local destruction.
+Keep slow external work outside local guards when the design permits it.
+Holding a guard across external work requires a latency, cancellation, and
+contention policy. Cancellation can end local execution after a remote effect
+succeeded; retain and recover an explicit uncertain result.
 
-`Send` describes values that can transfer safely between threads; `Sync` describes types whose shared references can transfer safely between threads.
-These bounds are useful static evidence about thread safety, not proofs of business ordering, fairness, or distributed consistency. [Send](https://doc.rust-lang.org/std/marker/trait.Send.html), [Sync](https://doc.rust-lang.org/std/marker/trait.Sync.html)
+A lock coordinates only participating access. Specify lock order and callback
+reentrancy. A sequential coordinator still needs policies for queued work,
+retries, shutdown, and partial external success. Platform threading and async
+rules belong in the [implementation guides](implementations.md).
 
-A mutex coordinates participating accesses, but a lock can protect the wrong boundary or preserve an invalid state.
-Specify lock ordering when several locks can be acquired and avoid calling unknown callbacks under a guard unless reentrancy is part of the protocol.
-Poisoning requires a recovery policy; the standard mutex documentation explicitly cautions that poisoning is advisory. [Standard library: Mutex](https://doc.rust-lang.org/std/sync/struct.Mutex.html)
-An actor avoids shared mutation of its owned state but does not automatically solve retries, queue overload, or partial external effects.
+For authorization, name the principal, operation, policy, decision point, and
+ordering with revocation. State what an earlier observation permits, what an
+accepted operation may finish after revocation, and how recovery is authorized.
+Rechecking every local transaction is one [reference policy](../case-studies/orders-payments/authorization/DESIGN.md),
+not a universal requirement imposed by the method.
 
 ## 2.8 The evidence ledger for invariants
 
-For every claim, distinguish compiler/static evidence, runtime evidence, database evidence, protocol evidence, and human review.
-The table below shows what the Rust realization can contribute; a database transaction must be verified at the store boundary, a remote deduplication promise at the protocol boundary, and an authorization policy through its implementation and review.
-None of those guarantees follows from a local compilation result, and an unverified expectation belongs in the assumptions ledger.
+Attach evidence at the boundary enforcing the claim. Keep language checks,
+runtime checks, storage guarantees, protocol behavior, and human review
+separate. Unverified expectations remain assumptions.
 
-| Claim | Evidence Rust can contribute | Evidence still needed |
+| Claim | Enforcement boundary | Evidence and unresolved assumptions |
 |---|---|---|
-| Borrowed access does not outlive its referent | Lifetime checking for safe references | Correct contracts inside any unsafe implementation |
-| Conflicting ordinary reference access is excluded | Borrow checking under Rust's rules | Interior-mutability policy and external aliases/state |
-| Some values are not reused after transfer | Move checking for non-`Copy` values | Business uniqueness and duplication rules |
-| Only valid operations are publicly callable | Module visibility, types, trait bounds | Runtime authorization and policy context |
-| Thread transfer/sharing satisfies type bounds | `Send` / `Sync` constraints | Deadlock, ordering, fairness, and business-race analysis |
-| Every LineItem has positive quantity | Private constructor can restrict creation | Validation, arithmetic checks, deserialization boundaries, and tests |
-| A handle still identifies its original node | Type can encode handle category | Runtime arena/generation checks and exhaustion policy |
-| A payment happens once | An owned command can limit local reuse | Provider guarantees, durable deduplication, reconciliation, and failure tests |
-| State and event are committed together | API can make intended boundary visible | Real transaction semantics and verified integration |
+| Access ends with a declared scope | Language/runtime API | Applicable static or runtime checks; unsafe escape paths |
+| Only legal transitions are exposed | Domain API | Encapsulation review and allowed/rejected transition tests |
+| A handle identifies its original target | Custodian lookup | Scope, generation/reuse checks, and exhaustion policy |
+| Overlapping updates preserve the invariant | Actual execution/store coordinator | Controlled competing-update scenarios and coordination contract |
+| Revocation orders with protected effects | Policy/effect decision boundary | Observation/revocation/execution scenarios and retained-effect checks |
+| Recovery does not add another charge | Durable intent and provider boundary | Original fingerprint, provider lookup/deduplication contract, failure scenarios |
+| State and event become visible together | Selected commit boundary | Documented atomicity plus failure/restart evidence |
 
-Safe Rust's reference rules support memory safety; they are not a universal immutability or business-correctness proof. [Rust Book: references and borrowing](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html)
-For each claim, put the actual check beside it and avoid promoting a test into a proof about all possible executions.
-Compile-fail examples are valuable evidence for a specific rejected access pattern; runtime scenarios exercise the domain conditions the compiler does not know.
+The [Rust evidence mapping](rust-relationship-mapping.md#rust-evidence-and-its-boundary)
+shows what a particular compiler can contribute. A successful compilation or
+selected test is evidence for its checked property and candidate, with its
+stated limits. It cannot certify unrelated storage, policy, or remote behavior.
 
 ## 2.9 Review exit criteria and open questions
 
@@ -235,7 +228,7 @@ A relationship is ready for implementation when all eight fields have concrete a
 A relationship is ready for production only after its real persistence, authorization, execution, and failure assumptions have been verified in that environment.
 This edition's local lab cannot establish those production properties.
 
-Open v0.1 questions include how much notation teams will maintain, how contracts should evolve with schema versions, and which review metrics predict reduced defects.
+Open evaluation questions include how much notation teams will maintain, how contracts should evolve with schema versions, and which review metrics predict reduced defects.
 The initial convention is to document significant relationships rather than every scalar field, and to update their contracts when custody, coordination, authorization, or failure behavior changes.
 Evaluate ROO by whether another engineer can predict an operation's effects and failure outcomes from the contract and API.
 Use that evaluation to improve the method without claiming that compilation alone validates the architecture.

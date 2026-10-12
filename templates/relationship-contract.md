@@ -34,8 +34,9 @@ validity, or failure rules.
 |---|---|---|
 | | | |
 
-Keep the relationship decision constant when comparing languages. An ID,
-borrow, Java interface, or SQL foreign key is a mechanism chosen afterward.
+Keep the relationship decision constant when comparing languages, runtimes,
+stores, and protocols. Record mechanisms and their evidence afterward; an
+interface name or storage feature is not a complete contract.
 Add detail only for a consequential question: deletion and reuse, reverse
 navigation, snapshot freshness, capacity, cancellation, or provider retention.
 

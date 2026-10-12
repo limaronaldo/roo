@@ -1,6 +1,11 @@
-# Learning path
+# Guided learning laboratory
 
 This is an initial syllabus for learning ROO (Relationship & Ownership Oriented design), a proposed, language-independent method for describing and reviewing important software relationships. It pairs method practice with a Rust laboratory; it is not a claim to cover all object-oriented, Rust, pattern, or architecture literature.
+
+This is a Rust-oriented implementation syllabus. To learn the method without
+choosing that toolchain, start with [foundations](01-foundations.md), the
+[neutral design case](../case-studies/orders-payments/DESIGN.md), and
+[technology selection](technology-selection.md).
 
 Use the [canonical contract and six-step procedure](02-relationship-design.md) throughout the stages below.
 
