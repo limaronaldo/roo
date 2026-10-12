@@ -8,6 +8,13 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+## [0.4.2] — 2026-10-12
+
+Publish the human validation kit as a compatible documentation addition.
+The eight-field contract, six-step procedure, reference APIs, schemas, and
+teaching fixtures retain their v0.4.1 behavior. No migration is required.
+This remains a pre-1.0 preview; a published kit is not completed human review.
+
 ### Added
 
 - Add an English validation kit with Rust and DDD/architecture reviewer
@@ -15,8 +22,20 @@ compatibility policy in [RELEASING.md](RELEASING.md).
   facilitator guide, predeclared trial criteria, and a results template.
   Record exact review scope, assistance, predictions, observed checks,
   disagreements, and publication permission without claiming completed human
-  review or field validation. Link the kit from Development navigation and
-  contributor guidance; released editions and historical records are unchanged.
+  review or field validation. Link the kit from v0.4.2 and Development navigation
+  and contributor guidance. Keep v0.4.1 as the initial method/code baseline and
+  record the kit revision separately.
+
+### Changed
+
+- Make v0.4.2 the default documentation edition through the existing tag-driven
+  publisher. Preserve v0.1.0–v0.4.1, their tagged sources and navigation, and
+  historical research records.
+- Require both proposed technology mappings to preserve every required promise
+  for a successful Transfer assessment. A changed promise or infeasible mapping
+  is unmet; unresolved feasibility is unknown. Keep the protocol, facilitator
+  guide, and results template consistent, and separate paper assessment from
+  executed implementation qualification.
 
 ## [0.4.1] — 2026-10-12
 
@@ -224,7 +243,9 @@ results retain their original bytes and meaning. Passing the test scenarios
 does not establish every interleaving, physical power-loss behavior, external
 provider behavior, or production readiness.
 
-[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.4.0...main
+[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.4.2...main
+[0.4.2]: https://github.com/limaronaldo/roo/releases/tag/v0.4.2
+[0.4.1]: https://github.com/limaronaldo/roo/releases/tag/v0.4.1
 [0.4.0]: https://github.com/limaronaldo/roo/releases/tag/v0.4.0
 [0.3.0]: https://github.com/limaronaldo/roo/releases/tag/v0.3.0
 [0.2.0]: https://github.com/limaronaldo/roo/releases/tag/v0.2.0

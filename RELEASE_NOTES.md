@@ -1,48 +1,59 @@
-# ROO v0.4.1
+# ROO v0.4.2
 
-**The method and implementations edition (preview).** ROO — Relationship &
-Ownership Oriented design — starts with relationship decisions independent of
-language, runtime, database, and protocol. This release makes that distinction
-clearer throughout the documentation and site.
+**The validation kit edition (preview).** ROO — Relationship & Ownership
+Oriented design — now includes a practical protocol for human evaluation.
+The method remains independent of language, runtime, database, and protocol.
+Publishing the kit does not establish completed human review or field validation.
 
 ## What changed
 
-- Separate navigation for **Method**, **Templates**, **Design cases**,
-  **Implementations**, and **Evidence**. Start with the contract and neutral
-  payment/revocation cases, then explore executable laboratories.
-- Move Rust mechanism detail into a dedicated
-  [relationship mapping guide](docs/rust-relationship-mapping.md), with an
-  [implementation index](docs/implementations.md) for Java, Rust, PostgreSQL,
-  and HTTP examples.
-- Add [technology-selection questions](docs/technology-selection.md) for
-  evaluating other storage models, runtimes, and coordination mechanisms
-  against the same relationship obligations. Listing a technology does not
-  establish implementation support or qualification.
-- Preserve v0.1.0–v0.4.0 introductions, navigation, and tagged documents.
-  Starting with this release, each new edition's homepage is read from its own
-  tag and recorded as release content in its public source manifest.
+- Add a [validation protocol](docs/validation/README.md) with separate
+  [Rust](docs/validation/rust-review.md) and
+  [DDD/architecture](docs/validation/ddd-review.md) reviewer briefs.
+- Add a technology-neutral [document-publication exercise](docs/validation/exercise.md),
+  a separate [facilitator guide](docs/validation/facilitator-guide.md), and a
+  reusable [results template](templates/validation-results.md). The exercise
+  covers stale content, revocation, competing admissions, conflicting keys,
+  uncertain external effects, deletion, and restart.
+- Predeclare success criteria and record scope, assistance, first attempts,
+  predictions, observed checks, disagreements, and unknowns. Both proposed
+  technology mappings must preserve every required promise to meet Transfer;
+  a changed promise is unmet, and unresolved feasibility is unknown.
+- Link the kit from the homepage, navigation, contributor guidance, and
+  [Claims and limits](docs/claims-and-limits.md). Keep working notes private
+  by default and publish only authorized synthetic summaries.
 
 ## Why a patch release
 
-The eight contract fields and canonical six-step procedure are unchanged.
-Java/Rust behavior, operation-specific permissions, PostgreSQL schemas,
-idempotency, and restart recovery retain the v0.4.0 contracts. There is no
-migration from v0.4.0. The changes organize and clarify compatible documentation,
-so they use a patch version under the [release policy](RELEASING.md).
+The eight contract fields, canonical six-step procedure, Java/Rust behavior,
+operation-specific HTTP permissions, PostgreSQL schemas, idempotency, and
+restart recovery are unchanged. No migration from v0.4.1 is required. This
+compatible documentation addition uses a patch version under the
+[release policy](RELEASING.md).
 
-## Read and reproduce
+## Use the kit
 
-Read the [documentation site](https://limaronaldo.github.io/roo/),
-starting with the [method](docs/02-relationship-design.md),
-[payment recovery case](case-studies/orders-payments/DESIGN.md), and
-[permission/revocation case](case-studies/orders-payments/authorization/DESIGN.md).
-The selector retains v0.1.0, v0.2.0, v0.3.0, v0.4.0, and Development. The site
-default becomes v0.4.1 as the highest numeric release tag.
+Read the [documentation site](https://limaronaldo.github.io/roo/) and start
+with the [validation protocol](docs/validation/README.md). The paper exercise
+requires no code or toolchain. Assign human reviewers, preserve their initial
+findings before discussion, and report negative or inconclusive results as
+well as positive ones.
+
+The initial method/code baseline remains v0.4.1, commit
+`f6670a109d7dbfef8f72078b4cd361079ac6a10a`. Record the exact v0.4.2 kit commit
+separately. A later trial may select other exact revisions, but participants
+in the same trial must share the same requirements and frozen sources.
+
+The version selector retains v0.1.0, v0.2.0, v0.3.0, v0.4.0, v0.4.1, and
+Development. The automatic publisher selects v0.4.2 as the highest numeric
+release tag and preserves previous editions and historical records.
+
+## Reproduce the reference laboratories
 
 With Docker, Compose, Bash, and common POSIX utilities:
 
 ```sh
-git clone --branch v0.4.1 https://github.com/limaronaldo/roo.git
+git clone --branch v0.4.2 https://github.com/limaronaldo/roo.git
 cd roo
 bash case-studies/orders-payments/track/compose.sh
 ```

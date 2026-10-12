@@ -20,7 +20,7 @@ and verification; independent human evaluation remains open.
 
 [Released documentation](https://limaronaldo.github.io/roo/) ·
 [Development](https://limaronaldo.github.io/roo/dev/) ·
-[Release v0.4.1](https://github.com/limaronaldo/roo/releases/tag/v0.4.1)
+[Release v0.4.2](https://github.com/limaronaldo/roo/releases/tag/v0.4.2)
 
 ## Try it on one relationship
 
@@ -93,9 +93,11 @@ evidence. A successful lab run is evidence for those scenarios and candidate.
 
 ## Status and provenance
 
-v0.4.1 separates the method, design cases, and reference implementations in
-the documentation. This pre-1.0 preview preserves v0.4.0's eight-field method,
-operation permissions, and executable APIs. v0.1.0's combined Mutation
+v0.4.2 adds a validation kit for human Rust and DDD/architecture review, with a
+technology-neutral exercise and explicit success criteria. Publishing the kit
+does not complete those reviews. This pre-1.0 preview retains v0.4.1's separation
+of method and implementations, and v0.4.0's eight-field method, operation
+permissions, and executable APIs. v0.1.0's combined Mutation
 authority field was split into Coordinator and Authorization in v0.2.0;
 see the [migration notes](CHANGELOG.md#migration-from-010).
 Published editions and historical research retain their sources and meaning.
