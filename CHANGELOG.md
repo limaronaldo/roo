@@ -8,6 +8,14 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-10-12
+
+Operation-specific permissions for the Java and Rust HTTP teaching APIs.
+The eight-field Relationship Contract is unchanged. This remains a pre-1.0
+preview.
+
+### Changed
+
 - Align Java and Rust rejection precedence for requests with multiple invalid
   inputs, including malformed authorization routes in legacy mode. Add shared
   HTTP regressions that verify rejection leaves business effects unchanged.
@@ -23,6 +31,31 @@ compatibility policy in [RELEASING.md](RELEASING.md).
   Existing coarse grants remain stored but confer no operation permissions;
   fixture owners must explicitly seed the desired operations. Legacy mode and
   previously published documentation editions retain their behavior and content.
+
+### Migration from 0.3.0
+
+- Install the updated additive [HTTP policy schema](case-studies/orders-payments/http/schema.sql).
+  Explicitly grant `(scope, principal, operation)` rows in
+  `roo_authorization.operation_grants` through trusted SQL. The closed operation
+  set is `read`, `init`, `add`, `pay`, `refund`, `reconcile`, `relay`, and the
+  test-only `provider_conflict`. Retain denied rows as tombstones.
+- Existing `(scope, principal)` grants remain stored but are inert for the new
+  fixture binaries. There is no fallback, automatic backfill, wildcard, or
+  implied permission. Plan the cutover and seed each intended operation before
+  using fixture authorization with v0.4.0.
+- Replace the fixture observation route with
+  `GET /v1/scopes/{scope}/authorization/{operation}`. An observation is advisory;
+  each protected transaction checks the bound operation again before business
+  locks or effects. A grant for one operation does not grant another.
+- A `reconcile` grant can recover an existing payment/refund intent after
+  revocation or restart, including for a different synthetic principal. It
+  cannot create a new intent or provider effect; recovery retains the original
+  identity and fingerprint. A 403 or lost response can follow an earlier commit.
+- Legacy mode remains the default. Fixture mode still requires
+  `ROO_HTTP_AUTH_MODE=fixture`, `ROO_HTTP_TEST_MODE=1`, and exactly one
+  `X-Roo-Principal`. This synthetic assertion is not authentication.
+- The v0.1.0, v0.2.0, and v0.3.0 tags, edition sources, and historical research
+  records remain preserved. v0.4.0 becomes the default documentation edition.
 
 ## [0.3.0] — 2026-10-12
 
@@ -156,7 +189,8 @@ results retain their original bytes and meaning. Passing the test scenarios
 does not establish every interleaving, physical power-loss behavior, external
 provider behavior, or production readiness.
 
-[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.3.0...main
+[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.4.0...main
+[0.4.0]: https://github.com/limaronaldo/roo/releases/tag/v0.4.0
 [0.3.0]: https://github.com/limaronaldo/roo/releases/tag/v0.3.0
 [0.2.0]: https://github.com/limaronaldo/roo/releases/tag/v0.2.0
 [0.1.0]: https://github.com/limaronaldo/roo/releases/tag/v0.1.0

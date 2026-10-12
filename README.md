@@ -18,7 +18,8 @@ The material was developed with AI assistance, including review by separate
 agents from the same model family. [How ROO was made](docs/how-roo-was-made.md)
 describes that process and the scope of verification.
 
-[Read v0.3.0 — persistent authorization (preview)](https://limaronaldo.github.io/roo/) ·
+[Read v0.4.0 — operation permissions (preview)](https://limaronaldo.github.io/roo/) ·
+[v0.3.0 — persistent authorization (preview)](https://limaronaldo.github.io/roo/v0.3.0/) ·
 [v0.2.0 — eight-field contract (preview)](https://limaronaldo.github.io/roo/v0.2.0/) ·
 [v0.1.0 — first edition (preview)](https://limaronaldo.github.io/roo/v0.1.0/) ·
 [Development](https://limaronaldo.github.io/roo/dev/)
@@ -73,7 +74,7 @@ when its hooks preserve the same behavioral contract.
 
 The [durable HTTP authorization extension](case-studies/orders-payments/http/AUTHORIZATION.md)
 adds opt-in synthetic policy checks to PostgreSQL transactions in all three API
-variants. Development adds separate permissions for each HTTP operation,
+variants. v0.4.0 adds separate permissions for each HTTP operation,
 including revocation and reconciliation-only recovery after restart. See the
 guide's migration rule for existing coarse grants.
 
@@ -116,9 +117,12 @@ explains AMD64 qualification and how to inspect a run's evidence.
 
 ## Project status
 
-v0.3.0 is the **persistent authorization edition (preview)**. Its opt-in HTTP
-fixture rechecks durable policy in Java and Rust, including revocation and
-recovery after restart. The eight-field contract is unchanged from v0.2.0.
+v0.4.0 is the **operation permissions edition (preview)**. Its opt-in HTTP
+fixture rechecks durable `(scope, principal, operation)` policy in Java and
+Rust, including revocation and reconciliation-only recovery after restart.
+Existing coarse grants require explicit operation grants; see the
+[v0.4.0 migration notes](CHANGELOG.md#migration-from-030).
+The eight-field contract is unchanged from v0.2.0.
 Coordinator and Authorization fields replace v0.1.0's combined Mutation
 authority field; see the [migration notes](CHANGELOG.md#migration-from-010).
 v0.1.0 remains the **first edition (preview)**, and Development follows main.

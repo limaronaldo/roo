@@ -109,6 +109,13 @@ and preserve the same denied outcomes and restart recovery in Java and Rust.
 An observed grant is not an execution permit. Retain denied policy rows and
 recover uncertain payment/refund effects with the original identity.
 
+Bind exactly one operation to a fixture request and check its
+`(scope, principal, operation)` row before business locks in every protected
+transaction. Keep the closed operation set and permission-isolation matrix
+equivalent across all three variants. A reconciliation grant may recover an
+existing intent but must not create one; old coarse grants confer no operation
+permission. Include revocation and restart regressions when changing this rule.
+
 Inspect the receipts as well as the exit status. Report the source commit,
 command, platform, checks passed, and remaining limits. Hosted CI validates
 AMD64 on GitHub; a local emulated run is different evidence. Never commit
