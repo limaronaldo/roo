@@ -93,8 +93,10 @@ python3 case-studies/orders-payments/authorization/verify.py
 
 No dependencies are downloaded. Java compiles for release 21 with all warnings
 treated as errors. The verifier runs four native tests per language, then
-compares all 47 checkpoints in 13 scenarios against the same oracle, including
+compares all 53 checkpoints in 14 scenarios against the same oracle, including
 both orders' status and approval count after every command.
+The scoped-revocation case approves the second order while the same principal's
+grant on the first order is revoked, checking both isolation and a positive path.
 
 Three thread tests use explicit synchronization, without sleeps: observation
 then revocation then execution; execution then revocation; and competing

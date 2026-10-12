@@ -46,3 +46,9 @@ idempotent_policy_change	grant	alice	order-1
 idempotent_policy_change	revoke	alice	order-1
 idempotent_policy_change	revoke	alice	order-1
 idempotent_policy_change	approve	alice	order-1
+scoped_revocation	grant	alice	order-1
+scoped_revocation	grant	alice	order-2
+scoped_revocation	observe	alice	order-2
+scoped_revocation	revoke	alice	order-1
+scoped_revocation	approve	alice	order-2
+scoped_revocation	approve	alice	order-1

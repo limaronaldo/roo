@@ -46,3 +46,9 @@ idempotent_policy_change	2	unchanged	draft/0	draft/0
 idempotent_policy_change	3	revoked	draft/0	draft/0
 idempotent_policy_change	4	unchanged	draft/0	draft/0
 idempotent_policy_change	5	forbidden	draft/0	draft/0
+scoped_revocation	1	granted	draft/0	draft/0
+scoped_revocation	2	granted	draft/0	draft/0
+scoped_revocation	3	allowed	draft/0	draft/0
+scoped_revocation	4	revoked	draft/0	draft/0
+scoped_revocation	5	approved	draft/0	approved/1
+scoped_revocation	6	forbidden	draft/0	approved/1
