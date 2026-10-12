@@ -6,7 +6,7 @@ ROO — Relationship & Ownership Oriented design — starts architectural work w
 
 Parnas argues for decomposing a system around hidden design decisions rather than merely its processing steps. A Rust module can hide a representation behind private fields and functions, but privacy alone does not hide a decision if callers depend on SQL rows, concrete framework errors, or a particular allocation graph. [Parnas, 1972](https://www.cs.lafayette.edu/~gexia/cs301/resources/parnas.html).
 
-For ROO, establish the scenario and invariant, then write the decision that must remain changeable: “pricing policy varies independently from transport,” or “inventory persistence may change.” Record the affected relationship's custody, identity, authority, access, horizon, execution, and failure policy before choosing the smallest boundary that protects it. A function parameter or private module may be sufficient; a trait, crate, service, and network protocol each add costs. This is a design recommendation, not a result proved by Parnas or Rust.
+For ROO, establish the scenario and invariant, then write the decision that must remain changeable: “pricing policy varies independently from transport,” or “inventory persistence may change.” Record the affected relationship's custody, identity, invariant coordination, caller authorization, access, horizon, execution, and failure policy before choosing the smallest boundary that protects it. A function parameter or private module may be sufficient; a trait, crate, service, and network protocol each add costs. This is a design recommendation, not a result proved by Parnas or Rust.
 
 Liskov and Wing define behavioral subtyping through preserved properties, including invariants and history constraints. Compatible method signatures are insufficient. A trait implementation that silently changes ordering, idempotency, or failure semantics can violate client expectations while compiling successfully. [Liskov and Wing, 1994](https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf).
 
@@ -20,7 +20,7 @@ SOLID addresses change and abstraction: single responsibility concerns reasons f
 
 GRASP addresses responsibility assignment. Information Expert asks who has the knowledge; Creator asks who should construct; Controller receives a system operation; Low Coupling and High Cohesion assess placement; Polymorphism distributes variation; Pure Fabrication introduces a useful technical responsibility; Indirection mediates; Protected Variations stabilizes a change point. [Larman, second edition publisher contents and excerpt](https://www.informit.com/store/applying-uml-and-patterns-an-introduction-to-object-9780130925695).
 
-ROO adds a question to each lens: who has authority to change the state, how is that authority accessed, and how long is the access valid? A GRASP controller might borrow a store for one call; a GoF strategy might be an owned enum; dependency inversion might be a generic parameter. These choices need no dependency injection container.
+ROO adds a question to each lens: which component preserves the invariant, which caller may request a change, what access is provided, and how long is it valid? A GRASP controller might borrow a store for one call; a GoF strategy might be an owned enum; dependency inversion might be a generic parameter. These choices need no dependency injection container.
 
 ## 3. DDD vocabulary, relationship decisions, and Rust realizations
 
@@ -68,7 +68,7 @@ Persistence DTOs belong to the adapter's representation. Decode and validate the
 
 CQRS separates update and query models; it can share a database and need not use different deployments. Fowler warns that the added complexity is often unjustified. [Fowler, 2011](https://martinfowler.com/bliki/CQRS.html).
 
-ROO therefore permits a command to load an aggregate while a query adapter returns a projection DTO. A query result is a snapshot, not ongoing mutation authority over the entity. Choose an acceptable staleness contract before introducing asynchronously maintained projections.
+ROO therefore permits a command to load an aggregate while a query adapter returns a projection DTO. A query result is a snapshot, not permission or access to mutate the entity. Choose an acceptable staleness contract before introducing asynchronously maintained projections.
 
 Event sourcing records state changes as events and supports reconstruction through replay. An event log and an audit trail are not interchangeable merely because both contain events. Schema evolution, snapshots, deterministic replay, and external effects require explicit policies. [Fowler, 2005 draft](https://martinfowler.com/eaaDev/EventSourcing.html).
 

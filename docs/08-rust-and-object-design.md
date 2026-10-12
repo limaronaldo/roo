@@ -380,7 +380,7 @@ Do not repeat the full 23-pattern catalog here. Use the existing [ROO GoF Patter
 4. Use generics for concrete compile-time variation.
 5. Use a dyn-compatible trait object for runtime heterogeneity when the dispatch boundary is useful.
 6. Use composition for independent policy layers and shared behavior that is not a subtype promise.
-7. Record ownership, authority, failure, and test evidence for the chosen pattern.
+7. Record custody, coordination, authorization, failure, and test evidence for the chosen pattern.
 
 An Adapter can preserve or translate a provider error. A Decorator can add a retry policy. A State representation can be an enum or typestate. A Strategy can be a closure, enum, generic, or trait. The pattern name alone does not tell you which representation is correct.
 
@@ -529,8 +529,9 @@ Do not draw a destruction marker merely because a non-Copy value moved. A move t
 ```mermaid
 flowchart LR
     A[Domain rule and identity] --> B[Eight-field relationship contract]
-    B --> C[Owner, access, and authority]
-    C --> D[Failure and consistency boundary]
+    B --> C[Custody and access]
+    C --> C2[Invariant coordination and caller authorization]
+    C2 --> D[Failure and consistency boundary]
     D --> E[Language representation]
     E --> F[Compiler, runtime, database, and tests]
     F --> B

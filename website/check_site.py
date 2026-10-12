@@ -20,10 +20,14 @@ class Page(HTMLParser):
         self.lang = None
         self.options = []
         self.canonical = None
+        self.contract_keys = []
+        self._term = None
         self.feed(text)
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        if tag == "dt":
+            self._term = ""
         if "id" in attrs:
             self.ids.add(attrs["id"])
         if tag == "html":
@@ -37,6 +41,33 @@ class Page(HTMLParser):
         for attribute in ("href", "src"):
             if attrs.get(attribute):
                 self.links.append(attrs[attribute])
+
+
+    def handle_data(self, data):
+        if self._term is not None:
+            self._term += data
+
+    def handle_endtag(self, tag):
+        if tag == "dt" and self._term is not None:
+            self.contract_keys.append(self._term.strip().lower())
+            self._term = None
+
+
+def homepage_errors(page, edition, versions, require_contract=True):
+    errors = []
+    expected = (["owner", "identity", "mutation authority", "access", "horizon", "execution", "failure"]
+                if edition == "v0.1.0" else
+                ["custodian", "identity", "coordinator", "authorization", "access", "horizon", "execution", "failure"])
+    if require_contract and page.contract_keys != expected:
+        errors.append(f"Homepage contract does not match its edition: {edition}")
+    homes = {version["url"] for version in versions}
+    prefix = f"/roo/{edition}/"
+    for link in page.links:
+        target = urlsplit(urljoin(BASE + edition + "/", link))
+        if target.netloc == "limaronaldo.github.io" and target.path.startswith("/roo/"):
+            if not target.path.startswith(prefix) and target.path not in homes:
+                errors.append(f"Homepage link leaves its edition: {edition}: {link}")
+    return errors
 
 
 def main():
@@ -68,6 +99,10 @@ def main():
     for version in versions["versions"]:
         edition = SITE / version["id"]
         manifest = json.loads((edition / "source-manifest.json").read_text())
+        homepage = rendered.get(edition / "index.html")
+        if homepage:
+            errors.extend(homepage_errors(homepage, version["id"], versions["versions"],
+                require_contract="docs/02-relationship-design/" in version["routes"]))
         expected = []
         release_sources = 0
         for source in manifest["pages"]:
@@ -101,7 +136,7 @@ def main():
             location = destination.relative_to(edition).as_posix().removesuffix("index.html")
             if location not in indexed:
                 errors.append(f"Navigation page is absent from edition search: {version['id']}/{location}")
-        editions.append({"id": version["id"], "pages": len(expected), "release_sources_verified": release_sources, "search_entries": len(search["docs"]), "documentation_commit": manifest["documentation_commit"]})
+        editions.append({"id": version["id"], "pages": len(expected), "release_sources_verified": release_sources, "search_entries": len(search["docs"]), "documentation_commit": manifest["documentation_commit"], "homepage_contract_keys": homepage.contract_keys if homepage else []})
     for location, target in versions["redirects"].items():
         old = rendered.get(SITE / location / "index.html")
         if not old or target not in old.links:

@@ -16,11 +16,8 @@ model family. The historical phrase “independent review” means a different
 agent with a separate read-only assignment. It does not mean an independent
 human reviewer or an external validation of the method.
 
-Ronaldo is identified as maintainer, not as the personal executor of every
-recorded check. The repository does not document which individual checks he
-personally repeated. Test receipts record execution by the automated workflow
-or authoring process that produced them. This page makes no claim of a
-completed human audit.
+Test receipts identify the automated workflow or authoring process that ran
+each check. They do not document a completed human audit.
 
 ## Verification readers can inspect
 
@@ -40,15 +37,15 @@ from field evidence and broader architectural claims.
 
 ROO is intended for practitioners making design decisions. The learning track
 demonstrates the method; the authoring pipeline is provenance rather than the
-method's justification. The development edition consolidates the contract
+method's justification. The v0.2.0 edition consolidates the contract
 into eight fields, separates invariant coordination from authorization, and
-uses one procedure across chapters and templates. The homepage layout adapts
-a design supplied with this editorial review.
+uses one procedure across chapters and templates. The homepage was adapted
+from a provided HTML layout.
 
 The v0.1.0 tag, its source documents, and historical research records remain
 available unchanged. The site interface labels that edition as a preview;
-development pages carry subsequent corrections. The shared homepage is a
-publisher overview, not a replacement for tagged chapter content.
+development pages carry subsequent corrections. Homepages use the contract
+and chapter links of the selected edition.
 
 Open work includes review by Rust and DDD/architecture practitioners,
 documented use in a real system, and measurement of what the contract catches.

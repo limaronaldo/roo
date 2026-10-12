@@ -46,6 +46,17 @@ starter shipped for qualification unless the teaching contract is also updated.
 
 ## Validate the affected behavior
 
+For current method vocabulary:
+
+```sh
+python3 scripts/check_vocabulary.py
+```
+
+Use Coordinator and Authorization as separate contract fields. The check
+rejects retired labels and old field lists in current prose while allowing
+ordinary uses of “authority.” Exact migration quotations, released notes,
+tagged sources, and historical records retain their wording.
+
 For chapter examples, with Rust 1.96+, JDK 21+, and Python 3:
 
 ```sh

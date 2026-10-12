@@ -8,7 +8,7 @@ PaymentId supports reconciliation when the caller cannot know the provider
 outcome. The [shared case](../README.md) and [contract](../SPEC.md) fix that
 invariant; chapter 2's [Relationship Contract](../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../templates/relationship-contract.md) guide custody,
-domain responsibility, stable identity, mutation authority, access lifetime,
+stable identity, invariant coordination, caller authorization, access, horizon,
 execution, and failure decisions. This in-memory PaymentId lasts one scenario,
 not a restart, and grants no authorization. Rust ownership and borrows enforce
 local movement and aliasing rules, not provider idempotency. No caller

@@ -10,6 +10,7 @@ on:
       - 'case-studies/orders-payments/**/*.md'
       - '*.md'
       - 'scripts/check_doc_examples.py'
+      - 'scripts/check_vocabulary.py'
       - 'src/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
@@ -24,6 +25,7 @@ on:
       - 'case-studies/orders-payments/**/*.md'
       - '*.md'
       - 'scripts/check_doc_examples.py'
+      - 'scripts/check_vocabulary.py'
       - 'src/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
@@ -74,6 +76,8 @@ jobs:
           export JAVA_HOME="$JAVA_HOME_21_X64"
           export PATH="$JAVA_HOME/bin:$PATH"
           python scripts/check_doc_examples.py
+      - name: Check current method vocabulary
+        run: python scripts/check_vocabulary.py
       - name: Capture the published release preservation baseline
         run: python website/release_tags.py capture --output .site-build/previous-publication.json
       - name: Build and validate every release edition and development

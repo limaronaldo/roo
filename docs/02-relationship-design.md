@@ -102,11 +102,12 @@ These are candidates, not equivalences: an ID graph can also live inside one agg
 
 Assume a small ordering application, one currency per Order, local validation before persistence, and an external payment provider.
 LineItems belong to one Order; Customers and Payments have independent durable identity.
+The teaching case has no caller authorization implementation; a real service must supply that policy.
 A submitted order retains commercial snapshots needed to explain its historical total.
 Events are immutable descriptions of committed transitions, copied or transferred to consumers.
 These are teaching assumptions, not universal commerce rules or a production payment design.
 
-| Relationship | Custodian / identity | Authority and access | Horizon and execution | Failure / consistency |
+| Relationship | Custodian / identity | Coordination, authorization, and access | Horizon and execution | Failure / consistency |
 |---|---|---|---|---|
 | Order → LineItem | Order owns item values; line ID local to Order if needed | Order coordinates mutation; callers get shared views | Until removal/drop; commercial data frozen at submission; local operation | Reject invalid quantity/currency/overflow before installing change; persist aggregate consistently |
 | Order → Customer | Order owns CustomerId and checkout snapshot; customer store owns customer state | Customer service mutates Customer; Order resolves authorized read view | ID may outlive any loaded Customer; snapshot is intentionally historical | Missing/deleted customer has explicit policy; no automatic cascade from Order deletion |
@@ -188,7 +189,7 @@ Borrowing across `.await` can be valid when lifetimes and the executor's require
 Review the retained state and capabilities, not merely whether the function is written `async`. [Standard library: Future](https://doc.rust-lang.org/std/future/trait.Future.html)
 
 As a v0.1 default, gather a minimal owned command or snapshot, release local guards, then perform slow external work.
-On return, revalidate any facts whose version or authority could have changed.
+On return, revalidate any facts whose version or permissions could have changed.
 A deliberate transaction or lock spanning an external operation needs a stronger latency, cancellation, and contention justification.
 The future's cancellation can drop local state while a remote operation has already succeeded.
 Represent an uncertain external result explicitly instead of claiming rollback from local destruction.
@@ -230,6 +231,6 @@ A relationship is ready for production only after its real persistence, authoriz
 This edition's local lab cannot establish those production properties.
 
 Open v0.1 questions include how much notation teams will maintain, how contracts should evolve with schema versions, and which review metrics predict reduced defects.
-The initial convention is to document significant relationships rather than every scalar field, and to update their contracts when ownership, authority, or failure behavior changes.
+The initial convention is to document significant relationships rather than every scalar field, and to update their contracts when custody, coordination, authorization, or failure behavior changes.
 Evaluate ROO by whether another engineer can predict an operation's effects and failure outcomes from the contract and API.
 Use that evaluation to improve the method without claiming that compilation alone validates the architecture.

@@ -44,7 +44,7 @@ GitHub Release, upload release assets, or run the Java/Rust/PostgreSQL track.
 |---|---|---|
 | Chapters, templates, studies, and project documents | Read from the exact tag commit | Read from the checked-out `main` working tree |
 | Navigation | Read from the tagged configuration | Read from `main` |
-| Publisher introduction, license overview, this guide, controls, theme, and assets | Shared current publisher interface | Shared current publisher interface |
+| Introduction, license overview, this guide, controls, theme, and assets | Current publisher interface; introduction uses the edition's contract and local links | Current publisher interface and current contract |
 
 The v0.1.0 tag predates the website. Its exact commit and original navigation
 are bootstrapped in [versions.json](../versions.json) and
@@ -55,6 +55,10 @@ explicit `nav` mapping in `website/mkdocs.yml` and the documents it references.
 
 Release **content and navigation** stay fixed. HTML and publisher pages can
 improve so the same selector includes new versions in older editions. Each
+homepage teaches its selected edition: the first edition uses its original
+contract, and later editions use separate Coordinator and Authorization fields.
+Chapter, worksheet, case, and review links stay in the selected edition; pages
+absent from an older edition are not linked from its introduction. Each
 edition's `source-manifest.json` separates `release`, `development`, and
 `publisher` page inputs, their commits, and original hashes. The public
 `versions.json` records exact release commit/tag identities and navigation
@@ -94,6 +98,7 @@ python3.12 -m venv .site-build/venv
 .site-build/venv/bin/python -m pip install --require-hashes -r website/requirements.lock
 .site-build/venv/bin/python -m unittest discover -s website/tests -v
 node --test website/tests/versions.test.cjs
+python3 scripts/check_vocabulary.py
 .site-build/venv/bin/python website/release_tags.py capture --output .site-build/previous-publication.json
 .site-build/venv/bin/python website/build.py --previous-state .site-build/previous-publication.json
 .site-build/venv/bin/python -m http.server 8000 --bind 127.0.0.1 --directory .site-build/preview
@@ -112,6 +117,7 @@ fallback, rejected moved/deleted tags, unavailable baselines, and event
 validation. MkDocs strict mode and an HTML crawler verify every edition's
 navigation, canonical URL, selected version and targets, links and fragments,
 English metadata, source hashes, search membership, and legacy redirects.
+It also rejects homepage contract keys or teaching links from another edition.
 
 ## Publication, recovery, and permissions
 

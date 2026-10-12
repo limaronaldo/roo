@@ -9,6 +9,7 @@ define the method; this worksheet is its fill-in form.
 ```text
 Relationship: Source -> Target [cardinality]
 Invariant: allowed outcome; forbidden outcome; when state must agree
+
 Custodian:
 Identity:
 Coordinator:
@@ -17,6 +18,7 @@ Access:
 Horizon:
 Execution:
 Failure:
+
 Evidence: mechanism, observed check, and reference
 Open: unresolved decisions and assumptions
 ```
