@@ -18,7 +18,8 @@ The material was developed with AI assistance, including review by separate
 agents from the same model family. [How ROO was made](docs/how-roo-was-made.md)
 describes that process and the scope of verification.
 
-[Read v0.2.0 — eight-field contract (preview)](https://limaronaldo.github.io/roo/) ·
+[Read v0.3.0 — persistent authorization (preview)](https://limaronaldo.github.io/roo/) ·
+[v0.2.0 — eight-field contract (preview)](https://limaronaldo.github.io/roo/v0.2.0/) ·
 [v0.1.0 — first edition (preview)](https://limaronaldo.github.io/roo/v0.1.0/) ·
 [Development](https://limaronaldo.github.io/roo/dev/)
 
@@ -33,7 +34,7 @@ Invariant: recovery must not create a second charge
 Custodian: local store retains intent; provider independently retains its result
 Identity: reuse the same attempt ID and immutable request fingerprint
 Coordinator: application sequences prepare, provider call, and finalization
-Authorization: not implemented in this teaching case; required in a live service
+Authorization: opt-in HTTP fixture rechecks current policy in each transaction
 Access: order stores an ID and status observation, not a mutable provider object
 Horizon: intent survives recovery; a status observation can become stale
 Execution: short local transactions; provider operation commits independently
@@ -113,7 +114,9 @@ explains AMD64 qualification and how to inspect a run's evidence.
 
 ## Project status
 
-v0.2.0 is the **eight-field contract edition (preview)**. Its separate
+v0.3.0 is the **persistent authorization edition (preview)**. Its opt-in HTTP
+fixture rechecks durable policy in Java and Rust, including revocation and
+recovery after restart. The eight-field contract is unchanged from v0.2.0.
 Coordinator and Authorization fields replace v0.1.0's combined Mutation
 authority field; see the [migration notes](CHANGELOG.md#migration-from-010).
 v0.1.0 remains the **first edition (preview)**, and Development follows main.

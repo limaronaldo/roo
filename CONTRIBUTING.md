@@ -102,6 +102,13 @@ lock witnesses or restart/HTTP-loss checks with timing guesses. The
 [case specification](case-studies/orders-payments/track/SPEC.md) defines the
 observable obligations and proof limits.
 
+For persistent HTTP authorization, the same qualification also runs the shared
+[HTTP authorization suite](case-studies/orders-payments/http/AUTHORIZATION.md).
+Keep fixture authorization opt-in, recheck policy in each protected transaction,
+and preserve the same denied outcomes and restart recovery in Java and Rust.
+An observed grant is not an execution permit. Retain denied policy rows and
+recover uncertain payment/refund effects with the original identity.
+
 Inspect the receipts as well as the exit status. Report the source commit,
 command, platform, checks passed, and remaining limits. Hosted CI validates
 AMD64 on GitHub; a local emulated run is different evidence. Never commit

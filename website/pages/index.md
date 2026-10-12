@@ -39,7 +39,7 @@ Maintained by [Ronaldo Martins](https://github.com/limaronaldo).
 <dt>coordinator</dt>
 <dd>Application prepares, calls, then finalizes; domain checks transitions.</dd>
 <dt>authorization</dt>
-<dd>Caller policy is not implemented in this teaching case.</dd>
+<dd>This baseline relationship leaves caller permission open.</dd>
 <dt>access</dt>
 <dd>Order keeps an attempt ID and a read-only status snapshot.</dd>
 <dt>horizon</dt>

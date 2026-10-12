@@ -1,100 +1,98 @@
-# ROO v0.2.0
+# ROO v0.3.0
 
-**The eight-field Relationship Contract edition (preview).** ROO —
-Relationship & Ownership Oriented design — is a language-independent method:
-describe important relationships before choosing their realization in Java,
-Rust, or another language.
+**The persistent authorization edition (preview).** ROO — Relationship &
+Ownership Oriented design — remains a language-independent method. This
+release applies its Authorization field to durable HTTP operations in Java
+composition, Java Template Method, and Rust composition. The eight-field
+contract introduced in v0.2.0 is unchanged.
 
 ## What changed
 
-- One canonical contract with eight decisions: **Custodian, Identity,
-  Coordinator, Authorization, Access, Horizon, Execution, Failure**.
-- A six-step procedure: describe the scenario, triage relationships, complete
-  the contract, choose realizations, check a counterexample, and record
-  evidence before deciding.
-- Chapters, three reusable templates, and completed orders/payments contracts
-  aligned with the same method. Java composition, Java Template Method, and
-  Rust composition show how the same decisions translate across languages.
-- A shorter overview and worksheet, a worked payment relationship, and a
-  three-clock explanation of memory validity, business lifecycle, and freshness.
-- Rust and Java chapter examples compiled and executed directly from Markdown
-  in CI, alongside positive and expected compile-fail Rust documentation tests.
-- Versioned GitHub Pages with edition-local navigation and search, a version
-  selector, exact source manifests, and automatic publication from numeric
-  release tags. Earlier tagged documents and navigation remain preserved.
-- Explicit claims and limits, AI-assisted authorship, and the scope of review
-  by separate agents from the same model family. Independent human evaluation
-  and evidence from real projects remain open.
+- Opt-in HTTP fixture authorization backed by persistent PostgreSQL grants.
+  Each protected transaction checks the current `(scope, principal)` policy
+  before order or provider locks and retains its policy lock through completion.
+- Equivalent tests for revocation between observation and execution, competing
+  execution and revocation, denied reads and writes, and relay delivery while a
+  revoker waits. A detached observation never grants later access.
+- Recovery after API process death and immediate PostgreSQL restart, including
+  denial after restart, later regrant, and reconciliation of the original
+  payment/refund identity without another provider effect.
+- The separate process-local Java/Rust authorization example, with shared
+  outcomes and controlled thread schedules.
+- Current vocabulary checks, edition-local homepage teaching, and a shorter
+  worked homepage contract. Historical sources and records retain their wording.
 
-## Migrate a v0.1.0 contract
+See the [durable HTTP authorization contract](case-studies/orders-payments/http/AUTHORIZATION.md)
+for the eight decisions, transaction ordering, HTTP outcomes, and tested limits.
 
-Split **Mutation authority** into two independent answers:
+## Upgrade from v0.2.0
 
-| New field | Required decision |
-|---|---|
-| Coordinator | Which component and operations preserve the invariant? |
-| Authorization | Which principal may request each operation, under which policy and revocation rule? |
+Legacy HTTP mode remains the default when `ROO_HTTP_AUTH_MODE` is absent.
+For the authorization fixture:
 
-Keep custody and identity separate from these roles. A mutable Rust borrow,
-Java reference, known ID, or held capability does not alone establish caller
-permission. Translate the other fields to the canonical compact keys listed
-above. Invariant, Evidence, and Open supply context rather than additional
-contract fields. See [Chapter 2](docs/02-relationship-design.md) and the
-[worksheet](templates/relationship-contract.md).
+1. Install the existing PostgreSQL schema, then the additive
+   [HTTP policy schema](case-studies/orders-payments/http/schema.sql).
+2. Set `ROO_HTTP_AUTH_MODE=fixture` and `ROO_HTTP_TEST_MODE=1`.
+3. Grant or revoke a synthetic `(scope, principal)` through trusted SQL. Keep
+   denied rows as tombstones; do not delete policy rows or change their keys.
+4. Send exactly one `X-Roo-Principal` matching `[A-Za-z0-9_]{1,32}`.
 
-The orders/payments teaching case does **not** implement caller authentication
-or authorization; its contract now records that gap explicitly. This release
-does not add a security layer or change case-study identifiers, policy inputs,
-HTTP behavior, or the PostgreSQL schema.
+The header asserts a synthetic principal; it is **not authentication**. Missing
+principals return 401, malformed/repeated principals return 400, and current
+policy denial returns 403. There are no HTTP policy-administration routes,
+roles, tenant policy, or real identity provider.
+
+Revocation preserves effects already committed by earlier phases. A 403, 503,
+timeout, or lost response is not proof of rollback. Reconcile a payment or
+refund using current permission and its original key. Line additions still
+have no durable command identity and must not be blindly replayed.
 
 ## Read and reproduce
 
-The [documentation site](https://limaronaldo.github.io/roo/) selects the
-highest numeric release tag. Choose **v0.2.0**, **v0.1.0**, or **Development**
-with the version selector. The original seven-field first edition remains
-available at [v0.1.0](https://limaronaldo.github.io/roo/v0.1.0/), with its
-[original release notes](https://github.com/limaronaldo/roo/blob/v0.1.0/RELEASE_NOTES.md).
+The [documentation site](https://limaronaldo.github.io/roo/) selects the highest
+numeric release tag. Its selector retains **v0.3.0**, **v0.2.0**, **v0.1.0**, and
+**Development**. The earlier tagged chapters, templates, case studies, and
+release notes remain available at their original edition URLs.
 
 With Docker, Compose, Bash, and common POSIX utilities installed:
 
 ```sh
-git clone --branch v0.2.0 https://github.com/limaronaldo/roo.git
+git clone --branch v0.3.0 https://github.com/limaronaldo/roo.git
 cd roo
 bash case-studies/orders-payments/track/compose.sh
 ```
 
-The qualification runs equivalent Java composition, Java Template Method,
-and Rust scenarios against evaluator-owned PostgreSQL in an isolated
-container. It checks that all six solution exercises pass, the shipped
-starter remains intentionally incomplete, and exercise 6 can pass independently.
-The scenarios cover idempotency, witnessed concurrency, process-death and
-PostgreSQL restart/WAL recovery, outbox delivery, and lost HTTP responses.
-See the [Docker guide](case-studies/orders-payments/track/DOCKER.md).
+Qualification runs the six adoption exercises, legacy HTTP scenarios, and the
+persistent authorization matrix across all three variants, with isolated
+PostgreSQL. It includes idempotency, witnessed concurrency, process/database
+restart recovery, outbox delivery, and response loss. Shipped starters remain
+intentionally incomplete. See the [Docker guide](case-studies/orders-payments/track/DOCKER.md).
 
-For the dependency-free root laboratory and the chapter examples:
+For an existing Rust 1.96+ and Java 21 toolchain:
 
 ```sh
 cargo test --locked --offline
 python3 scripts/check_doc_examples.py
+python3 case-studies/orders-payments/authorization/verify.py
+bash case-studies/orders-payments/http/verify.sh
 ```
 
-Use Rust 1.96 or newer and Java 21. The published GitHub Release identifies
-the exact tested commit and hosted Linux AMD64 run; its checked qualification
-summary, workflow evidence, and `SHA256SUMS` retain evidence beyond the hosted
-artifact's retention period. Documentation publication is verified separately
-through the release dispatcher, Pages deployment, and public source manifests.
+The GitHub Release identifies the exact qualified commit and hosted Linux
+AMD64 run. Checked qualification/publication summaries, allowlisted workflow
+evidence, and `SHA256SUMS` retain evidence beyond hosted artifact retention.
+Pages publication is verified separately through the tag dispatcher, deployment,
+version selector, and public source manifests.
 
 ## License and scope
 
-Original ROO material remains **MIT OR Apache-2.0**, at your option.
-[Third-party terms](THIRD_PARTY_NOTICES.md) apply to preserved inputs and
-dependencies. All new documentation is in English. The v0.1.0 tag and
-historical research records are unchanged.
+Original material remains **MIT OR Apache-2.0**, at your option, with
+[third-party exceptions](THIRD_PARTY_NOTICES.md). New documentation is in
+English. The v0.1.0 and v0.2.0 tags and historical research records are preserved.
 
-This is a GitHub source release. Rust packages remain `publish = false`;
-no registry package, executable binary, or signing claim is included. A numeric
-release tag records a source snapshot and does not certify method maturity.
-Passing bounded educational scenarios does not establish every interleaving,
-physical power-loss behavior, external provider behavior, or production
-readiness. See [Claims and limits](docs/claims-and-limits.md) and the
-[changelog](CHANGELOG.md).
+This is a GitHub source release; Rust packages remain `publish = false`. No
+registry package, executable binary, signature, or production readiness is
+claimed. The fixture shares one PostgreSQL/WAL domain with its simulated
+provider. Its bounded scenarios do not establish real authentication,
+external-provider authorization, exhaustive interleavings, or physical
+power-loss durability. Independent human evaluation remains open. See
+[Claims and limits](docs/claims-and-limits.md) and the [changelog](CHANGELOG.md).

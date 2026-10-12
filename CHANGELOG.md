@@ -8,6 +8,13 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+No changes recorded yet.
+
+## [0.3.0] — 2026-10-12
+
+Persistent authorization for the Java and Rust HTTP teaching APIs, with the
+eight-field Relationship Contract unchanged. This remains a pre-1.0 preview.
+
 ### Changed
 
 - Remove remaining retired contract labels from current chapters and case
@@ -28,6 +35,26 @@ compatibility policy in [RELEASING.md](RELEASING.md).
   observation and execution, shared outcomes, controlled thread tests, and CI.
 - A CI vocabulary check for retired field labels and summaries, with narrow
   migration exceptions and regression tests.
+
+### Migration from 0.2.0
+
+- Legacy HTTP behavior remains the default. Enable the synthetic authorization
+  fixture explicitly with `ROO_HTTP_AUTH_MODE=fixture` and
+  `ROO_HTTP_TEST_MODE=1`; supply one `X-Roo-Principal` header. The header asserts
+  a test principal and does not authenticate a person.
+- Install the additive [HTTP policy schema](case-studies/orders-payments/http/schema.sql)
+  after the PostgreSQL schema. The trusted fixture owner grants or revokes
+  `(scope, principal)` access through SQL, retaining denied rows as tombstones.
+  No HTTP policy-administration endpoint or production identity layer is added.
+- Each protected transaction rechecks current policy before business locks or
+  effects. An observation does not reserve access. Revocation does not undo a
+  prior commit, and even a 403 response can follow a committed payment phase.
+- Reconcile uncertain payment/refund outcomes with current permission and the
+  original operation identity. Line additions remain non-idempotent; never
+  blindly replay an uncertain line POST.
+- The eight contract fields, package/scenario identifiers, v0.1.0 and v0.2.0
+  sources, and historical research records remain preserved. The numeric tag
+  makes v0.3.0 the default documentation edition while retaining earlier ones.
 
 ## [0.2.0] — 2026-10-11
 
@@ -115,6 +142,7 @@ results retain their original bytes and meaning. Passing the test scenarios
 does not establish every interleaving, physical power-loss behavior, external
 provider behavior, or production readiness.
 
-[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.2.0...main
+[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.3.0...main
+[0.3.0]: https://github.com/limaronaldo/roo/releases/tag/v0.3.0
 [0.2.0]: https://github.com/limaronaldo/roo/releases/tag/v0.2.0
 [0.1.0]: https://github.com/limaronaldo/roo/releases/tag/v0.1.0
