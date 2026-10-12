@@ -8,6 +8,17 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [0.4.1] — 2026-10-12
+
+Separate the method from its reference implementations in the documentation.
+This compatible documentation release keeps the eight-field contract,
+six-step procedure, APIs, and teaching fixtures unchanged. No migration from
+v0.4.0 is required. This remains a pre-1.0 preview.
+
+### Changed
+
 - Separate Method, Templates, Design cases, Implementations, and Evidence in
   site navigation. Present neutral payment/revocation cases before the
   Java, Rust, PostgreSQL, and HTTP laboratories.
@@ -17,7 +28,12 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 - Preserve published homepage teaching while Development adopts the new
   organization; pin future release homepages to their tagged sources.
   Existing edition routes, release sources, APIs, identifiers, and historical
-  research records remain unchanged. No new release accompanies this change.
+  research records remain unchanged. The v0.4.1 homepage comes from its own
+  tagged source, while v0.1.0–v0.4.0 retain their published teaching.
+- Clarify that compatible documentation reorganization uses a patch version;
+  incompatible changes to the method or executable contracts still require a
+  minor version during 0.x development. Alternative technologies remain
+  evaluation candidates, with no new implementation support claimed.
 
 ## [0.4.0] — 2026-10-12
 

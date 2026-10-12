@@ -11,7 +11,9 @@ changing a package version. Do not rename identifiers to change a release label.
 ROO follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). During
 0.x development, incompatible changes to the published contract, CLI, HTTP
 behavior, or teaching fixtures use a new minor version; compatible corrections
-use a patch version. Explain the migration in the changelog. Before 1.0, the
+use a patch version. Documentation reorganization and editorial clarification
+also use a patch version when the method and executable contracts stay
+compatible. Explain any migration in the changelog. Before 1.0, the
 method and APIs remain evolving; a future 1.0 release must define its supported
 public contract explicitly. Never move an already published version tag.
 
