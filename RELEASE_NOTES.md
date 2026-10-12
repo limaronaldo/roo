@@ -32,7 +32,7 @@ so they use a patch version under the [release policy](RELEASING.md).
 
 ## Read and reproduce
 
-Read the [v0.4.1 documentation](https://limaronaldo.github.io/roo/v0.4.1/),
+Read the [documentation site](https://limaronaldo.github.io/roo/),
 starting with the [method](docs/02-relationship-design.md),
 [payment recovery case](case-studies/orders-payments/DESIGN.md), and
 [permission/revocation case](case-studies/orders-payments/authorization/DESIGN.md).
