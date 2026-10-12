@@ -1,85 +1,91 @@
-# ROO v0.4.2
+# ROO v0.4.3
 
-**The validation kit edition (preview).** ROO — Relationship & Ownership
-Oriented design — now includes a practical protocol for human evaluation.
-The method remains independent of language, runtime, database, and protocol.
-Publishing the kit does not establish completed human review or field validation.
+**First human validation round preparation (preview).** ROO — Relationship &
+Ownership Oriented design — now supplies a coordination plan, unsent English
+invitations, and a consolidation form for the published validation kit.
+The round is prepared, not started: no invitations, accepted participants,
+human reviews, or practitioner results are established by this release.
 
 ## What changed
 
-- Add a [validation protocol](docs/validation/README.md) with separate
-  [Rust](docs/validation/rust-review.md) and
-  [DDD/architecture](docs/validation/ddd-review.md) reviewer briefs.
-- Add a technology-neutral [document-publication exercise](docs/validation/exercise.md),
-  a separate [facilitator guide](docs/validation/facilitator-guide.md), and a
-  reusable [results template](templates/validation-results.md). The exercise
-  covers stale content, revocation, competing admissions, conflicting keys,
-  uncertain external effects, deletion, and restart.
-- Predeclare success criteria and record scope, assistance, first attempts,
-  predictions, observed checks, disagreements, and unknowns. Both proposed
-  technology mappings must preserve every required promise to meet Transfer;
-  a changed promise is unmet, and unresolved feasibility is unknown.
-- Link the kit from the homepage, navigation, contributor guidance, and
-  [Claims and limits](docs/claims-and-limits.md). Keep working notes private
-  by default and publish only authorized synthetic summaries.
+- Add the [first-round plan](docs/validation/first-round.md), with frozen sources,
+  Rust and DDD review roles, a practitioner exercise, and a staged sequence.
+- Supply [unsent invitation drafts](docs/validation/invitations.md) for Rust
+  and DDD/architecture reviewers. The maintainer chooses recipients, agrees
+  privately on scope and dates, and sends invitations separately.
+- Add a [round summary form](templates/validation-round-summary.md) that preserves
+  first attempts, assistance, role overlap, dissent, missing evidence, and
+  separate first-attempt and later assessments.
+- Explain consolidation without score averaging or majority votes. Keep
+  incomplete work distinct from a negative result, and paper predictions
+  distinct from executed implementation checks.
+- Link the pack from the overview, validation kit, contributor guidance, and
+  edition navigation. Keep recruitment, originals, and consent private;
+  publish only an approved synthetic summary through a separate contribution.
 
 ## Why a patch release
 
-The eight contract fields, canonical six-step procedure, Java/Rust behavior,
-operation-specific HTTP permissions, PostgreSQL schemas, idempotency, and
-restart recovery are unchanged. No migration from v0.4.1 is required. This
-compatible documentation addition uses a patch version under the
-[release policy](RELEASING.md).
+This is a compatible documentation addition. The eight-field contract,
+canonical six-step procedure, Java/Rust APIs, operation permissions,
+PostgreSQL schemas, idempotency, and restart recovery are unchanged.
+No migration from v0.4.2 is required. The method remains independent of
+language, runtime, database, and protocol; the reference implementations
+remain bounded laboratories. See the [release policy](RELEASING.md).
 
-## Use the kit
+## Use the prepared round
 
-Read the [documentation site](https://limaronaldo.github.io/roo/) and start
-with the [validation protocol](docs/validation/README.md). The paper exercise
-requires no code or toolchain. Assign human reviewers, preserve their initial
-findings before discussion, and report negative or inconclusive results as
-well as positive ones.
+Start with the [coordination plan](docs/validation/first-round.md) and preserve
+three separate source identities before inviting anyone:
 
-The initial method/code baseline remains v0.4.1, commit
-`f6670a109d7dbfef8f72078b4cd361079ac6a10a`. Record the exact v0.4.2 kit commit
-separately. A later trial may select other exact revisions, but participants
-in the same trial must share the same requirements and frozen sources.
+- Method/code: v0.4.1, `f6670a109d7dbfef8f72078b4cd361079ac6a10a`.
+- Kit, exercise, criteria, and individual results form: v0.4.2,
+  `9a149882a3bb2e65cbfa7f569420ba2fc40ae2d4`.
+- Coordination plan and round summary form: record the exact accepted v0.4.3
+  commit, or another explicitly agreed revision, before sending invitations.
 
-The version selector retains v0.1.0, v0.2.0, v0.3.0, v0.4.0, v0.4.1, and
-Development. The automatic publisher selects v0.4.2 as the highest numeric
-release tag and preserves previous editions and historical records.
+Do not replace those pins with a moving Development URL during the round.
+Save independent reviews and the practitioner's first attempt before feedback;
+perform the second-reader cross-check before showing the facilitator key.
+Record assistance, prior exposure, overlaps, and work not performed. Human
+participation and approval of the exact public summary are separate decisions.
+The exercise needs no code or toolchain.
+
+Read the [v0.4.3 documentation](https://limaronaldo.github.io/roo/v0.4.3/).
+The automatic publisher selects v0.4.3 as the highest numeric release tag;
+the selector retains v0.1.0–v0.4.2 and Development. Earlier edition sources,
+navigation, tags, and historical records remain preserved.
 
 ## Reproduce the reference laboratories
 
 With Docker, Compose, Bash, and common POSIX utilities:
 
 ```sh
-git clone --branch v0.4.2 https://github.com/limaronaldo/roo.git
+git clone --branch v0.4.3 https://github.com/limaronaldo/roo.git
 cd roo
 bash case-studies/orders-payments/track/compose.sh
 ```
 
 The shared qualification compares Java composition, Java Template Method, and
-Rust composition with isolated PostgreSQL. It exercises idempotency,
-concurrency, operation permissions, revocation, restart recovery, outbox
+Rust composition with isolated PostgreSQL. It exercises concurrency,
+idempotency, operation permissions, revocation, restart recovery, outbox
 delivery, and lost responses. Shipped starters remain intentionally incomplete.
 See the [Docker guide](case-studies/orders-payments/track/DOCKER.md) and
 [contribution checks](CONTRIBUTING.md#validate-the-affected-behavior).
 
-The GitHub Release records the exact qualified source and hosted Linux AMD64
-run. Attached qualification/publication summaries, allowlisted workflow
-evidence, and `SHA256SUMS` preserve checked evidence beyond hosted artifact
-retention. Pages publication is verified separately through the automatic
-tag dispatcher, deployment, selector, and public source manifests.
+The GitHub Release identifies the exact qualified source and hosted Linux
+AMD64 runs. Qualification and publication summaries, allowlisted workflow
+evidence, and `SHA256SUMS` retain checked receipts beyond hosted artifact
+retention. Automatic documentation dispatch, Pages deployment, the selector,
+and public source manifests are verified separately.
 
-## License and scope
+## License and evidence limits
 
 Original material remains **MIT OR Apache-2.0**, with
 [third-party exceptions](THIRD_PARTY_NOTICES.md). Documentation is in English.
-Earlier tags and historical research records retain their original content.
-
 This is a GitHub source release; Rust packages remain `publish = false`.
-Qualification covers the supplied reference laboratories and bounded scenarios.
-It does not qualify alternative backends or establish production readiness,
-real authentication, exhaustive interleavings, or physical power-loss durability.
-Independent human evaluation remains open. See
+
+Automated checks and AI review do not complete the human round. This release
+does not establish novelty, superiority, a field study, production readiness,
+real authentication, alternative-backend qualification, exhaustive
+interleavings, or physical power-loss durability. See
 [Claims and limits](docs/claims-and-limits.md) and the [changelog](CHANGELOG.md).

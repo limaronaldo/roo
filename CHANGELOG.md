@@ -8,6 +8,13 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+## [0.4.3] — 2026-10-12
+
+Prepare the first human validation round for the published v0.4.2 kit.
+This compatible documentation addition keeps the method, reference APIs,
+schemas, and teaching fixtures unchanged. No migration from v0.4.2 is required.
+The round is prepared, not started; no human results are claimed.
+
 ### Added
 
 - Prepare the first human evaluation round for the v0.4.2 kit: unsent English
@@ -16,6 +23,14 @@ compatibility policy in [RELEASING.md](RELEASING.md).
   Preserve initial attempts, assistance, dissent, missing evidence, and
   contributor approval for any public summary. Preparation does not send
   invitations or claim completed human validation.
+
+### Changed
+
+- Publish v0.4.3 as the default documentation edition through the existing
+  tag-driven workflow. Preserve v0.1.0–v0.4.2, their tagged sources and
+  navigation, and historical research records. Keep the initial method/code
+  baseline at v0.4.1 and the review kit at v0.4.2; record the coordination
+  plan's exact accepted revision separately before outreach.
 
 ## [0.4.2] — 2026-10-12
 
@@ -252,7 +267,8 @@ results retain their original bytes and meaning. Passing the test scenarios
 does not establish every interleaving, physical power-loss behavior, external
 provider behavior, or production readiness.
 
-[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.4.2...main
+[Unreleased]: https://github.com/limaronaldo/roo/compare/v0.4.3...main
+[0.4.3]: https://github.com/limaronaldo/roo/releases/tag/v0.4.3
 [0.4.2]: https://github.com/limaronaldo/roo/releases/tag/v0.4.2
 [0.4.1]: https://github.com/limaronaldo/roo/releases/tag/v0.4.1
 [0.4.0]: https://github.com/limaronaldo/roo/releases/tag/v0.4.0

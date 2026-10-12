@@ -3,8 +3,8 @@
 **Status: prepared, not started.** No invitations have been sent, participants
 assigned, or human results collected by preparing this pack. The maintainer
 chooses recipients and sends the [invitation drafts](invitations.md) separately.
-This Development plan coordinates the published kit; it does not revise a
-released edition or report a completed human review.
+This coordination plan applies the published kit and prepares a human review;
+it does not report one.
 
 ## Freeze the pack before inviting
 
