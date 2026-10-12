@@ -44,7 +44,8 @@ GitHub Release, upload release assets, or run the Java/Rust/PostgreSQL track.
 |---|---|---|
 | Chapters, templates, studies, and project documents | Read from the exact tag commit | Read from the checked-out `main` working tree |
 | Navigation | Read from the tagged configuration | Read from `main` |
-| Introduction, license overview, this guide, controls, theme, and assets | Current publisher interface; introduction uses the edition's contract and local links | Current publisher interface and current contract |
+| Homepage | Preserved publisher copies for v0.1.0–v0.4.0; read from the exact tag for future editions | Current homepage and reading routes |
+| License overview, this guide, controls, theme, and assets | Current publisher interface | Current publisher interface |
 
 The v0.1.0 tag predates the website. Its exact commit and original navigation
 are bootstrapped in [versions.json](../versions.json) and
@@ -53,7 +54,16 @@ contains this historical exception and the Development configuration; new
 release entries are discovered automatically. A future tag must contain an
 explicit `nav` mapping in `website/mkdocs.yml` and the documents it references.
 
-Release **content and navigation** stay fixed. HTML and publisher pages can
+The published introductions for v0.2.0, v0.3.0, and v0.4.0 previously shared a
+publisher page. Their unchanged text is preserved in
+[releases/v0.2.0-v0.4.0-home.md](../releases/v0.2.0-v0.4.0-home.md), with a fixed
+hash checked by the test suite. Do not edit this compatibility copy. The first
+edition retains its existing [homepage](../releases/v0.1.0-home.md).
+Future tags must also contain `website/pages/index.md`: the publisher reads
+that homepage from the tag and records it as release content. A missing
+homepage stops publication instead of borrowing the current introduction.
+
+Release **content and navigation** stay fixed. HTML and other publisher pages can
 improve so the same selector includes new versions in older editions. Each
 homepage teaches its selected edition: the first edition uses its original
 contract, and later editions use separate Coordinator and Authorization fields.
@@ -114,7 +124,8 @@ Use `--release-tag vX.Y.Z` to additionally require a particular existing tag.
 Tests use disposable Git repositories to exercise semantic ordering, annotated
 and lightweight tags, new editions, frozen content and navigation, selector
 fallback, rejected moved/deleted tags, unavailable baselines, and event
-validation. MkDocs strict mode and an HTML crawler verify every edition's
+validation. Homepage tests isolate the existing editions from Development and
+verify that future editions use their own tagged introduction. MkDocs strict mode and an HTML crawler verify every edition's
 navigation, canonical URL, selected version and targets, links and fragments,
 English metadata, source hashes, search membership, and legacy redirects.
 It also rejects homepage contract keys or teaching links from another edition.

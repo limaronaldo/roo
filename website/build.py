@@ -91,11 +91,15 @@ def prepare(entry, source_root, publisher_commit, dirty, default="v0.1.0"):
     sources = {page: CUSTOM.get(page, page) for page in entry["pages"]}
     if entry["id"] == "v0.1.0" and "index.md" in sources:
         sources["index.md"] = "website/releases/v0.1.0-home.md"
+    elif entry["id"] in {"v0.2.0", "v0.3.0", "v0.4.0"} and "index.md" in sources:
+        sources["index.md"] = "website/releases/v0.2.0-v0.4.0-home.md"
     reverse = {source: page for page, source in sources.items()}
 
     def origin(source):
-        # The site did not exist at v0.1.0. These three pages and the interface
-        # are publisher overlays; all method, template, and case content is tagged.
+        # Existing editions retain their published introductions. Future homes
+        # belong to their tags; only the surrounding interface remains current.
+        if source == "website/pages/index.md":
+            return source_root, commit, "development" if entry["id"] == "dev" else "release"
         overlay = source.startswith("website/") or source in {".github/workflows/docs.yml", ".github/workflows/docs-release.yml"}
         return (ROOT, publisher_commit, "publisher") if overlay else (source_root, commit, "release" if entry["id"] != "dev" else "development")
 
@@ -153,14 +157,16 @@ def prepare(entry, source_root, publisher_commit, dirty, default="v0.1.0"):
             raise ValueError(f"Excluded documentation source: {source}")
         data = path.read_bytes()
         text = data.decode("utf-8")
-        if source in {"website/pages/index.md", "website/releases/v0.1.0-home.md"}:
+        if page == "index.md":
             status = f"Release documentation from the {entry['id']} tag." if entry["id"] != "dev" else f"Development documentation from main. Changes here are not part of {default}."
             text = text.replace("{{edition_status}}", status)
             text = text.replace("{{checkout_ref}}", entry["id"] if entry["id"] != "dev" else "main")
             text = text.replace("{{release_version}}", entry["id"] if entry["id"] != "dev" else default)
         target = content / page
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(render_links(text, source, page))
+        # The compatibility copy retains links relative to its original home.
+        link_source = "website/pages/index.md" if source == "website/releases/v0.2.0-v0.4.0-home.md" else source
+        target.write_text(render_links(text, link_source, page))
         _, ref, kind = origin(source)
         records.append({"source": source, "page": page, "origin": kind, "commit": ref, "sha256": hashlib.sha256(data).hexdigest()})
     shutil.copytree(WEBSITE / "assets", content / "assets")

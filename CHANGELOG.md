@@ -8,6 +8,17 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+- Separate Method, Templates, Design cases, Implementations, and Evidence in
+  site navigation. Present neutral payment/revocation cases before the
+  Java, Rust, PostgreSQL, and HTTP laboratories.
+- Keep the canonical eight fields and six-step procedure while moving Rust
+  mechanism detail into an implementation guide. Add technology-selection
+  questions with explicit evidence boundaries for alternative stores/runtimes.
+- Preserve published homepage teaching while Development adopts the new
+  organization; pin future release homepages to their tagged sources.
+  Existing edition routes, release sources, APIs, identifiers, and historical
+  research records remain unchanged. No new release accompanies this change.
+
 ## [0.4.0] — 2026-10-12
 
 Operation-specific permissions for the Java and Rust HTTP teaching APIs.

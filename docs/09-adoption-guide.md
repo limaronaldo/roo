@@ -3,10 +3,11 @@
 ROO means **Relationship & Ownership Oriented design**. Use it as a
 language-independent design method: define an operation and its invariant,
 decide the relationships that preserve it, then choose representations and
-enforcement mechanisms. An existing Java or Rust project can adopt this method
-without changing language, framework, or its whole architecture.
+enforcement mechanisms. An existing project can adopt this method without changing language, runtime,
+store, protocol, or its whole architecture.
 
-This guide follows one decision through the orders/payments case: persist a
+Start with the neutral [payment design case](../case-studies/orders-payments/DESIGN.md).
+This guide follows one decision through its reference laboratories: persist a
 stable payment intent before asking the provider to charge, then recover local
 finalization using that same intent. Read the filled artifacts alongside it:
 

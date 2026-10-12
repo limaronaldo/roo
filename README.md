@@ -5,144 +5,107 @@
 [![Release](https://img.shields.io/github/v/release/limaronaldo/roo)](https://github.com/limaronaldo/roo/releases)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
 
-**Design relationships before choosing their representation.**
+**Design relationships, ownership, and failure boundaries before choosing technologies.**
 
-ROO is a proposed, language-independent design method. For a relationship that
-crosses a lifecycle, process, transaction, or trust boundary, record who retains
-the data, who coordinates its invariant, who may request a change, how access
-expires, and how partial failure recovers. Then choose types, APIs, storage,
-and protocols that uphold those decisions.
+ROO is a proposed design method independent of programming language, runtime,
+database, and protocol. For an important relationship, decide who retains the
+data, who coordinates its invariant, who may request a change, how access
+expires, and how partial failure recovers. Then select mechanisms and collect
+evidence that they uphold those decisions.
 
 Maintained by [Ronaldo Martins](https://github.com/limaronaldo).
-The material was developed with AI assistance, including review by separate
-agents from the same model family. [How ROO was made](docs/how-roo-was-made.md)
-describes that process and the scope of verification.
+Developed with AI assistance, including separate-agent review from the same
+model family. [How ROO was made](docs/how-roo-was-made.md) describes authorship
+and verification; independent human evaluation remains open.
 
-[Read v0.4.0 — operation permissions (preview)](https://limaronaldo.github.io/roo/) ·
-[v0.3.0 — persistent authorization (preview)](https://limaronaldo.github.io/roo/v0.3.0/) ·
-[v0.2.0 — eight-field contract (preview)](https://limaronaldo.github.io/roo/v0.2.0/) ·
-[v0.1.0 — first edition (preview)](https://limaronaldo.github.io/roo/v0.1.0/) ·
-[Development](https://limaronaldo.github.io/roo/dev/)
+[Released documentation](https://limaronaldo.github.io/roo/) ·
+[Development](https://limaronaldo.github.io/roo/dev/) ·
+[Release v0.4.0](https://github.com/limaronaldo/roo/releases/tag/v0.4.0)
 
-## Try ROO without installing anything
+## Try it on one relationship
 
-Consider an order whose payment request times out. Does that mean the provider
-declined, or could the charge have succeeded? Write a contract before retrying:
+A payment request times out. The charge may have succeeded. Before retrying,
+write the relationship's decisions:
 
 ```text
 Relationship: Order -> PaymentAttempt
-Invariant: recovery must not create a second charge
+Invariant: recovery preserves the original attempt and creates no second charge
+
 Custodian: local store retains intent; provider independently retains its result
-Identity: reuse the same attempt ID and immutable request fingerprint
-Coordinator: application sequences prepare, provider call, and finalization
-Authorization: opt-in HTTP fixture rechecks current policy in each transaction
-Access: order stores an ID and status observation, not a mutable provider object
-Horizon: intent survives recovery; a status observation can become stale
-Execution: short local transactions; provider operation commits independently
-Failure: persist Pending before calling; reconcile unknown outcome by attempt ID
-Evidence: shared success/failure scenarios; database and HTTP recovery checks
-Open: verify a real provider's key retention and reconciliation guarantees
+Identity: one scoped attempt ID binds the order, currency, amount, and operation
+Coordinator: application sequences prepare/call/finalize; domain checks transitions
+Authorization: baseline leaves caller policy open; define who may pay and recover
+Access: detached observations and immutable commands expose no mutable provider
+Horizon: intent survives recovery; an observation may become stale immediately
+Execution: local commit boundaries and provider effects need separate coordination
+Failure: retain Pending on uncertainty; reconcile the original attempt
+
+Evidence: record observed checks for the chosen implementation and environment
+Open: provider retention, policy, and unverified failure assumptions
 ```
 
 The [canonical contract and six-step procedure](docs/02-relationship-design.md)
-define this record. The [short worksheet](templates/relationship-contract.md)
-fits in a PR or an ADR. Apply it to one relationship, then try a duplicate
-request, stale observation, or lost response against the proposed design.
+define the eight fields. Copy the [worksheet](templates/relationship-contract.md)
+into a PR or ADR, then try a duplicate request, stale observation, or lost reply.
 
-Custody, invariant responsibility, identity, and authorization have separate
-fields. A Rust mutable borrow or Java reference describes access; neither
-decides who is entitled to refund an order.
-
-## Read and apply
+## Method, cases, and implementations
 
 | Need | Start here |
 |---|---|
-| Understand the method | [Foundations](docs/01-foundations.md) and [relationship design](docs/02-relationship-design.md) |
-| Translate OO concepts and inheritance | [Concept atlas](docs/03-concept-atlas.md), [23 GoF patterns](docs/04-pattern-catalog.md), [Rust and object design](docs/08-rust-and-object-design.md) |
-| Choose architecture boundaries | [Architecture](docs/05-architecture.md) and [cross-language mappings](docs/06-cross-language.md) |
-| Adopt one vertical slice | [Practical adoption](docs/09-adoption-guide.md) and [three completed templates](case-studies/orders-payments/adoption/relationship-contract.md) |
-| Learn through equivalent exercises | [Learning path](docs/07-learning-path.md) and [six-exercise track](case-studies/orders-payments/track/README.md) |
-| Inspect the evidence and its scope | [Claims and limits](docs/claims-and-limits.md) |
+| Learn the method | [Foundations](docs/01-foundations.md), [relationship design](docs/02-relationship-design.md), [architecture](docs/05-architecture.md) |
+| Review a choice | [Technology selection](docs/technology-selection.md) and the [architecture decision template](templates/architecture-decision.md) |
+| See decisions without a toolchain | [Payment recovery](case-studies/orders-payments/DESIGN.md) and [permission/revocation](case-studies/orders-payments/authorization/DESIGN.md) |
+| Apply one operation | [Adoption guide](docs/09-adoption-guide.md) and [completed templates](case-studies/orders-payments/adoption/relationship-contract.md) |
+| Inspect realizations | [Implementation index](docs/implementations.md), including language mappings and executable laboratories |
+| Assess claims | [Claims and limits](docs/claims-and-limits.md) |
 
-The orders/payments case follows the same decisions through
-[in-memory state](case-studies/orders-payments/README.md),
-[PostgreSQL concurrency and restart recovery](case-studies/orders-payments/postgres/README.md),
-and [HTTP retry and response loss](case-studies/orders-payments/http/README.md).
-Java composition, Java Template Method, and Rust composition use shared
-scenario inputs and expected results. Inheritance is a legitimate alternative
-when its hooks preserve the same behavioral contract.
+Java composition, Java Template Method, and Rust composition are current
+reference implementations. PostgreSQL and HTTP laboratories add persistence,
+concurrency, authorization, restart, and response-loss scenarios. Their
+specifications keep exact APIs and mechanisms; they are examples of applying
+the method, with bounded evidence.
 
-The [durable HTTP authorization extension](case-studies/orders-payments/http/AUTHORIZATION.md)
-adds opt-in synthetic policy checks to PostgreSQL transactions in all three API
-variants. v0.4.0 adds separate permissions for each HTTP operation,
-including revocation and reconciliation-only recovery after restart. See the
-guide's migration rule for existing coarse grants.
+Other languages, storage models, runtimes, and transports can be evaluated
+against the same contract. No support or qualification for an alternative is
+implied by listing it. If a technology needs a weaker promise, record the
+changed contract explicitly.
 
-The [authorization example](case-studies/orders-payments/authorization/README.md)
-separately tests revocation between observing permission and executing an order
-approval, with the same policy and outcomes in Java and Rust.
+## Reproduce the reference laboratories
 
-## Run the examples
+The [implementation index](docs/implementations.md) explains each laboratory's
+scope and toolchain. With Docker, Compose, Bash, and common POSIX utilities:
 
-The dependency-free root Rust laboratory requires Rust 1.96 or newer:
+```sh
+bash case-studies/orders-payments/track/compose.sh
+```
+
+For the root Rust examples with Rust 1.96+:
 
 ```sh
 cargo test --locked --offline
 cargo run --locked --offline --example order_workflow
 ```
 
-Chapter Rust examples are included in rustdoc tests; the Java examples are
-compiled for Java 21 and run with equivalent assertions:
+Chapter examples and local authorization have [separate checks](CONTRIBUTING.md#validate-the-affected-behavior).
+The [hosted guide](docs/10-github-reproduction.md) explains commit-bound AMD64
+evidence. A successful lab run is evidence for those scenarios and candidate.
 
-```sh
-python3 scripts/check_doc_examples.py
-```
+## Status and provenance
 
-Run the authorization example's shared scenarios and controlled thread tests:
+v0.4.0 is the operation permissions edition, a pre-1.0 preview. Development
+reorganizes presentation; the eight-field method and executable APIs remain
+unchanged. v0.1.0's combined Mutation
+authority field was split into Coordinator and Authorization in v0.2.0;
+see the [migration notes](CHANGELOG.md#migration-from-010).
+Published editions and historical research retain their sources and meaning.
 
-```sh
-python3 case-studies/orders-payments/authorization/verify.py
-```
+ROO draws on information hiding, behavioral subtyping, ownership types,
+separation logic, capabilities, RAII, DDD, and typestate. Its practitioner
+workflow remains a proposal to evaluate with human reviewers and real projects.
+ROO originally stood for Rust Object Oriented; the expansion changed to
+reflect the method's broader scope.
 
-With Docker, Compose, Bash, and common POSIX utilities, run the full track
-with an isolated PostgreSQL lifecycle:
-
-```sh
-bash case-studies/orders-payments/track/compose.sh
-```
-
-The [Docker guide](case-studies/orders-payments/track/DOCKER.md) explains
-starter and solution modes. The [hosted reproduction guide](docs/10-github-reproduction.md)
-explains AMD64 qualification and how to inspect a run's evidence.
-
-## Project status
-
-v0.4.0 is the **operation permissions edition (preview)**. Its opt-in HTTP
-fixture rechecks durable `(scope, principal, operation)` policy in Java and
-Rust, including revocation and reconciliation-only recovery after restart.
-Existing coarse grants require explicit operation grants; see the
-[v0.4.0 migration notes](CHANGELOG.md#migration-from-030).
-The eight-field contract is unchanged from v0.2.0.
-Coordinator and Authorization fields replace v0.1.0's combined Mutation
-authority field; see the [migration notes](CHANGELOG.md#migration-from-010).
-v0.1.0 remains the **first edition (preview)**, and Development follows main.
-Tagged editions and historical research records retain their original
-content. Publication of a numeric release tag creates a documentation edition,
-preserves earlier editions, and updates the selector. A version number records
-a source snapshot, rather than certifying maturity.
-
-ROO builds on information hiding, behavioral subtyping, ownership types,
-separation logic, capabilities, RAII, DDD, and typestate. Its proposal is a
-practitioner workflow that connects those ideas through explicit relationships.
-Evaluation with independent human reviewers and real projects remains open.
-See [claims and limits](docs/claims-and-limits.md) for the evidence map.
-
-ROO originally stood for Rust Object Oriented. The expansion changed because
-the method applies beyond Rust; Rust remains a laboratory language.
-
-Contribute a concrete relationship and its counterexample using
-[CONTRIBUTING.md](CONTRIBUTING.md). See [CHANGELOG.md](CHANGELOG.md),
-[release notes](RELEASE_NOTES.md), and [RELEASING.md](RELEASING.md) for project
-history and release instructions. Original material is available under
-[MIT](LICENSE-MIT) OR [Apache-2.0](LICENSE-APACHE); [third-party terms](THIRD_PARTY_NOTICES.md)
-apply to preserved inputs and dependencies.
+Contribute through [CONTRIBUTING.md](CONTRIBUTING.md). See the
+[changelog](CHANGELOG.md), [released notes](RELEASE_NOTES.md), and
+[release policy](RELEASING.md). Original material uses [MIT](LICENSE-MIT) OR
+[Apache-2.0](LICENSE-APACHE), with [third-party exceptions](THIRD_PARTY_NOTICES.md).

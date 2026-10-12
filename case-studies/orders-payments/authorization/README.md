@@ -1,5 +1,11 @@
 # Authorization at execution
 
+**Process-local implementation laboratory.** The
+[design case](DESIGN.md) states the permission/revocation decisions without a
+language or store. This page explains their Java/Rust local-lock realization;
+persistent operation permissions have a [separate laboratory](../http/AUTHORIZATION.md).
+
+
 A caller observes permission to approve an order. An administrator revokes it
 before the caller executes. The order must stay `Draft`, with zero approvals.
 Java and Rust implement this same decision in a small, in-memory example.

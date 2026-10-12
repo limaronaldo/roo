@@ -15,7 +15,7 @@ ROO (Relationship & Ownership Oriented design) is language-independent. Review o
 | What happens on stale lookup, invalid input, cancellation, or partial external failure? | Negative behavior, recovery path, and observed results |
 | After the behavior is defined, do traits or interfaces expose the needed operations, and do implementations preserve their shared contract? | Port contract, implementations, and shared behavioral checks |
 | Does a hierarchy provide needed reuse, substitutability, or variation? | Alternatives and concrete extension scenario |
-| Can another language preserve the same relationship decisions with its own mechanisms? | Neutral contract and per-language enforcement limits |
+| Can another language, runtime, store, or protocol preserve the same decisions with its own mechanisms? | Neutral contract and per-language enforcement limits |
 
 ## Evidence
 

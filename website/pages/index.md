@@ -14,12 +14,12 @@ ROO (Relationship & Ownership Oriented design) is a proposed practitioner method
 each important connection in a design means: who keeps the data, who coordinates
 its rules, who may request a change, how long access lasts, and what survives a failure. Decide that
 first, then pick the classes, references, locks, or messages that uphold it,
-in Java, Rust, or any other language.
+across programming languages, runtimes, databases, and protocols.
 
 Maintained by [Ronaldo Martins](https://github.com/limaronaldo).
 
 [Try it on one relationship](#try-it){ .md-button .md-button--primary }
-[Read the foundations](../../docs/01-foundations.md){ .md-button }
+[Read the method](../../docs/02-relationship-design.md){ .md-button }
 
 </div>
 
@@ -125,8 +125,8 @@ is a finished one to compare against.
 
 ### Learn the method
 
-Foundations and relationship design first, then classical OO concepts, all 23
-GoF patterns, and architecture, each translated into relationship decisions.
+Start with the eight fields and six steps, then architecture boundaries and
+technology-selection questions. Choose mechanisms after stating the invariant.
 
 [Read the foundations](../../docs/01-foundations.md)
 
@@ -134,24 +134,24 @@ GoF patterns, and architecture, each translated into relationship decisions.
 
 <div markdown="1">
 
-### Review a design
+### Work through a design case
 
-A worksheet, an architecture decision template, and a design review guide,
-each paired with a completed orders/payments example.
+Follow payment recovery and revocation through states and failure outcomes.
+Use the worksheets to record decisions before selecting a toolchain.
 
-[Open the templates](../../templates/relationship-contract.md)
+[Open the design cases](../../case-studies/orders-payments/DESIGN.md)
 
 </div>
 
 <div markdown="1">
 
-### Check the evidence
+### Explore implementations
 
-One orders/payments domain, from in-memory objects to PostgreSQL restarts and
-lost HTTP responses, built in Java and Rust and checked against the same
-expected results. Six exercises run in Docker.
+Java, Rust, PostgreSQL, and HTTP are current reference laboratories. Compare
+their mechanisms and evidence, or evaluate another technology against the
+same contract. Alternative backends need their own qualification.
 
-[Open the case study](../../case-studies/orders-payments/README.md)
+[Open the implementation guides](../../docs/implementations.md)
 
 </div>
 

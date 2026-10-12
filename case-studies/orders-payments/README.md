@@ -1,5 +1,12 @@
 # Orders and payments: a ROO case study
 
+**Reference implementation laboratory.** Start with the
+[technology-neutral design case](DESIGN.md) for states, invariants, and recovery
+outcomes. This page describes the existing Java/Rust in-memory realization;
+[other technology choices](../../docs/technology-selection.md) require their
+own enforcement and evidence.
+
+
 This case study applies ROO (Relationship & Ownership Oriented design) to a
 small checkout and refund workflow. It implements the same bounded behavior as
 Java composition, Java template-method inheritance, and Rust composition, then compares what each
