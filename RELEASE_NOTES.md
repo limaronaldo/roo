@@ -50,7 +50,7 @@ Record assistance, prior exposure, overlaps, and work not performed. Human
 participation and approval of the exact public summary are separate decisions.
 The exercise needs no code or toolchain.
 
-Read the [v0.4.3 documentation](https://limaronaldo.github.io/roo/v0.4.3/).
+Read the [documentation site](https://limaronaldo.github.io/roo/).
 The automatic publisher selects v0.4.3 as the highest numeric release tag;
 the selector retains v0.1.0–v0.4.2 and Development. Earlier edition sources,
 navigation, tags, and historical records remain preserved.
