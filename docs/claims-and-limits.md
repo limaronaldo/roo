@@ -62,6 +62,11 @@ family as some authors. This is separation of roles, not independent human
 validation. No completed external Rust or DDD/architecture human review is
 documented. [How ROO was made](how-roo-was-made.md) links the preserved records.
 
+The [validation kit](validation/README.md) prepares those human reviews and a
+small practitioner exercise. Its briefs, criteria, and blank results form are
+evaluation materials, not completed review or field evidence. Reports must
+identify the reviewed candidate, participant assistance, and observed scope.
+
 The underlying concepts have established prior art. ROO proposes their
 integration into a compact relationship contract and adoption procedure;
 it makes no priority claim for ownership types, composition, capabilities,

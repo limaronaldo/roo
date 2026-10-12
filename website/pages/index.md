@@ -170,6 +170,10 @@ Original material uses [MIT OR Apache-2.0](license.md).
 What ROO needs most is evidence from real systems: if you write a contract for a design of yours, share what it caught
 and what it missed.
 
+For a structured evaluation, use the [validation kit](../../docs/validation/README.md):
+Rust and DDD review briefs, a technology-neutral exercise, and an honest results
+record. It prepares reviews; it does not report that they have happened.
+
 [Share a case](https://github.com/limaronaldo/roo/issues/new?title=Case%20report%3A%20){ .md-button .md-button--primary }
 [Read the release notes](../../RELEASE_NOTES.md){ .md-button }
 

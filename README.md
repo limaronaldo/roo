@@ -58,6 +58,7 @@ into a PR or ADR, then try a duplicate request, stale observation, or lost reply
 | Apply one operation | [Adoption guide](docs/09-adoption-guide.md) and [completed templates](case-studies/orders-payments/adoption/relationship-contract.md) |
 | Inspect realizations | [Implementation index](docs/implementations.md), including language mappings and executable laboratories |
 | Assess claims | [Claims and limits](docs/claims-and-limits.md) |
+| Evaluate the proposal | [Validation kit](docs/validation/README.md): Rust and DDD review briefs, a technology-neutral exercise, and results template |
 
 Java composition, Java Template Method, and Rust composition are current
 reference implementations. PostgreSQL and HTTP laboratories add persistence,

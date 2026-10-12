@@ -25,6 +25,14 @@ system description and synthetic data, with publication rights confirmed by
 the contributor. Exclude credentials, configuration secrets, personal data,
 and private organizational or personal context from documentation and evidence.
 
+For human evaluation, use the [validation kit](docs/validation/README.md).
+Freeze the method and kit commits, record reviewer experience and assistance,
+and keep initial findings separate from later discussion. The Rust and DDD
+briefs and paper exercise do not require a new implementation or field study.
+Use the [results template](templates/validation-results.md) to report negative,
+inconclusive, and positive outcomes with their actual scope. Publishing a kit
+does not complete the reviews it proposes.
+
 ## Work on a focused branch
 
 ```sh

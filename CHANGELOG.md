@@ -8,7 +8,15 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
-No unreleased changes.
+### Added
+
+- Add an English validation kit with Rust and DDD/architecture reviewer
+  briefs, a technology-neutral document-publication exercise, a separate
+  facilitator guide, predeclared trial criteria, and a results template.
+  Record exact review scope, assistance, predictions, observed checks,
+  disagreements, and publication permission without claiming completed human
+  review or field validation. Link the kit from Development navigation and
+  contributor guidance; released editions and historical records are unchanged.
 
 ## [0.4.1] — 2026-10-12
 
