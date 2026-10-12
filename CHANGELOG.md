@@ -20,6 +20,9 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ### Added
 
+- A bounded caller-authorization example in Java and Rust: execution rechecks
+  permission under the order transition's lock, with revocation between
+  observation and execution, shared outcomes, controlled thread tests, and CI.
 - A CI vocabulary check for retired field labels and summaries, with narrow
   migration exceptions and regression tests.
 

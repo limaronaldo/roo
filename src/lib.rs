@@ -13,6 +13,7 @@
 //! | Graph to nodes | Graph owns nodes; store-scoped generational handles identify them | Exclusive graph methods mutate; removal invalidates handles | Synchronous; stale and foreign IDs rejected |
 //! | Queue to observers | Queue owns deliveries; queue-scoped IDs refer to subscribers | Queue owner subscribes and drains; unsubscribe ends delivery validity | Deferred, single-owner; rejected message returned |
 //! | View to order | Caller owns order; view contains borrowed access | Shared borrow; owner must outlive view | Synchronous reads; invalid borrows rejected by compiler |
+//! | Principal to order approval | Coordinator owns orders and policy; principal ID is trusted fixture input | Detached observation is no credential; execution rechecks permission | One local lock for policy and transition; revocation before execution denies without effect |
 //!
 //! The `command_transfer` example adds an execution boundary: an owned command
 //! crosses a standard channel, while a scoped worker shares only an immutable
@@ -20,6 +21,7 @@
 //! points; the example treats them as programmer failures with `expect`.
 #![forbid(unsafe_code)]
 
+pub mod authorization;
 pub mod events;
 pub mod graph;
 pub mod order;

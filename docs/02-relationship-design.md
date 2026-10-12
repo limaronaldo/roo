@@ -64,6 +64,11 @@ A complete [payment-recovery example](../case-studies/orders-payments/adoption/r
 maps the same decisions to Java composition, Java inheritance, and Rust.
 Add longer explanations only where a consequential tradeoff needs them.
 
+The [authorization example](../case-studies/orders-payments/authorization/README.md)
+implements the separate caller-permission field in Java and Rust. It tests a
+revocation after observation but before execution; the earlier observation
+cannot authorize a later order approval.
+
 ## 2.3 The six-step decision procedure
 
 1. **Describe the scenario.** Name the allowed result, forbidden result, relevant

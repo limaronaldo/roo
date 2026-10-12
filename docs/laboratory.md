@@ -20,6 +20,7 @@ This package defines the Rust laboratory qualification for selected Rust mechani
 | Graph → nodes | Graph owns slots; edges retain local identities | Store-scoped generational `NodeId` | Stale, reused and foreign-store handles rejected |
 | Queue → observers / messages | Queue owns subscription registry and pending payloads | Queue-scoped IDs and owned deliveries | Unsubscribe suppresses pending notifications; foreign IDs rejected |
 | Worker → command | Sender transfers draft; scoped worker borrows immutable policy | Owned channel message and scoped thread | Executed command workflow and asserted result |
+| Principal → order approval | Coordinator owns local orders and policy; execution rechecks current permission | One mutex spanning policy check and state replacement | Equivalent Java/Rust revocation and competing-approval tests |
 
 ## Source tour
 
@@ -29,6 +30,7 @@ This package defines the Rust laboratory qualification for selected Rust mechani
 - [Borrowed views](../src/view.rs): data access bounded by the owner's lifetime. Two mutable borrows can occur sequentially; overlapping exclusive borrows remain forbidden.
 - [Graph](../src/graph.rs): handles include store identity, slot and generation. Exhausted generations are retired rather than wrapping into old identities.
 - [Event queue](../src/events.rs): deferred delivery avoids storing subscriber borrows or invoking callbacks while the queue is mutably borrowed.
+- [Authorization](../src/authorization.rs): an observation grants no permission; policy changes and approval share one execution lock. The [paired Java/Rust case](../case-studies/orders-payments/authorization/README.md) supplies the contract and shared oracle.
 
 ## Executable scenarios
 

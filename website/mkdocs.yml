@@ -79,6 +79,7 @@ nav:
       - Architecture decision: templates/architecture-decision.md
       - Design review: templates/design-review.md
   - Case studies:
+      - Authorization and revocation: case-studies/orders-payments/authorization/README.md
       - Orders and payments:
           - case-studies/orders-payments/README.md
           - Shared specification: case-studies/orders-payments/SPEC.md

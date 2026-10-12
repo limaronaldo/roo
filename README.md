@@ -70,6 +70,10 @@ Java composition, Java Template Method, and Rust composition use shared
 scenario inputs and expected results. Inheritance is a legitimate alternative
 when its hooks preserve the same behavioral contract.
 
+The [authorization example](case-studies/orders-payments/authorization/README.md)
+separately tests revocation between observing permission and executing an order
+approval, with the same policy and outcomes in Java and Rust.
+
 ## Run the examples
 
 The dependency-free root Rust laboratory requires Rust 1.96 or newer:
@@ -84,6 +88,12 @@ compiled for Java 21 and run with equivalent assertions:
 
 ```sh
 python3 scripts/check_doc_examples.py
+```
+
+Run the authorization example's shared scenarios and controlled thread tests:
+
+```sh
+python3 case-studies/orders-payments/authorization/verify.py
 ```
 
 With Docker, Compose, Bash, and common POSIX utilities, run the full track

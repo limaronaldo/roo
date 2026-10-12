@@ -1,0 +1,50 @@
+name: ROO authorization example
+
+on:
+  pull_request:
+    paths:
+      - 'case-studies/orders-payments/authorization/**'
+      - 'src/**'
+      - 'examples/authorization_cases.rs'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/authorization.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'case-studies/orders-payments/authorization/**'
+      - 'src/**'
+      - 'examples/authorization_cases.rs'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/authorization.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    name: Authorization parity in Java and Rust
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the pinned Rust toolchain
+        run: rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy
+      - name: Check the Rust laboratory
+        env:
+          RUSTUP_TOOLCHAIN: '1.96.0'
+        run: |
+          cargo fmt --all -- --check
+          cargo test --locked --offline
+          cargo clippy --locked --offline --all-targets -- -D warnings
+      - name: Verify shared outcomes and controlled thread schedules
+        env:
+          RUSTUP_TOOLCHAIN: '1.96.0'
+        run: |
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          python3 case-studies/orders-payments/authorization/verify.py
