@@ -72,6 +72,7 @@ nav:
       - Architecture decision: templates/architecture-decision.md
       - Design review: templates/design-review.md
       - Validation results: templates/validation-results.md
+      - Validation round summary: templates/validation-round-summary.md
   - Design cases:
       - Payment recovery: case-studies/orders-payments/DESIGN.md
       - Authorization and revocation: case-studies/orders-payments/authorization/DESIGN.md
@@ -119,6 +120,8 @@ nav:
       - GitHub reproduction: docs/10-github-reproduction.md
       - Validation kit:
           - Protocol and success criteria: docs/validation/README.md
+          - First human round: docs/validation/first-round.md
+          - Invitation drafts: docs/validation/invitations.md
           - Rust reviewer brief: docs/validation/rust-review.md
           - DDD reviewer brief: docs/validation/ddd-review.md
           - Practical exercise: docs/validation/exercise.md

@@ -8,6 +8,15 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+### Added
+
+- Prepare the first human evaluation round for the v0.4.2 kit: unsent English
+  Rust and DDD reviewer invitations, pinned method/kit sources, a sequenced
+  review and practitioner exercise, and a round consolidation template.
+  Preserve initial attempts, assistance, dissent, missing evidence, and
+  contributor approval for any public summary. Preparation does not send
+  invitations or claim completed human validation.
+
 ## [0.4.2] — 2026-10-12
 
 Publish the human validation kit as a compatible documentation addition.
