@@ -8,7 +8,16 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
-No changes recorded yet.
+- Add operation-specific PostgreSQL permissions to the Java composition, Java
+  Template Method, and Rust HTTP APIs. Each request binds one immutable operation;
+  every protected phase rechecks its exact policy row, including retries and
+  response reads. Reconciliation-only callers can recover retained payment and
+  refund identities after revocation or restart.
+- Replace the fixture observation route with `authorization/{operation}` and
+  add an equivalent permission-isolation, revocation, and restart test matrix.
+  Existing coarse grants remain stored but confer no operation permissions;
+  fixture owners must explicitly seed the desired operations. Legacy mode and
+  previously published documentation editions retain their behavior and content.
 
 ## [0.3.0] — 2026-10-12
 

@@ -1,5 +1,7 @@
 package roo.postgres;
 
+import static roo.postgres.Domain.*;
+
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +32,11 @@ public final class HttpUnitTests {
             check(rejected.status == status && rejected.code.equals(code) && java.util.Objects.equals(rejected.allow, allow));
         }
     }
+    private static Operation operation(String path, String method, String body) throws Exception {
+        var headers = new HashMap<>(JSON);
+        headers.put("X-Roo-Principal", List.of("caller"));
+        return HttpProtocol.validate(URI.create(path), method, headers, body.getBytes(StandardCharsets.UTF_8), true, true).operation();
+    }
     private static void invalidConfig(Map<String, String> env) {
         try { HttpService.Config.parse(env); throw new AssertionError("Accepted invalid authorization configuration"); }
         catch (IllegalArgumentException expected) { checks++; }
@@ -45,12 +52,27 @@ public final class HttpUnitTests {
         authorizationRejects("/v1/scopes/demo", "GET", Map.of("X-Roo-Principal", List.of("caller", "caller")), empty, 400, "InvalidRequest", null);
         authorizationRejects("/v1/scopes/demo", "GET", Map.of("X-Roo-Principal", List.of("caller"), "x-roo-principal", List.of("caller")), empty, 400, "InvalidRequest", null);
         check(HttpProtocol.principal(Map.of("x-roo-principal", List.of("a".repeat(32))), true).length() == 32);
-        check(HttpProtocol.validate(URI.create("/v1/scopes/missing/authorization"), "GET", caller, empty, true, true).route().resource().equals("authorization"));
+        check(HttpProtocol.validate(URI.create("/v1/scopes/missing/authorization/read"), "GET", caller, empty, true, true).route().resource().equals("authorization"));
+        check(operation("/v1/scopes/demo", "GET", "") == Operation.READ);
+        check(operation("/v1/scopes/demo", "PUT", "{}") == Operation.INIT);
+        check(operation("/v1/scopes/demo/lines", "POST", "{\"unit_minor\":\"1\",\"quantity\":\"1\"}") == Operation.ADD);
+        check(operation("/v1/scopes/demo/payments", "POST", "{\"payment_id\":\"p1\"}") == Operation.PAY);
+        check(operation("/v1/scopes/demo/refunds", "POST", "{\"refund_id\":\"r1\"}") == Operation.REFUND);
+        check(operation("/v1/scopes/demo/reconciliation", "POST", "{}") == Operation.RECONCILE);
+        check(operation("/v1/scopes/demo/relay", "POST", "{}") == Operation.RELAY);
+        check(operation("/v1/scopes/demo/_test/provider-conflicts", "POST", "{\"payment_id\":\"p1\",\"different_amount\":\"2\"}") == Operation.PROVIDER_CONFLICT);
+        check(operation("/v1/scopes/demo/authorization/provider_conflict", "GET", "") == Operation.PROVIDER_CONFLICT);
+        authorizationRejects("/v1/scopes/demo/authorization", "GET", caller, empty, 400, "InvalidRequest", null);
+        authorizationRejects("/v1/scopes/demo/authorization/unknown", "GET", caller, empty, 400, "InvalidRequest", null);
         rejects("/v1/scopes/demo/authorization", "GET", caller, empty, true, 404, "RouteNotFound");
+        rejects("/v1/scopes/demo/authorization/read", "GET", caller, empty, true, 404, "RouteNotFound");
         for (String method : List.of("PUT", "POST", "DELETE", "HEAD"))
-            authorizationRejects("/v1/scopes/demo/authorization", method, caller, empty, 405, "MethodNotAllowed", "GET");
-        authorizationRejects("/v1/scopes/demo/authorization", "GET", caller, "{}".getBytes(StandardCharsets.UTF_8), 400, "InvalidRequest", null);
-        authorizationRejects("/v1/scopes/demo/authorization", "GET", Map.of("X-Roo-Principal", List.of("caller"), "Idempotency-Key", List.of("p1")), empty, 400, "InvalidRequest", null);
+            authorizationRejects("/v1/scopes/demo/authorization/read", method, caller, empty, 405, "MethodNotAllowed", "GET");
+        authorizationRejects("/v1/scopes/demo/authorization/read", "GET", caller, "{}".getBytes(StandardCharsets.UTF_8), 400, "InvalidRequest", null);
+        authorizationRejects("/v1/scopes/demo/authorization/read", "GET", Map.of("X-Roo-Principal", List.of("caller"), "Idempotency-Key", List.of("p1")), empty, 400, "InvalidRequest", null);
+        authorizationRejects("/v1/scopes/demo/authorization/read?x=1", "GET", caller, empty, 400, "InvalidRequest", null);
+        check(new String(HttpProtocol.authorization(Operation.READ, true), StandardCharsets.UTF_8)
+            .equals("{\"authorization\":{\"operation\":\"read\",\"allowed\":true}}"));
         check(new String(HttpProtocol.error("PrincipalRequired"), StandardCharsets.UTF_8).equals("{\"error\":{\"code\":\"PrincipalRequired\",\"message\":\"Principal required\"}}"));
         check(new String(HttpProtocol.error("Forbidden"), StandardCharsets.UTF_8).equals("{\"error\":{\"code\":\"Forbidden\",\"message\":\"Access forbidden\"}}"));
         var env = new HashMap<String, String>();
@@ -71,20 +93,45 @@ public final class HttpUnitTests {
         env.put("ROO_HTTP_AUTH_GATE_LOCK", "1"); env.remove("ROO_HTTP_TEST_MODE"); invalidConfig(env);
         Database base = new Database(Map.of("ROO_PG_HOST", "127.0.0.1", "ROO_PG_PORT", "1",
             "ROO_PG_DATABASE", "roo_test", "ROO_PG_USER", "roo_test"));
-        Database guarded = base.authorized("demo", "caller");
+        Database guarded = base.authorized("demo", "caller", Operation.READ);
         // These reject before opening a connection, proving accidental scope reuse cannot
         // turn a guarded adapter into authority for another scope or an unscoped callback.
-        try { guarded.transaction("other", c -> { throw new AssertionError("Callback entered"); }); throw new AssertionError("Scope mismatch accepted"); }
+        try { guarded.transaction("other", Operation.READ, c -> { throw new AssertionError("Callback entered"); }); throw new AssertionError("Scope mismatch accepted"); }
         catch (Database.Forbidden expected) { checks++; }
         try { guarded.transaction(c -> { throw new AssertionError("Callback entered"); }); throw new AssertionError("Unscoped callback accepted"); }
         catch (Database.Forbidden expected) { checks++; }
-        try { guarded.observeAuthorization("demo", "other"); throw new AssertionError("Principal mismatch accepted"); }
+        try { guarded.observeAuthorization("demo", "caller", Operation.INIT); throw new AssertionError("Operation mismatch accepted"); }
         catch (Database.Forbidden expected) { checks++; }
-        try { guarded.authorized("demo", "other"); throw new AssertionError("Context rebound"); }
+        try { guarded.observeAuthorization("demo", "other", Operation.READ); throw new AssertionError("Principal mismatch accepted"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { guarded.transaction("demo", Operation.INIT, c -> { throw new AssertionError("Callback entered"); }); throw new AssertionError("Operation substitution accepted"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { new Store(guarded).init("demo"); throw new AssertionError("Mismatched init entered database"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { new Store(guarded).add("demo", Action.parse("add:1:1")); throw new AssertionError("Mismatched add entered database"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { new Store(guarded).prepare("demo", Action.parse("pay:p1:approve:none")); throw new AssertionError("Mismatched prepare entered database"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { new Store(guarded).relay("demo", Relay.ok); throw new AssertionError("Mismatched relay entered database"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { new Store(guarded).fresh(List.of("fresh")); throw new AssertionError("Bound fixture setup entered database"); }
+        catch (Database.Forbidden expected) { checks++; }
+        Request payment = new Request("payment", "p1", new OrderId("O1"), new Money(100, "USD"), new PaymentId("p1"));
+        try { new Provider(guarded).lookup("demo", payment, false); throw new AssertionError("Mismatched lookup entered database"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { new Provider(guarded).call("demo", payment, Mode.approve); throw new AssertionError("Mismatched provider call entered database"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { new Provider(guarded).conflict("demo", new PaymentId("p1"), "2"); throw new AssertionError("Mismatched conflict entered database"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { new Store(guarded).finish("demo", payment, Result.Unknown, Failure.none); throw new AssertionError("Mismatched finish entered database"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { guarded.authorized("demo", "other", Operation.READ); throw new AssertionError("Context rebound"); }
         catch (IllegalStateException expected) { checks++; }
         // A request clone does not bind or mutate the shared base adapter.
-        check(base.authorized("other", "other") != guarded);
-        try { base.authorized("demo", "bad-principal"); throw new AssertionError("Invalid context accepted"); }
+        check(base.authorized("other", "other", Operation.PAY) != guarded);
+        try { base.authorized("demo", "bad-principal", Operation.READ); throw new AssertionError("Invalid context accepted"); }
+        catch (IllegalArgumentException expected) { checks++; }
+        try { base.authorized("demo", "caller", null); throw new AssertionError("Unbound operation accepted"); }
         catch (IllegalArgumentException expected) { checks++; }
     }
     public static void main(String[] args) throws Exception {

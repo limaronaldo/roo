@@ -73,7 +73,9 @@ when its hooks preserve the same behavioral contract.
 
 The [durable HTTP authorization extension](case-studies/orders-payments/http/AUTHORIZATION.md)
 adds opt-in synthetic policy checks to PostgreSQL transactions in all three API
-variants, including revocation and authorized recovery after restart.
+variants. Development adds separate permissions for each HTTP operation,
+including revocation and reconciliation-only recovery after restart. See the
+guide's migration rule for existing coarse grants.
 
 The [authorization example](case-studies/orders-payments/authorization/README.md)
 separately tests revocation between observing permission and executing an order

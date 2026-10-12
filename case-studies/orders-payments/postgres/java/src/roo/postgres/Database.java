@@ -16,10 +16,10 @@ final class Database {
     private final String gatePoint;
     private final Long gateLock;
     private final Authorization authorization;
-    record Authorization(String scope, String principal) {
+    record Authorization(String scope, String principal, Operation operation) {
         Authorization {
             if (scope == null || !scope.matches("[A-Za-z0-9_]{1,96}")
-                || principal == null || !principal.matches("[A-Za-z0-9_]{1,32}"))
+                || principal == null || !principal.matches("[A-Za-z0-9_]{1,32}") || operation == null)
                 throw new IllegalArgumentException("Invalid authorization context");
         }
     }
@@ -46,28 +46,39 @@ final class Database {
         port = source.port; worker = source.worker; gatePoint = source.gatePoint; gateLock = source.gateLock;
         this.authorization = authorization;
     }
-    Database authorized(String scope, String principal) {
+    Database authorized(String scope, String principal, Operation operation) {
         if (authorization != null) throw new IllegalStateException("Authorization context already bound");
-        return new Database(this, new Authorization(scope, principal));
+        return new Database(this, new Authorization(scope, principal, operation));
     }
+    Operation operation() { return authorization == null ? null : authorization.operation(); }
+    void requireOperation(Operation expected) {
+        if (authorization != null && (expected == null || authorization.operation() != expected)) throw new Forbidden();
+    }
+    Operation requireOneOf(Operation... allowed) {
+        if (authorization == null) return allowed[0];
+        for (Operation operation : allowed) if (authorization.operation() == operation) return operation;
+        throw new Forbidden();
+    }
+    void requireUnbound() { if (authorization != null) throw new Forbidden(); }
     void checkScope(String scope) {
         if (authorization != null && !authorization.scope().equals(scope)) throw new Forbidden();
     }
     private void authorize(Connection c, String scope) throws SQLException {
         checkScope(scope);
         if (authorization == null) return;
-        try (PreparedStatement p = c.prepareStatement("SELECT allowed FROM roo_authorization.grants WHERE scope=? AND principal=? FOR SHARE")) {
-            p.setString(1, scope); p.setString(2, authorization.principal());
+        try (PreparedStatement p = c.prepareStatement("SELECT allowed FROM roo_authorization.operation_grants WHERE scope=? AND principal=? AND operation=? FOR SHARE")) {
+            p.setString(1, scope); p.setString(2, authorization.principal()); p.setString(3, authorization.operation().token());
             try (ResultSet r = p.executeQuery()) { if (!r.next() || !r.getBoolean(1)) throw new Forbidden(); }
         }
     }
     // Detached advisory observation: no retained policy lock or authority for a later transaction.
-    boolean observeAuthorization(String scope, String principal) throws SQLException {
-        new Authorization(scope, principal);
+    boolean observeAuthorization(String scope, String principal, Operation operation) throws SQLException {
+        new Authorization(scope, principal, operation);
         checkScope(scope);
-        if (authorization != null && !authorization.principal().equals(principal)) throw new Forbidden();
-        try (Connection c = open(false); PreparedStatement p = c.prepareStatement("SELECT allowed FROM roo_authorization.grants WHERE scope=? AND principal=?")) {
-            p.setString(1, scope); p.setString(2, principal);
+        if (operation == null) throw new IllegalArgumentException("Invalid authorization operation");
+        if (authorization != null && (!authorization.principal().equals(principal) || authorization.operation() != operation)) throw new Forbidden();
+        try (Connection c = open(false); PreparedStatement p = c.prepareStatement("SELECT allowed FROM roo_authorization.operation_grants WHERE scope=? AND principal=? AND operation=?")) {
+            p.setString(1, scope); p.setString(2, principal); p.setString(3, operation.token());
             try (ResultSet r = p.executeQuery()) { return r.next() && r.getBoolean(1); }
         }
     }
@@ -86,9 +97,14 @@ final class Database {
     static <T> Decision<T> rollback(T value) { return new Decision<>(value, true); }
     <T> T transaction(Work<T> work) throws SQLException {
         if (authorization != null) throw new Forbidden();
-        return transaction(null, work);
+        return transaction(null, null, work);
     }
     <T> T transaction(String scope, Work<T> work) throws SQLException {
+        if (authorization != null) throw new Forbidden();
+        return transaction(scope, null, work);
+    }
+    <T> T transaction(String scope, Operation expected, Work<T> work) throws SQLException {
+        requireOperation(expected);
         checkScope(scope);
         for (int attempt = 1; ; attempt++) {
             try (Connection c = open(false)) {

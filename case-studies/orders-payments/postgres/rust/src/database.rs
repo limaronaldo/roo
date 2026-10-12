@@ -41,11 +41,18 @@ pub fn scope(s: &str) -> Result<()> {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct AuthorizationContext {
+    scope: String,
+    principal: String,
+    operation: Operation,
+}
+
 #[derive(Clone)]
 pub struct Database {
     config: Config,
     gate: Option<(String, i64, String)>,
-    authorization: Option<(String, String)>,
+    authorization: Option<AuthorizationContext>,
 }
 impl Database {
     pub fn from_env() -> Result<Self> {
@@ -105,8 +112,8 @@ impl Database {
             authorization: None,
         })
     }
-    /// Immutable request authority; the default adapter remains unrestricted.
-    pub fn authorized(&self, s: &str, principal: &str) -> Result<Self> {
+    /// Bind one immutable scope, principal, and operation for this request.
+    pub fn authorized(&self, s: &str, principal: &str, operation: Operation) -> Result<Self> {
         scope(s)?;
         if principal.is_empty()
             || principal.len() > 32
@@ -120,16 +127,20 @@ impl Database {
             return Err(Error::Input("authorization context already bound"));
         }
         let mut database = self.clone();
-        database.authorization = Some((s.into(), principal.into()));
+        database.authorization = Some(AuthorizationContext {
+            scope: s.into(),
+            principal: principal.into(),
+            operation,
+        });
         Ok(database)
     }
     fn authorize(&self, tx: &mut Transaction<'_>, s: &str) -> Result<()> {
         self.check_authorization_scope(s)?;
-        if let Some((bound_scope, principal)) = &self.authorization {
-            debug_assert_eq!(bound_scope, s);
+        if let Some(context) = &self.authorization {
+            debug_assert_eq!(context.scope, s);
             let row = tx.query_opt(
-                "SELECT allowed FROM roo_authorization.grants WHERE scope=$1 AND principal=$2 FOR SHARE",
-                &[&s, principal],
+                "SELECT allowed FROM roo_authorization.operation_grants WHERE scope=$1 AND principal=$2 AND operation=$3 FOR SHARE",
+                &[&s, &context.principal, &context.operation.token()],
             )?;
             if !row.is_some_and(|r| r.get::<_, bool>(0)) {
                 return Err(Error::Forbidden);
@@ -141,25 +152,35 @@ impl Database {
         if self
             .authorization
             .as_ref()
-            .is_some_and(|(bound_scope, _)| bound_scope != s)
+            .is_some_and(|context| context.scope != s)
         {
             return Err(Error::Forbidden);
         }
         Ok(())
     }
-    /// Detached advisory observation. It is never execution authority.
-    pub fn authorization_allowed(&self, s: &str) -> Result<bool> {
-        let Some((bound_scope, principal)) = &self.authorization else {
-            return Err(Error::Input("authorization context required"));
+    fn assert_operation(&self, operation: Operation) -> Result<()> {
+        if self
+            .authorization
+            .as_ref()
+            .is_some_and(|context| context.operation != operation)
+        {
+            return Err(Error::Forbidden);
+        }
+        Ok(())
+    }
+    /// Detached advisory observation for the immutable request operation.
+    pub fn operation_allowed(&self, s: &str) -> Result<bool> {
+        let Some(context) = &self.authorization else {
+            return Err(Error::Input("operation authorization context required"));
         };
-        if bound_scope != s {
+        if context.scope != s {
             return Err(Error::Forbidden);
         }
         let mut client = self.connect()?;
         Ok(client
             .query_opt(
-                "SELECT allowed FROM roo_authorization.grants WHERE scope=$1 AND principal=$2",
-                &[&s, principal],
+                "SELECT allowed FROM roo_authorization.operation_grants WHERE scope=$1 AND principal=$2 AND operation=$3",
+                &[&s, &context.principal, &context.operation.token()],
             )?
             .is_some_and(|r| r.get::<_, bool>(0)))
     }
@@ -228,6 +249,10 @@ impl Database {
         unreachable!()
     }
     pub fn init(&self, s: &str, fresh: bool) -> Result<()> {
+        if fresh && self.authorization.is_some() {
+            return Err(Error::Forbidden);
+        }
+        self.assert_operation(Operation::Init)?;
         scope(s)?;
         self.scoped_short(s, |tx| {
             let n = tx.execute(
@@ -242,6 +267,9 @@ impl Database {
     }
     /// Reserve the entire fixture set atomically before any scenario action.
     pub fn reserve_fresh(&self, scopes: &[String]) -> Result<()> {
+        if self.authorization.is_some() {
+            return Err(Error::Forbidden);
+        }
         for s in scopes {
             scope(s)?;
             self.check_authorization_scope(s)?;
@@ -404,11 +432,25 @@ enum Prepared {
 /// prevents the independently committed inbox effect from outliving that lock.
 struct RelayAuthority<'a, 'connection> {
     scope: &'a str,
+    operation: Operation,
     _policy_transaction: &'a Transaction<'connection>,
+}
+
+fn action_operation(action: &Action) -> Operation {
+    match action {
+        Action::Add(_, _) => Operation::Add,
+        Action::Pay(_, _, _) => Operation::Pay,
+        Action::Refund(_, _, _) => Operation::Refund,
+        Action::Reconcile(_, _) => Operation::Reconcile,
+        Action::Relay(_) => Operation::Relay,
+        Action::Conflict(_, _) => Operation::ProviderConflict,
+    }
 }
 
 impl Database {
     pub fn step(&self, s: &str, action: &Action) -> Result<Outcome> {
+        let operation = action_operation(action);
+        self.assert_operation(operation)?;
         scope(s)?;
         match action {
             Action::Add(Number::Value(unit),Number::Value(qty)) => self.scoped_short(s, |tx| {
@@ -434,12 +476,14 @@ impl Database {
                     Ok(((),true))
                 })?;
                 let request=Request::Payment(domain::PaymentRequest { id:id.clone(),order:OrderId::new("O1").map_err(|_|Error::Input("invalid constant"))?,currency:"USD".into(),amount:Money::new(*amount).map_err(|_|Error::Input("invalid conflict amount"))? });
-                self.provider(s,&request,Mode::Approve,false)
+                self.provider(Operation::ProviderConflict, s, &request, Mode::Approve, false)
             },
             _ => self.operation(s,action)
         }
     }
     fn operation(&self, s: &str, action: &Action) -> Result<Outcome> {
+        let operation = action_operation(action);
+        self.assert_operation(operation)?;
         let failure = match action {
             Action::Pay(_, _, f) | Action::Refund(_, _, f) | Action::Reconcile(_, f) => *f,
             _ => return Err(Error::Input("invalid operation")),
@@ -513,14 +557,15 @@ impl Database {
         };
         self.gate("after_prepare")?;
         let observation = match action {
-            Action::Pay(_, mode, _) | Action::Refund(_, mode, _) => {
-                self.provider(s, &request, *mode, false)?
+            Action::Pay(_, mode, _) => self.provider(Operation::Pay, s, &request, *mode, false)?,
+            Action::Refund(_, mode, _) => {
+                self.provider(Operation::Refund, s, &request, *mode, false)?
             }
             Action::Reconcile(lookup, _) => {
                 if *lookup == Lookup::Unavailable {
                     self.scoped_short(s, |_| Ok((Outcome::Unknown, true)))?
                 } else {
-                    self.provider(s, &request, Mode::Approve, true)?
+                    self.provider(Operation::Reconcile, s, &request, Mode::Approve, true)?
                 }
             }
             _ => return Err(Error::Input("invalid operation")),
@@ -528,6 +573,30 @@ impl Database {
         self.gate("after_effect")?;
         if ![Outcome::Approved, Outcome::Declined].contains(&observation) {
             return Ok(observation);
+        }
+        self.finalize(operation, s, &request, observation, failure)
+    }
+
+    fn finalize(
+        &self,
+        operation: Operation,
+        s: &str,
+        request: &Request,
+        observation: Outcome,
+        failure: Failure,
+    ) -> Result<Outcome> {
+        self.assert_operation(operation)?;
+        let request_matches_operation = matches!(
+            (operation, request),
+            (Operation::Pay, Request::Payment(_))
+                | (Operation::Refund, Request::Refund(_))
+                | (
+                    Operation::Reconcile,
+                    Request::Payment(_) | Request::Refund(_)
+                )
+        );
+        if !request_matches_operation {
+            return Err(Error::Input("invalid finalization operation"));
         }
         let (result, committed) = self.scoped_short(s, |tx| {
             let mut o = load(tx, s)?;
@@ -548,7 +617,7 @@ impl Database {
             if let Some(noop) = noop {
                 return Ok(((noop, false), true));
             }
-            if Request::from_order(&o)? != request {
+            if &Request::from_order(&o)? != request {
                 return Err(Error::Input("persisted intent changed during finalization"));
             }
             let event = match request {
@@ -568,7 +637,36 @@ impl Database {
         }
         Ok(result)
     }
-    fn provider(&self, s: &str, request: &Request, mode: Mode, lookup: bool) -> Result<Outcome> {
+
+    fn provider(
+        &self,
+        operation: Operation,
+        s: &str,
+        request: &Request,
+        mode: Mode,
+        lookup: bool,
+    ) -> Result<Outcome> {
+        self.assert_operation(operation)?;
+        let valid_call = matches!(
+            (operation, request, mode, lookup),
+            (Operation::Pay, Request::Payment(_), _, false)
+                | (Operation::Refund, Request::Refund(_), _, false)
+                | (
+                    Operation::Reconcile,
+                    Request::Payment(_) | Request::Refund(_),
+                    Mode::Approve,
+                    true
+                )
+                | (
+                    Operation::ProviderConflict,
+                    Request::Payment(_),
+                    Mode::Approve,
+                    false
+                )
+        );
+        if !valid_call {
+            return Err(Error::Input("invalid provider operation"));
+        }
         self.scoped_short(s, |tx| {
             let (kind,id,order,currency,amount,payment)=request.parts();
             if !lookup { tx.query_one("SELECT pg_advisory_xact_lock(hashtextextended($1,0))",&[&s])?; }
@@ -588,6 +686,7 @@ impl Database {
         })
     }
     fn relay(&self, s: &str, mode: RelayMode) -> Result<Outcome> {
+        self.assert_operation(Operation::Relay)?;
         loop {
             let (result,more)=self.scoped_short(s, |tx| {
                 load(tx,s)?;
@@ -598,7 +697,11 @@ impl Database {
                 // completes. Reacquiring it in another transaction could wait behind
                 // a revoker that is itself waiting for this outer transaction.
                 self.gate("before_delivery")?;
-                let authority = RelayAuthority { scope: s, _policy_transaction: tx };
+                let authority = RelayAuthority {
+                    scope: s,
+                    operation: Operation::Relay,
+                    _policy_transaction: tx,
+                };
                 self.inbox_under_relay_authority(authority,&fact)?;
                 self.gate("after_delivery")?;
                 if mode==RelayMode::AckFail {return Ok(((Outcome::RelayAckFailed,false),false));}
@@ -616,6 +719,10 @@ impl Database {
         f: &Fact,
     ) -> Result<()> {
         let s = authority.scope;
+        if authority.operation != Operation::Relay {
+            return Err(Error::Forbidden);
+        }
+        self.assert_operation(Operation::Relay)?;
         self.check_authorization_scope(s)?;
         self.short(|tx| {
             tx.execute("INSERT INTO roo_consumer.inbox(scope,event_id,event_kind,order_id,currency,payment_id,refund_id,amount) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING",&[&s,&f.id,&f.kind,&f.order,&f.currency,&f.payment,&f.refund,&f.amount])?;
@@ -681,22 +788,45 @@ mod authorization_tests {
         }
     }
 
+    fn payment_request() -> Request {
+        Request::Payment(domain::PaymentRequest {
+            id: PaymentId::new("p1").unwrap(),
+            order: OrderId::new("O1").unwrap(),
+            currency: "USD".into(),
+            amount: Money::new(1).unwrap(),
+        })
+    }
+
     #[test]
     fn authority_is_an_immutable_single_scope_clone() {
         let base = unconnected();
-        let alice = base.authorized("first", "alice").unwrap();
-        let bob = base.authorized("second", "bob").unwrap();
+        let alice = base.authorized("first", "alice", Operation::Read).unwrap();
+        let bob = base.authorized("second", "bob", Operation::Pay).unwrap();
         assert!(base.authorization.is_none());
-        assert_eq!(alice.authorization, Some(("first".into(), "alice".into())));
-        assert_eq!(bob.authorization, Some(("second".into(), "bob".into())));
-        assert!(alice.authorized("second", "bob").is_err());
+        assert_eq!(
+            alice.authorization,
+            Some(AuthorizationContext {
+                scope: "first".into(),
+                principal: "alice".into(),
+                operation: Operation::Read,
+            })
+        );
+        assert_eq!(
+            bob.authorization,
+            Some(AuthorizationContext {
+                scope: "second".into(),
+                principal: "bob".into(),
+                operation: Operation::Pay,
+            })
+        );
+        assert!(alice.authorized("second", "bob", Operation::Pay).is_err());
         assert!(matches!(alice.init("second", false), Err(Error::Forbidden)));
         assert!(matches!(
             alice.snapshot("second", "second", "-"),
             Err(Error::Forbidden)
         ));
         assert!(matches!(
-            alice.authorization_allowed("second"),
+            alice.operation_allowed("second"),
             Err(Error::Forbidden)
         ));
         assert!(matches!(
@@ -714,14 +844,121 @@ mod authorization_tests {
     fn authority_rejects_invalid_principals_before_any_connection() {
         let base = unconnected();
         for principal in ["", "a,b", "a b", "a-b", "é"] {
-            assert!(base.authorized("scope", principal).is_err());
+            assert!(
+                base.authorized("scope", principal, Operation::Read)
+                    .is_err()
+            );
         }
-        assert!(base.authorized("scope", &"a".repeat(33)).is_err());
-        assert!(base.authorized("scope", &"a".repeat(32)).is_ok());
-        assert!(base.authorized("scope", "A_1").is_ok());
+        assert!(
+            base.authorized("scope", &"a".repeat(33), Operation::Read)
+                .is_err()
+        );
+        assert!(
+            base.authorized("scope", &"a".repeat(32), Operation::Read)
+                .is_ok()
+        );
+        assert!(base.authorized("scope", "A_1", Operation::Read).is_ok());
         assert!(matches!(
-            base.authorization_allowed("scope"),
+            base.operation_allowed("scope"),
             Err(Error::Input(_))
         ));
+    }
+
+    #[test]
+    fn operation_context_is_immutable_and_rejects_mismatches_before_connecting() {
+        let base = unconnected();
+        let actions = [
+            ("add:1:1", Operation::Add),
+            ("pay:p1:approve:none", Operation::Pay),
+            ("refund:r1:approve:none", Operation::Refund),
+            ("reconcile:ok:none", Operation::Reconcile),
+            ("relay:ok", Operation::Relay),
+            ("conflict:p1:2", Operation::ProviderConflict),
+        ];
+        for operation in Operation::ALL {
+            let bound = base.authorized("scope", "alice", operation).unwrap();
+            assert_eq!(bound.authorization.as_ref().unwrap().operation, operation);
+            assert!(bound.authorized("scope", "bob", Operation::Read).is_err());
+            assert!(matches!(bound.reserve_fresh(&[]), Err(Error::Forbidden)));
+            assert!(matches!(
+                bound.reserve_fresh(&["scope".into()]),
+                Err(Error::Forbidden)
+            ));
+            assert!(matches!(bound.init("scope", true), Err(Error::Forbidden)));
+            for (script, action_operation) in actions {
+                if operation != action_operation {
+                    let action = crate::fixture::parse_action(script).unwrap();
+                    assert!(matches!(
+                        bound.step("scope", &action),
+                        Err(Error::Forbidden)
+                    ));
+                }
+            }
+            if operation != Operation::Init {
+                assert!(matches!(bound.init("scope", false), Err(Error::Forbidden)));
+            }
+        }
+        let init = base.authorized("scope", "alice", Operation::Init).unwrap();
+        assert!(init.assert_operation(Operation::Init).is_ok());
+        let read = base.authorized("scope", "alice", Operation::Read).unwrap();
+        assert!(matches!(
+            read.operation_allowed("other"),
+            Err(Error::Forbidden)
+        ));
+        assert!(matches!(
+            base.operation_allowed("scope"),
+            Err(Error::Input(_))
+        ));
+    }
+
+    #[test]
+    fn every_fixture_action_has_one_closed_operation() {
+        for (script, operation) in [
+            ("add:1:1", Operation::Add),
+            ("pay:p1:approve:none", Operation::Pay),
+            ("refund:r1:approve:none", Operation::Refund),
+            ("reconcile:ok:none", Operation::Reconcile),
+            ("relay:ok", Operation::Relay),
+            ("conflict:p1:2", Operation::ProviderConflict),
+        ] {
+            assert_eq!(
+                action_operation(&crate::fixture::parse_action(script).unwrap()),
+                operation
+            );
+        }
+    }
+
+    #[test]
+    fn private_provider_finalizer_and_relay_checks_reject_wrong_operations_without_connecting() {
+        let base = unconnected();
+        let request = payment_request();
+        for bound_operation in Operation::ALL {
+            let bound = base.authorized("scope", "alice", bound_operation).unwrap();
+            let wrong_operation = if bound_operation == Operation::Pay {
+                Operation::Refund
+            } else {
+                Operation::Pay
+            };
+            assert!(matches!(
+                bound.provider(wrong_operation, "scope", &request, Mode::Approve, false),
+                Err(Error::Forbidden)
+            ));
+            assert!(matches!(
+                bound.finalize(
+                    wrong_operation,
+                    "scope",
+                    &request,
+                    Outcome::Approved,
+                    Failure::None
+                ),
+                Err(Error::Forbidden)
+            ));
+            if bound_operation != Operation::Relay {
+                assert!(matches!(
+                    bound.relay("scope", RelayMode::Ok),
+                    Err(Error::Forbidden)
+                ));
+            }
+        }
     }
 }

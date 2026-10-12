@@ -9,7 +9,11 @@ The accepted PostgreSQL source/evidence baseline remains
 `d1594cd230a03bcad6edbb2b590cbcb3bbcbc5f94604cdc4fbb0af59596bd7ac`.
 
 The [durable authorization extension](AUTHORIZATION.md) adds explicit fixture
-policy to the same APIs and transactions, with revocation and restart checks.
+policy to the same APIs and transactions, with separate permissions for each
+operation, revocation, and restart checks. A request retains its exact permission
+through internal reads and response serialization. A reconciliation-only caller
+can recover an existing intent using its original identity. Existing coarse
+grants need explicit operation grants; see the extension's migration rule.
 Legacy mode retains the behavior described below. Its historical receipts
 describe their original bytes; optional authorization contexts extend the current
 PostgreSQL adapters without rewriting those records.

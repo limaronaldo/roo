@@ -24,7 +24,13 @@ final class Provider {
         try (PreparedStatement p = c.prepareStatement("SELECT pg_advisory_xact_lock(hashtextextended(?,0))")) { p.setString(1, scope); p.execute(); }
     }
     Result call(String scope, Request request, Mode mode) throws SQLException {
-        return db.transaction(scope, c -> {
+        Operation expected = switch (request.kind()) {
+            case "payment" -> db.requireOneOf(Operation.PAY, Operation.PROVIDER_CONFLICT);
+            case "refund" -> db.requireOneOf(Operation.REFUND);
+            default -> null;
+        };
+        db.requireOperation(expected);
+        return db.transaction(scope, expected, c -> {
             lock(c, scope);
             Record old = read(c, scope, request.kind(), request.operation());
             if (old != null) return Database.commit(old.request().equals(request) ? old.result() : Result.KeyConflict);
@@ -48,20 +54,22 @@ final class Provider {
         });
     }
     Result lookup(String scope, Request request, boolean unavailable) throws SQLException {
-        return db.transaction(scope, c -> {
+        db.requireOperation(Operation.RECONCILE);
+        return db.transaction(scope, Operation.RECONCILE, c -> {
             if (unavailable) return Database.commit(Result.Unknown);
             Record old = read(c, scope, request.kind(), request.operation());
             return Database.commit(old == null ? Result.NotFound : old.request().equals(request) ? old.result() : Result.KeyConflict);
         });
     }
     Result conflict(String scope, PaymentId id, String amountText) throws SQLException {
+        db.requireOperation(Operation.PROVIDER_CONFLICT);
         Long amount = Store.integer(amountText);
         if (amount == null) {
             // Require the scope to exist even for numeric boundary outcomes.
-            db.transaction(scope, c -> { Store.load(c, scope, false); return Database.commit(null); });
+            db.transaction(scope, Operation.PROVIDER_CONFLICT, c -> { Store.load(c, scope, false); return Database.commit(null); });
             return Result.Overflow;
         }
-        Request changed = db.transaction(scope, c -> {
+        Request changed = db.transaction(scope, Operation.PROVIDER_CONFLICT, c -> {
             Store.load(c, scope, false);
             Record old = read(c, scope, "payment", id.value());
             if (old == null || amount <= 0 || amount == old.request().amount().minor()) throw new IllegalArgumentException("Invalid conflict probe");

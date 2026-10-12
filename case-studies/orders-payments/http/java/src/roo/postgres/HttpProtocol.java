@@ -37,8 +37,8 @@ final class HttpProtocol {
         Rejection(int status, String code) { this(status, code, null); }
         Rejection(int status, String code, String allow) { this.status = status; this.code = code; this.allow = allow; }
     }
-    record Route(String scope, String resource, String allow) { }
-    record Input(Route route, String method, Action action) { }
+    record Route(String scope, String resource, String allow, Operation operation) { }
+    record Input(Route route, String method, Action action, Operation operation) { }
     static Rejection invalid() { return new Rejection(400, "InvalidRequest"); }
     static Route route(URI uri, boolean test) throws Rejection {
         return route(uri, test, false);
@@ -50,13 +50,28 @@ final class HttpProtocol {
         String[] parts = path.split("/", -1);
         if (parts.length < 3 || !parts[1].equals("v1") || !parts[2].equals("scopes")) throw new Rejection(404, "RouteNotFound");
         if (parts.length < 4 || !parts[3].matches("[A-Za-z0-9_]{1,96}")) throw invalid();
-        if (parts.length == 4) return new Route(parts[3], "scope", "GET, PUT");
-        if (parts.length == 5 && parts[4].equals("authorization") && authorization)
-            return new Route(parts[3], "authorization", "GET");
-        if (parts.length == 5 && Set.of("lines", "payments", "refunds", "reconciliation", "relay").contains(parts[4]))
-            return new Route(parts[3], parts[4], "POST");
+        if (parts.length == 4) return new Route(parts[3], "scope", "GET, PUT", null);
+        if (parts.length >= 5 && parts[4].equals("authorization")) {
+            if (!authorization) throw new Rejection(404, "RouteNotFound");
+            if (parts.length == 5) throw invalid();
+            if (parts.length != 6) throw invalid();
+            Operation operation = Operation.fromToken(parts[5]);
+            if (operation == null) throw invalid();
+            return new Route(parts[3], "authorization", "GET", operation);
+        }
+        if (parts.length == 5 && Set.of("lines", "payments", "refunds", "reconciliation", "relay").contains(parts[4])) {
+            Operation operation = switch (parts[4]) {
+                case "lines" -> Operation.ADD;
+                case "payments" -> Operation.PAY;
+                case "refunds" -> Operation.REFUND;
+                case "reconciliation" -> Operation.RECONCILE;
+                case "relay" -> Operation.RELAY;
+                default -> throw new IllegalStateException("Closed route mapping");
+            };
+            return new Route(parts[3], parts[4], "POST", operation);
+        }
         if (parts.length == 6 && parts[4].equals("_test") && parts[5].equals("provider-conflicts")) {
-            if (test) return new Route(parts[3], "conflict", "POST");
+            if (test) return new Route(parts[3], "conflict", "POST", Operation.PROVIDER_CONFLICT);
             throw new Rejection(404, "RouteNotFound");
         }
         if (parts.length > 5) throw invalid();
@@ -122,9 +137,12 @@ final class HttpProtocol {
             throw new Rejection(405, "MethodNotAllowed", route.allow());
         principal(headers, authorization);
         if (key != null && !Set.of("payments", "refunds").contains(route.resource())) throw invalid();
+        Operation operation = scope
+            ? method.equals("GET") ? Operation.READ : Operation.INIT
+            : route.operation();
         if (method.equals("GET")) {
             if (body.length != 0) throw invalid();
-            return new Input(route, method, null);
+            return new Input(route, method, null, operation);
         }
         if (content == null || !content.trim().matches("(?i)application/json(?:\\s*;\\s*charset\\s*=\\s*utf-8)?"))
             throw new Rejection(415, "UnsupportedMediaType");
@@ -168,7 +186,7 @@ final class HttpProtocol {
             case "conflict" -> "conflict:" + fields.get("payment_id") + ":" + fields.get("different_amount");
             default -> throw invalid();
         };
-        try { return new Input(route, method, action == null ? null : Action.parse(action)); }
+        try { return new Input(route, method, action == null ? null : Action.parse(action), operation); }
         catch (IllegalArgumentException bad) { throw invalid(); }
     }
     static int status(Domain.Result result) {
@@ -187,6 +205,15 @@ final class HttpProtocol {
         try (JsonGenerator out = JSON.createGenerator(bytes)) {
             out.writeStartObject(); out.writeObjectFieldStart("snapshot");
             for (int i = 0; i < KEYS.size(); i++) out.writeStringField(KEYS.get(i), values[i]);
+            out.writeEndObject(); out.writeEndObject();
+        }
+        return bytes.toByteArray();
+    }
+    static byte[] authorization(Operation operation, boolean allowed) throws IOException {
+        var bytes = new ByteArrayOutputStream();
+        try (JsonGenerator out = JSON.createGenerator(bytes)) {
+            out.writeStartObject(); out.writeObjectFieldStart("authorization");
+            out.writeStringField("operation", operation.token()); out.writeBooleanField("allowed", allowed);
             out.writeEndObject(); out.writeEndObject();
         }
         return bytes.toByteArray();
