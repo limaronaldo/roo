@@ -33,6 +33,11 @@ Use the [results template](templates/validation-results.md) to report negative,
 inconclusive, and positive outcomes with their actual scope. Publishing a kit
 does not complete the reviews it proposes.
 
+The [first-round plan](docs/validation/first-round.md) supplies unsent English
+invitations, a frozen source pack, and a consolidation form. Keep recruitment,
+original reports, and consent records private; publish only an approved
+synthetic summary. Preparing a round does not contact or enroll reviewers.
+
 ## Work on a focused branch
 
 ```sh

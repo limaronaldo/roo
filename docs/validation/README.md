@@ -26,6 +26,11 @@ The kit is included in **v0.4.2**. Use that tag's exact commit as the kit
 revision for an initial trial; the method/code baseline above remains v0.4.1.
 Development may change, so record its exact commit if selecting a later kit.
 
+For the first planned human round, use the [coordination plan](first-round.md),
+[unsent reviewer invitations](invitations.md), and
+[round summary form](../../templates/validation-round-summary.md). They arrange
+the frozen kit's application; no invitations or completed results are implied.
+
 ## Run the review
 
 1. Assign a human Rust reviewer and a human DDD/software architecture reviewer.
