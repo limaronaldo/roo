@@ -77,6 +77,16 @@ cargo test --locked --offline
 cargo clippy --locked --offline --all-targets -- -D warnings
 ```
 
+For the authorization example, with Python 3.10+, JDK 21+, and Rust 1.96+:
+
+```sh
+python3 case-studies/orders-payments/authorization/verify.py
+```
+
+Keep the command traces, oracle, and controlled thread scenarios equivalent in
+both languages. Revocation must be checked at execution, with no order effect
+on rejection. Diagnostic observations are never caller credentials.
+
 For the shared adoption track, with Docker, Compose, Bash, and common POSIX
 utilities:
 
