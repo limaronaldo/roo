@@ -8,6 +8,11 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+- Align Java and Rust rejection precedence for requests with multiple invalid
+  inputs, including malformed authorization routes in legacy mode. Add shared
+  HTTP regressions that verify rejection leaves business effects unchanged.
+- Correct current learning-path, permission-matrix, and hosted-evidence guidance;
+  retain the original release documentation and historical receipts.
 - Add operation-specific PostgreSQL permissions to the Java composition, Java
   Template Method, and Rust HTTP APIs. Each request binds one immutable operation;
   every protected phase rechecks its exact policy row, including retries and

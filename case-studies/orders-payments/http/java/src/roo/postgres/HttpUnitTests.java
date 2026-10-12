@@ -66,6 +66,11 @@ public final class HttpUnitTests {
         authorizationRejects("/v1/scopes/demo/authorization/unknown", "GET", caller, empty, 400, "InvalidRequest", null);
         rejects("/v1/scopes/demo/authorization", "GET", caller, empty, true, 404, "RouteNotFound");
         rejects("/v1/scopes/demo/authorization/read", "GET", caller, empty, true, 404, "RouteNotFound");
+        rejects("/v1/scopes/demo/authorization/read/extra", "GET", caller, empty, true, 400, "InvalidRequest");
+        authorizationRejects("/v1/scopes/demo/authorization/read/extra", "GET", caller, empty, 400, "InvalidRequest", null);
+        rejects("/v1/scopes/demo/unknown", "GET", Map.of("Accept", List.of("text/html")), empty, true, 404, "RouteNotFound");
+        rejects("/v1/scopes/demo/payments", "DELETE", JSON, new byte[8193], true, 405, "MethodNotAllowed");
+        authorizationRejects("/v1/scopes/demo/payments", "POST", JSON, new byte[8193], 401, "PrincipalRequired", null);
         for (String method : List.of("PUT", "POST", "DELETE", "HEAD"))
             authorizationRejects("/v1/scopes/demo/authorization/read", method, caller, empty, 405, "MethodNotAllowed", "GET");
         authorizationRejects("/v1/scopes/demo/authorization/read", "GET", caller, "{}".getBytes(StandardCharsets.UTF_8), 400, "InvalidRequest", null);

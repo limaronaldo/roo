@@ -525,8 +525,9 @@ custody, domain responsibility, durable database identity, and caller permission
 are named separately where they differ.
 
 This matrix describes the default legacy mode. In the opt-in authorization
-fixture, every row's permission rule changes: the current `(scope, principal)`
-grant must allow execution and remains locked through each protected transaction.
+fixture, every row's permission rule changes: the current
+`(scope, principal, operation)` grant must allow execution and remains locked
+through each protected transaction. No operation grant implies another.
 The [durable authorization contract](AUTHORIZATION.md#relationship-contract)
 describes that extension, including authorization of provider effects and reads.
 

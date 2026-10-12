@@ -90,6 +90,8 @@ final class HttpService {
         boolean admitted = false;
         try (exchange) {
             try {
+                // Match Rust's route, method, principal, and header precedence before reading the stream.
+                HttpProtocol.preflight(exchange.getRequestURI(), exchange.getRequestMethod(), exchange.getRequestHeaders(), config.test(), config.authorization());
                 byte[] body = HttpProtocol.read(exchange.getRequestBody());
                 HttpProtocol.Input input = HttpProtocol.validate(exchange.getRequestURI(), exchange.getRequestMethod(), exchange.getRequestHeaders(), body, config.test(), config.authorization());
                 admitted = admission.tryAcquire();

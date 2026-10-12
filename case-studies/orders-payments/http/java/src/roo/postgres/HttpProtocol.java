@@ -52,6 +52,7 @@ final class HttpProtocol {
         if (parts.length < 4 || !parts[3].matches("[A-Za-z0-9_]{1,96}")) throw invalid();
         if (parts.length == 4) return new Route(parts[3], "scope", "GET, PUT", null);
         if (parts.length >= 5 && parts[4].equals("authorization")) {
+            if (parts.length > 6) throw invalid();
             if (!authorization) throw new Rejection(404, "RouteNotFound");
             if (parts.length == 5) throw invalid();
             if (parts.length != 6) throw invalid();
@@ -124,19 +125,27 @@ final class HttpProtocol {
         if (!principal.matches("[A-Za-z0-9_]{1,32}")) throw invalid();
         return principal;
     }
-    static Input validate(URI uri, String method, Map<String, List<String>> headers, byte[] body, boolean test, boolean authorization) throws Rejection {
-        if (body.length > BODY_LIMIT) throw new Rejection(413, "BodyTooLarge");
-        String content = header(headers, "Content-Type"), accept = header(headers, "Accept");
-        String key = header(headers, "Idempotency-Key");
-        if (header(headers, "X-Roo-Test-Drop-Response") != null) throw invalid();
-        if (accept != null && !Set.of("application/json", "*/*").contains(accept.trim())) throw new Rejection(406, "NotAcceptable");
+    static Route preflight(URI uri, String method, Map<String, List<String>> headers, boolean test, boolean authorization) throws Rejection {
         Route route = route(uri, test, authorization);
         boolean scope = route.resource().equals("scope");
         boolean observation = route.resource().equals("authorization");
         if (!(scope ? method.equals("GET") || method.equals("PUT") : observation ? method.equals("GET") : method.equals("POST")))
             throw new Rejection(405, "MethodNotAllowed", route.allow());
         principal(headers, authorization);
-        if (key != null && !Set.of("payments", "refunds").contains(route.resource())) throw invalid();
+        String content = header(headers, "Content-Type"), accept = header(headers, "Accept");
+        String key = header(headers, "Idempotency-Key");
+        if (header(headers, "X-Roo-Test-Drop-Response") != null) throw invalid();
+        if (accept != null && !Set.of("application/json", "*/*").contains(accept.trim())) throw new Rejection(406, "NotAcceptable");
+        if (key != null && (!Set.of("payments", "refunds").contains(route.resource()) || !key.matches("[A-Za-z0-9]{1,64}"))) throw invalid();
+        if (!method.equals("GET") && (content == null || !content.trim().matches("(?i)application/json(?:\\s*;\\s*charset\\s*=\\s*utf-8)?")))
+            throw new Rejection(415, "UnsupportedMediaType");
+        return route;
+    }
+    static Input validate(URI uri, String method, Map<String, List<String>> headers, byte[] body, boolean test, boolean authorization) throws Rejection {
+        Route route = preflight(uri, method, headers, test, authorization);
+        if (body.length > BODY_LIMIT) throw new Rejection(413, "BodyTooLarge");
+        boolean scope = route.resource().equals("scope");
+        String key = header(headers, "Idempotency-Key");
         Operation operation = scope
             ? method.equals("GET") ? Operation.READ : Operation.INIT
             : route.operation();
@@ -144,8 +153,6 @@ final class HttpProtocol {
             if (body.length != 0) throw invalid();
             return new Input(route, method, null, operation);
         }
-        if (content == null || !content.trim().matches("(?i)application/json(?:\\s*;\\s*charset\\s*=\\s*utf-8)?"))
-            throw new Rejection(415, "UnsupportedMediaType");
         Map<String, String> fields = object(body);
         Set<String> required;
         Set<String> optional;

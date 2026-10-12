@@ -126,6 +126,15 @@ contract; native HTTP parser rejections for invalid framing/header syntax are
 outside cross-stack JSON parity. No header-count/slow-client hardening claim is
 implied by a body cap.
 
+For requests with multiple application-level errors, all three variants use the
+same precedence: path/route, method, asserted principal (in fixture mode), header
+multiplicity and unsupported control header, Accept, idempotency-key syntax,
+Content-Type, streamed body limit, then body/command validation. Metadata checks
+run before reading the body and before database admission. A malformed
+authorization path with extra segments returns 400 even when fixture mode is off;
+the well-formed observation route remains unavailable (404) in that mode. Native
+HTTP framing errors remain outside this application-level ordering.
+
 Money and quantity are decimal **strings**, never JSON numbers or floating
 point. The grammar is `[+-]?[0-9]+`, with at most 128 ASCII characters total;
 it deliberately preserves the accepted signed integer parser. A syntactically

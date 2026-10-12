@@ -525,6 +525,15 @@ mod tests {
             route_with_authorization(&unknown, true, false).unwrap_err(),
             Fault::RouteNotFound
         );
+        let extra: Uri = "/v1/scopes/missing/authorization/read/extra"
+            .parse()
+            .unwrap();
+        for enabled in [false, true] {
+            assert_eq!(
+                route_with_authorization(&extra, true, enabled).unwrap_err(),
+                Fault::InvalidRequest
+            );
+        }
 
         for operation in Operation::ALL {
             let path = format!("/v1/scopes/missing/authorization/{}", operation.token());

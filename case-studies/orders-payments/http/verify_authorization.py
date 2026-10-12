@@ -318,6 +318,20 @@ def coarse_and_route_contract(variant, legacy, auth):
     expect_error(auth, "GET", f"/v1/scopes/{scope}/authorization/unknown_operation", None, 400, "InvalidRequest")
     expect_error(auth, "GET", f"/v1/scopes/{scope}/authorization/read?operation=add", None, 400, "InvalidRequest")
     expect_error(legacy, "GET", f"/v1/scopes/{scope}/authorization/read", None, 404, "RouteNotFound")
+    precedence = [
+        ("extra_authorization_segment", "GET", f"/v1/scopes/{scope}/authorization/read/extra", None, 400, "InvalidRequest", {}),
+        ("principal_before_accept", "GET", f"/v1/scopes/{scope}", None, 401, "PrincipalRequired",
+         {"principal": None, "headers": [("Accept", "text/html")]}),
+        ("principal_before_body_limit", "POST", f"/v1/scopes/{scope}/payments", b" " * 8193, 401, "PrincipalRequired",
+         {"principal": None, "raw": True}),
+        ("method_before_principal", "DELETE", f"/v1/scopes/{scope}/payments", {}, 405, "MethodNotAllowed",
+         {"principal": None}),
+    ]
+    for label, method, target, body, status, code, options in precedence:
+        expect_error(auth, method, target, body, status, code, **options)
+        if effects(scope) != before:
+            raise AssertionError(f"Rejected authorization case {label} changed business effects")
+    EVIDENCE["variants"][variant]["validation_precedence"] = [case[0] for case in precedence]
     EVIDENCE["variants"][variant]["operation_policy_contract"] = {
         "coarse_true_inert": True, "no_backfill": True, "unknown_sql_token_rejected": True,
         "old_route_enabled_400": True, "old_route_disabled_404": True,
