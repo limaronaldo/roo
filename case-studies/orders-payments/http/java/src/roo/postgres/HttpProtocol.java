@@ -41,6 +41,9 @@ final class HttpProtocol {
     record Input(Route route, String method, Action action) { }
     static Rejection invalid() { return new Rejection(400, "InvalidRequest"); }
     static Route route(URI uri, boolean test) throws Rejection {
+        return route(uri, test, false);
+    }
+    static Route route(URI uri, boolean test, boolean authorization) throws Rejection {
         String path = uri.getRawPath();
         if (uri.getRawQuery() != null || uri.getRawFragment() != null || path == null
             || !path.matches("/[A-Za-z0-9_/-]*") || path.contains("//") || path.endsWith("/")) throw invalid();
@@ -48,6 +51,8 @@ final class HttpProtocol {
         if (parts.length < 3 || !parts[1].equals("v1") || !parts[2].equals("scopes")) throw new Rejection(404, "RouteNotFound");
         if (parts.length < 4 || !parts[3].matches("[A-Za-z0-9_]{1,96}")) throw invalid();
         if (parts.length == 4) return new Route(parts[3], "scope", "GET, PUT");
+        if (parts.length == 5 && parts[4].equals("authorization") && authorization)
+            return new Route(parts[3], "authorization", "GET");
         if (parts.length == 5 && Set.of("lines", "payments", "refunds", "reconciliation", "relay").contains(parts[4]))
             return new Route(parts[3], parts[4], "POST");
         if (parts.length == 6 && parts[4].equals("_test") && parts[5].equals("provider-conflicts")) {
@@ -95,15 +100,27 @@ final class HttpProtocol {
         } catch (IOException bad) { throw invalid(); }
     }
     static Input validate(URI uri, String method, Map<String, List<String>> headers, byte[] body, boolean test) throws Rejection {
+        return validate(uri, method, headers, body, test, false);
+    }
+    static String principal(Map<String, List<String>> headers, boolean authorization) throws Rejection {
+        if (!authorization) return null;
+        String principal = header(headers, "X-Roo-Principal");
+        if (principal == null) throw new Rejection(401, "PrincipalRequired");
+        if (!principal.matches("[A-Za-z0-9_]{1,32}")) throw invalid();
+        return principal;
+    }
+    static Input validate(URI uri, String method, Map<String, List<String>> headers, byte[] body, boolean test, boolean authorization) throws Rejection {
         if (body.length > BODY_LIMIT) throw new Rejection(413, "BodyTooLarge");
         String content = header(headers, "Content-Type"), accept = header(headers, "Accept");
         String key = header(headers, "Idempotency-Key");
         if (header(headers, "X-Roo-Test-Drop-Response") != null) throw invalid();
         if (accept != null && !Set.of("application/json", "*/*").contains(accept.trim())) throw new Rejection(406, "NotAcceptable");
-        Route route = route(uri, test);
+        Route route = route(uri, test, authorization);
         boolean scope = route.resource().equals("scope");
-        if (!(scope ? method.equals("GET") || method.equals("PUT") : method.equals("POST")))
+        boolean observation = route.resource().equals("authorization");
+        if (!(scope ? method.equals("GET") || method.equals("PUT") : observation ? method.equals("GET") : method.equals("POST")))
             throw new Rejection(405, "MethodNotAllowed", route.allow());
+        principal(headers, authorization);
         if (key != null && !Set.of("payments", "refunds").contains(route.resource())) throw invalid();
         if (method.equals("GET")) {
             if (body.length != 0) throw invalid();
@@ -180,6 +197,8 @@ final class HttpProtocol {
             case "RouteNotFound" -> "Route not found";
             case "MethodNotAllowed" -> "Method not allowed";
             case "ScopeNotFound" -> "Scope not found";
+            case "PrincipalRequired" -> "Principal required";
+            case "Forbidden" -> "Access forbidden";
             case "UnsupportedMediaType" -> "Unsupported media type";
             case "BodyTooLarge" -> "Body too large";
             case "NotAcceptable" -> "Not acceptable";

@@ -17,6 +17,8 @@ pub const BODY_LIMIT: usize = 8192;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Fault {
     InvalidRequest,
+    PrincipalRequired,
+    Forbidden,
     RouteNotFound,
     MethodNotAllowed,
     ScopeNotFound,
@@ -31,6 +33,8 @@ impl Fault {
     pub fn status(self) -> u16 {
         match self {
             Self::InvalidRequest => 400,
+            Self::PrincipalRequired => 401,
+            Self::Forbidden => 403,
             Self::RouteNotFound | Self::ScopeNotFound => 404,
             Self::MethodNotAllowed => 405,
             Self::UnsupportedMediaType => 415,
@@ -43,6 +47,8 @@ impl Fault {
     pub fn body(self) -> Value {
         let (code, message) = match self {
             Self::InvalidRequest => ("InvalidRequest", "Invalid request"),
+            Self::PrincipalRequired => ("PrincipalRequired", "Principal required"),
+            Self::Forbidden => ("Forbidden", "Access forbidden"),
             Self::RouteNotFound => ("RouteNotFound", "Route not found"),
             Self::MethodNotAllowed => ("MethodNotAllowed", "Method not allowed"),
             Self::ScopeNotFound => ("ScopeNotFound", "Scope not found"),
@@ -60,6 +66,7 @@ impl Fault {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Route {
     Scope,
+    Authorization,
     Lines,
     Payments,
     Refunds,
@@ -69,7 +76,9 @@ pub enum Route {
 }
 impl Route {
     pub fn allow(self) -> &'static str {
-        if self == Self::Scope {
+        if self == Self::Authorization {
+            "GET"
+        } else if self == Self::Scope {
             "GET, PUT"
         } else {
             "POST"
@@ -78,6 +87,14 @@ impl Route {
 }
 
 pub fn route(uri: &Uri, test: bool) -> Result<(String, Route), Fault> {
+    route_with_authorization(uri, test, false)
+}
+
+pub fn route_with_authorization(
+    uri: &Uri,
+    test: bool,
+    authorization: bool,
+) -> Result<(String, Route), Fault> {
     let path = uri.path();
     if uri.query().is_some()
         || !path
@@ -104,6 +121,7 @@ pub fn route(uri: &Uri, test: bool) -> Result<(String, Route), Fault> {
     }
     let kind = match &parts[4..] {
         [] => Route::Scope,
+        ["authorization"] if authorization => Route::Authorization,
         ["lines"] => Route::Lines,
         ["payments"] => Route::Payments,
         ["refunds"] => Route::Refunds,
@@ -118,7 +136,9 @@ pub fn route(uri: &Uri, test: bool) -> Result<(String, Route), Fault> {
 }
 
 pub fn method_allowed(route: Route, method: &Method) -> bool {
-    if route == Route::Scope {
+    if route == Route::Authorization {
+        method == Method::GET
+    } else if route == Route::Scope {
         method == Method::GET || method == Method::PUT
     } else {
         method == Method::POST
@@ -134,6 +154,55 @@ fn one_header<'a>(headers: &'a HeaderMap, name: &str) -> Result<Option<&'a str>,
     value
         .map(|v| v.to_str().map_err(|_| Fault::InvalidRequest))
         .transpose()
+}
+
+/// Synthetic fixture caller assertion, deliberately not authentication.
+pub fn principal(headers: &HeaderMap, enabled: bool) -> Result<Option<String>, Fault> {
+    if !enabled {
+        return Ok(None);
+    }
+    let principal = one_header(headers, "x-roo-principal")?.ok_or(Fault::PrincipalRequired)?;
+    if principal.is_empty()
+        || principal.len() > 32
+        || !principal
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'_')
+    {
+        return Err(Fault::InvalidRequest);
+    }
+    Ok(Some(principal.into()))
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AuthorizationConfig {
+    pub enabled: bool,
+    pub gate_key: Option<i64>,
+}
+impl AuthorizationConfig {
+    pub fn parse(mode: Option<&str>, gate: Option<&str>, test: bool) -> Result<Self, &'static str> {
+        let enabled = match mode {
+            None => false,
+            Some("fixture") if test => true,
+            _ => return Err("invalid authorization mode"),
+        };
+        let gate_key = match gate {
+            None => None,
+            Some(text) if enabled && test => {
+                if text.is_empty() || !text.bytes().all(|b| b.is_ascii_digit()) {
+                    return Err("invalid authorization gate");
+                }
+                let key = text
+                    .parse::<i64>()
+                    .map_err(|_| "invalid authorization gate")?;
+                if key <= 0 {
+                    return Err("invalid authorization gate");
+                }
+                Some(key)
+            }
+            Some(_) => return Err("authorization gate requires fixture test mode"),
+        };
+        Ok(Self { enabled, gate_key })
+    }
 }
 
 pub fn headers(
@@ -230,7 +299,7 @@ pub fn action(
     let text = std::str::from_utf8(body).map_err(|_| Fault::InvalidRequest)?;
     let Fields(fields) = serde_json::from_str::<Fields>(text).map_err(|_| Fault::InvalidRequest)?;
     let ordinary: &[&str] = match route {
-        Route::Scope | Route::Reconciliation | Route::Relay => &[],
+        Route::Scope | Route::Authorization | Route::Reconciliation | Route::Relay => &[],
         Route::Lines => &["unit_minor", "quantity"],
         Route::Payments => &["payment_id"],
         Route::Refunds => &["refund_id"],
@@ -273,7 +342,7 @@ pub fn action(
         }
     }
     let script = match route {
-        Route::Scope => return Ok(None),
+        Route::Scope | Route::Authorization => return Ok(None),
         Route::Lines => format!("add:{}:{}", field("unit_minor"), field("quantity")),
         Route::Payments => format!(
             "pay:{}:{}:{}",
@@ -328,6 +397,7 @@ pub fn domain_status(outcome: Outcome) -> u16 {
 
 pub fn database_fault(error: database::Error, probe: bool) -> Fault {
     match error {
+        database::Error::Forbidden => Fault::Forbidden,
         database::Error::Database(_) => Fault::DatabaseUnavailable,
         database::Error::Input("scope does not exist") => Fault::ScopeNotFound,
         database::Error::Input("gate wait failed or timed out" | "gate unlock failed") => {
@@ -359,6 +429,99 @@ pub fn snapshot(tsv: &str) -> Result<Value, Fault> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn authorization_configuration_is_explicit_and_test_only() {
+        assert_eq!(
+            AuthorizationConfig::parse(None, None, false).unwrap(),
+            AuthorizationConfig {
+                enabled: false,
+                gate_key: None
+            }
+        );
+        assert_eq!(
+            AuthorizationConfig::parse(Some("fixture"), Some("9223372036854775807"), true).unwrap(),
+            AuthorizationConfig {
+                enabled: true,
+                gate_key: Some(i64::MAX)
+            }
+        );
+        for (mode, gate, test) in [
+            (Some("fixture"), None, false),
+            (Some(""), None, true),
+            (Some("other"), None, true),
+            (None, Some("1"), true),
+            (Some("fixture"), Some("1"), false),
+        ] {
+            assert!(AuthorizationConfig::parse(mode, gate, test).is_err());
+        }
+        for key in [
+            "",
+            "0",
+            "-1",
+            "+1",
+            "+",
+            " 1",
+            "1 ",
+            "1.0",
+            "9223372036854775808",
+        ] {
+            assert!(AuthorizationConfig::parse(Some("fixture"), Some(key), true).is_err());
+        }
+    }
+    #[test]
+    fn fixture_principal_is_single_and_narrow() {
+        let mut h = HeaderMap::new();
+        assert_eq!(principal(&h, true).unwrap_err(), Fault::PrincipalRequired);
+        assert_eq!(principal(&h, false).unwrap(), None);
+        for invalid in ["", "a b", "a,b", "a-b", "+a", "a.b", " a", "a "] {
+            h.insert("x-roo-principal", invalid.parse().unwrap());
+            assert_eq!(principal(&h, true).unwrap_err(), Fault::InvalidRequest);
+        }
+        h.insert("x-roo-principal", "A_01".parse().unwrap());
+        assert_eq!(principal(&h, true).unwrap().as_deref(), Some("A_01"));
+        h.insert("x-roo-principal", "a".repeat(32).parse().unwrap());
+        assert!(principal(&h, true).is_ok());
+        h.insert("x-roo-principal", "a".repeat(33).parse().unwrap());
+        assert_eq!(principal(&h, true).unwrap_err(), Fault::InvalidRequest);
+        h.insert("x-roo-principal", "alice".parse().unwrap());
+        h.append("x-roo-principal", "alice".parse().unwrap());
+        assert_eq!(principal(&h, true).unwrap_err(), Fault::InvalidRequest);
+        assert_eq!(principal(&h, false).unwrap(), None);
+    }
+    #[test]
+    fn authorization_observation_has_its_own_route_and_errors() {
+        let uri: Uri = "/v1/scopes/missing/authorization".parse().unwrap();
+        assert_eq!(route(&uri, true).unwrap_err(), Fault::RouteNotFound);
+        assert_eq!(
+            route_with_authorization(&uri, true, true).unwrap(),
+            ("missing".into(), Route::Authorization)
+        );
+        assert!(method_allowed(Route::Authorization, &Method::GET));
+        for method in [Method::PUT, Method::POST, Method::HEAD, Method::DELETE] {
+            assert!(!method_allowed(Route::Authorization, &method));
+        }
+        assert_eq!(Route::Authorization.allow(), "GET");
+        let mut h = HeaderMap::new();
+        h.insert("idempotency-key", "p1".parse().unwrap());
+        assert_eq!(
+            headers(&h, Route::Authorization, &Method::GET).unwrap_err(),
+            Fault::InvalidRequest
+        );
+        assert_eq!(
+            database_fault(database::Error::Forbidden, false),
+            Fault::Forbidden
+        );
+        assert_eq!(Fault::Forbidden.status(), 403);
+        assert_eq!(
+            Fault::Forbidden.body(),
+            json!({"error":{"code":"Forbidden","message":"Access forbidden"}})
+        );
+        assert_eq!(Fault::PrincipalRequired.status(), 401);
+        assert_eq!(
+            Fault::PrincipalRequired.body(),
+            json!({"error":{"code":"PrincipalRequired","message":"Principal required"}})
+        );
+    }
     #[test]
     fn rejects_ambiguous_and_non_string_objects() {
         for body in [

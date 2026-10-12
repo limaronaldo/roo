@@ -14,10 +14,17 @@ finish() {
     status=$?
     trap - EXIT INT TERM
     set +e
+    stop_status=0
+    if [[ -f "$TRACK/../postgres/.runtime/config.json" ]]; then
+        python3 "$TRACK/../postgres/cluster.py" stop
+        stop_status=$?
+    fi
     python3 "$TRACK/docker/evidence.py" collect
     export_status=$?
     printf '%s\n' "$status" > evidence/test-exit-code.txt
     printf '%s\n' "$export_status" > evidence/collection-exit-code.txt
+    printf '%s\n' "$stop_status" > evidence/postgres-stop-exit-code.txt
+    if [[ $status -eq 0 && $stop_status -ne 0 ]]; then status=$stop_status; fi
     if [[ $status -eq 0 && $export_status -ne 0 ]]; then status=$export_status; fi
     exit "$status"
 }
@@ -31,6 +38,15 @@ python3 "$TRACK/docker/evidence.py" identity
 dpkg-query -W -f='${Package}\t${Version}\n' > evidence/os-packages.tsv
 if [[ "$mode" == qualify ]]; then
     bash "$TRACK/verify.sh"
+    for boundary in postgres http; do
+        cargo fmt --manifest-path "$TRACK/../$boundary/rust/Cargo.toml" -- --check
+        cargo test --manifest-path "$TRACK/../$boundary/rust/Cargo.toml" --locked --offline
+        cargo clippy --manifest-path "$TRACK/../$boundary/rust/Cargo.toml" --locked --offline --all-targets -- -D warnings
+    done
+    python3 "$TRACK/../postgres/cluster.py" start
+    python3 "$TRACK/../postgres/cluster.py" schema
+    python3 "$TRACK/../http/verify.py"
+    python3 "$TRACK/../http/verify_authorization.py"
 else
     bash "$TRACK/build.sh" "$mode"
     python3 "$TRACK/verify.py" --source "$mode" --exercise "$exercise" --variant "$variant"

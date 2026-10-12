@@ -40,10 +40,15 @@ bash case-studies/orders-payments/track/compose.sh
 ```
 
 The default `qualify` mode builds an image from the current checkout, starts one
-new container, and runs the existing `verify.sh` unchanged. It checks the
+new container, and runs the existing track `verify.sh`. It checks the
 starter's expected behavioral RED groups, the completed solution across Java
 composition, Java Template Method, and Rust composition, and the regression
-that completes only e6 while confirming e2 remains incomplete. The wrapper
+that completes only e6 while confirming e2 remains incomplete. It then checks
+PostgreSQL/HTTP Rust formatting, native tests, and Clippy, and runs both the
+legacy HTTP verifier and the [durable authorization suite](../http/AUTHORIZATION.md).
+The latter uses the same matrix in all three language variants, including
+revocation between observation and execution and recovery after restart.
+The wrapper
 returns the qualification's nonzero status if a check fails.
 
 This full qualification deliberately expects the starter gaps to remain

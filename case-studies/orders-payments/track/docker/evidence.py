@@ -21,7 +21,8 @@ def identity():
 
 def collect():
     receipts = {'last-run.json', 'starter-last-run.json', 'solution-last-run.json',
-                'e6-independent-last-run.json'}
+                'e6-independent-last-run.json', 'http-last-run.json',
+                'authorization-last-run.json'}
     for directory in (CASE / 'track/.runtime', CASE / 'postgres/.runtime', CASE / 'http/.runtime'):
         if not directory.exists():
             continue

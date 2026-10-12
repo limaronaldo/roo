@@ -17,3 +17,4 @@ trap 'python3 "$PG/cluster.py" stop' EXIT
 python3 "$PG/cluster.py" start
 python3 "$PG/cluster.py" schema
 python3 "$CASE/verify.py"
+python3 "$CASE/verify_authorization.py"

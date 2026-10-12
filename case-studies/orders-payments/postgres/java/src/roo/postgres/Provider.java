@@ -24,7 +24,7 @@ final class Provider {
         try (PreparedStatement p = c.prepareStatement("SELECT pg_advisory_xact_lock(hashtextextended(?,0))")) { p.setString(1, scope); p.execute(); }
     }
     Result call(String scope, Request request, Mode mode) throws SQLException {
-        return db.transaction(c -> {
+        return db.transaction(scope, c -> {
             lock(c, scope);
             Record old = read(c, scope, request.kind(), request.operation());
             if (old != null) return Database.commit(old.request().equals(request) ? old.result() : Result.KeyConflict);
@@ -48,26 +48,25 @@ final class Provider {
         });
     }
     Result lookup(String scope, Request request, boolean unavailable) throws SQLException {
-        if (unavailable) return Result.Unknown;
-        try (Connection c = db.open(false)) {
+        return db.transaction(scope, c -> {
+            if (unavailable) return Database.commit(Result.Unknown);
             Record old = read(c, scope, request.kind(), request.operation());
-            return old == null ? Result.NotFound : old.request().equals(request) ? old.result() : Result.KeyConflict;
-        }
+            return Database.commit(old == null ? Result.NotFound : old.request().equals(request) ? old.result() : Result.KeyConflict);
+        });
     }
     Result conflict(String scope, PaymentId id, String amountText) throws SQLException {
         Long amount = Store.integer(amountText);
         if (amount == null) {
             // Require the scope to exist even for numeric boundary outcomes.
-            try (Connection c = db.open(false)) { Store.load(c, scope, false); }
+            db.transaction(scope, c -> { Store.load(c, scope, false); return Database.commit(null); });
             return Result.Overflow;
         }
-        Request changed;
-        try (Connection c = db.open(false)) {
+        Request changed = db.transaction(scope, c -> {
             Store.load(c, scope, false);
             Record old = read(c, scope, "payment", id.value());
             if (old == null || amount <= 0 || amount == old.request().amount().minor()) throw new IllegalArgumentException("Invalid conflict probe");
-            changed = new Request("payment", id.value(), new OrderId("O1"), new Money(amount, "USD"), id);
-        }
+            return Database.commit(new Request("payment", id.value(), new OrderId("O1"), new Money(amount, "USD"), id));
+        });
         return call(scope, changed, Mode.approve);
     }
 }

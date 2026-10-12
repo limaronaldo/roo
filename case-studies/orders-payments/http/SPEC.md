@@ -4,10 +4,14 @@ Status: implementation contract, 2026-10-11. This sibling extension adds a
 long-lived local HTTP process to the accepted [PostgreSQL contract](../postgres/SPEC.md).
 The accepted source/evidence baseline is
 `d1594cd230a03bcad6edbb2b590cbcb3bbcbc5f94604cdc4fbb0af59596bd7ac`.
-The accepted PostgreSQL implementation and evidence remain unchanged; intentional
+The original extension preserved the accepted PostgreSQL implementation. The
+[current authorization extension](AUTHORIZATION.md) adds optional guarded adapter
+contexts and a separate policy schema; default behavior and historical evidence
+remain preserved. The original source-hash baseline identifies the earlier bytes.
+For the original transport extension, intentional
 root README navigation and .gitignore cache patterns are the only changes to
 accepted manifest files for this extension. No server spawns a runner subprocess per request.
-All new implementation, dependencies, and checks live beneath this directory;
+In that original extension, new implementation, dependencies, and checks lived beneath this directory;
 new English research/evidence documents may live beneath `research/`.
 
 ## Architecture and ownership
@@ -200,7 +204,8 @@ add receipt would require an adapter transaction that commits line + full comman
 fingerprint + receipt atomically; wrapping the accepted self-owned add transaction
 with another transaction cannot provide that guarantee. This narrow transport
 scope preserves the accepted adapters without duplicating domain/SQL logic.
-[schema.sql](schema.sql) therefore declares no migration or extra receipt table.
+[schema.sql](schema.sql) adds only the opt-in fixture authorization policy; it
+introduces no durable command receipt or change to line replay semantics.
 
 ## Synthetic controls and gates
 
@@ -289,5 +294,5 @@ No HTTP check is marked passed by this specification. Record compiler, dependenc
 transport, concurrency, process recovery and PostgreSQL WAL-recovery evidence
 separately. The simulator shares one database/WAL domain across independent
 schemas/connections. This local educational service claims no real payment
-network, authentication/tenant boundary, production deployment, exhaustive
+network, real authentication/tenant boundary, production deployment, exhaustive
 interleavings, hardware power-loss survival, or operational throughput.

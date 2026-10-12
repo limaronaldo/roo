@@ -9,6 +9,7 @@ use std::{env, time::Duration};
 #[derive(Debug)]
 pub enum Error {
     Input(&'static str),
+    Forbidden,
     Database(postgres::Error),
 }
 impl From<postgres::Error> for Error {
@@ -20,6 +21,7 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Input(s) => f.write_str(s),
+            Self::Forbidden => f.write_str("Access forbidden"),
             Self::Database(e) => {
                 if let Some(c) = e.code() {
                     write!(f, "database operation failed ({})", c.code())
@@ -43,6 +45,7 @@ pub fn scope(s: &str) -> Result<()> {
 pub struct Database {
     config: Config,
     gate: Option<(String, i64, String)>,
+    authorization: Option<(String, String)>,
 }
 impl Database {
     pub fn from_env() -> Result<Self> {
@@ -75,6 +78,7 @@ impl Database {
                     "after_prepare",
                     "after_effect",
                     "after_finalize",
+                    "before_delivery",
                     "after_delivery",
                 ]
                 .contains(&point.as_str())
@@ -95,7 +99,80 @@ impl Database {
         config.host("127.0.0.1").port(port).dbname("roo_test").user("roo_test")
             .connect_timeout(Duration::from_secs(5)).application_name(&format!("roo:{worker}:rust"))
             .options("-c statement_timeout=10000 -c lock_timeout=5000 -c default_transaction_isolation=read\\ committed");
-        Ok(Self { config, gate })
+        Ok(Self {
+            config,
+            gate,
+            authorization: None,
+        })
+    }
+    /// Immutable request authority; the default adapter remains unrestricted.
+    pub fn authorized(&self, s: &str, principal: &str) -> Result<Self> {
+        scope(s)?;
+        if principal.is_empty()
+            || principal.len() > 32
+            || !principal
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'_')
+        {
+            return Err(Error::Input("invalid principal"));
+        }
+        if self.authorization.is_some() {
+            return Err(Error::Input("authorization context already bound"));
+        }
+        let mut database = self.clone();
+        database.authorization = Some((s.into(), principal.into()));
+        Ok(database)
+    }
+    fn authorize(&self, tx: &mut Transaction<'_>, s: &str) -> Result<()> {
+        self.check_authorization_scope(s)?;
+        if let Some((bound_scope, principal)) = &self.authorization {
+            debug_assert_eq!(bound_scope, s);
+            let row = tx.query_opt(
+                "SELECT allowed FROM roo_authorization.grants WHERE scope=$1 AND principal=$2 FOR SHARE",
+                &[&s, principal],
+            )?;
+            if !row.is_some_and(|r| r.get::<_, bool>(0)) {
+                return Err(Error::Forbidden);
+            }
+        }
+        Ok(())
+    }
+    fn check_authorization_scope(&self, s: &str) -> Result<()> {
+        if self
+            .authorization
+            .as_ref()
+            .is_some_and(|(bound_scope, _)| bound_scope != s)
+        {
+            return Err(Error::Forbidden);
+        }
+        Ok(())
+    }
+    /// Detached advisory observation. It is never execution authority.
+    pub fn authorization_allowed(&self, s: &str) -> Result<bool> {
+        let Some((bound_scope, principal)) = &self.authorization else {
+            return Err(Error::Input("authorization context required"));
+        };
+        if bound_scope != s {
+            return Err(Error::Forbidden);
+        }
+        let mut client = self.connect()?;
+        Ok(client
+            .query_opt(
+                "SELECT allowed FROM roo_authorization.grants WHERE scope=$1 AND principal=$2",
+                &[&s, principal],
+            )?
+            .is_some_and(|r| r.get::<_, bool>(0)))
+    }
+    fn scoped_short<T>(
+        &self,
+        s: &str,
+        mut body: impl FnMut(&mut Transaction<'_>) -> Result<(T, bool)>,
+    ) -> Result<T> {
+        self.check_authorization_scope(s)?;
+        self.short(|tx| {
+            self.authorize(tx, s)?;
+            body(tx)
+        })
     }
     fn connect(&self) -> Result<Client> {
         Ok(self.config.connect(NoTls)?)
@@ -152,7 +229,7 @@ impl Database {
     }
     pub fn init(&self, s: &str, fresh: bool) -> Result<()> {
         scope(s)?;
-        self.short(|tx| {
+        self.scoped_short(s, |tx| {
             let n = tx.execute(
                 "INSERT INTO roo_app.orders(scope) VALUES($1) ON CONFLICT DO NOTHING",
                 &[&s],
@@ -167,11 +244,16 @@ impl Database {
     pub fn reserve_fresh(&self, scopes: &[String]) -> Result<()> {
         for s in scopes {
             scope(s)?;
+            self.check_authorization_scope(s)?;
         }
         // A common insertion order avoids deadlocks between overlapping sets.
         let mut ordered: Vec<_> = scopes.iter().collect();
         ordered.sort();
         self.short(|tx| {
+            // Authorize the complete set before inserting any order.
+            for s in &ordered {
+                self.authorize(tx, s)?;
+            }
             for s in &ordered {
                 let inserted = tx.execute(
                     "INSERT INTO roo_app.orders(scope) VALUES($1) ON CONFLICT DO NOTHING",
@@ -185,9 +267,10 @@ impl Database {
         })
     }
     pub fn snapshot(&self, s: &str, label: &str, last: &str) -> Result<String> {
-        let mut c = self.connect()?;
-        let r=c.query_opt("SELECT state,total,payment_id,refund_id,(SELECT count(*) FROM roo_provider.records WHERE scope=$1 AND kind='payment' AND result='Approved'),(SELECT count(*) FROM roo_provider.records WHERE scope=$1 AND kind='refund' AND result='Approved'),(SELECT count(*) FROM roo_app.outbox WHERE scope=$1),(SELECT count(*) FROM roo_consumer.inbox WHERE scope=$1),(SELECT count(*) FROM roo_app.outbox WHERE scope=$1 AND NOT delivered) FROM roo_app.orders WHERE scope=$1",&[&s])?.ok_or(Error::Input("scope does not exist"))?;
-        Ok(format!(
+        scope(s)?;
+        self.scoped_short(s, |tx| {
+        let r=tx.query_opt("SELECT state,total,payment_id,refund_id,(SELECT count(*) FROM roo_provider.records WHERE scope=$1 AND kind='payment' AND result='Approved'),(SELECT count(*) FROM roo_provider.records WHERE scope=$1 AND kind='refund' AND result='Approved'),(SELECT count(*) FROM roo_app.outbox WHERE scope=$1),(SELECT count(*) FROM roo_consumer.inbox WHERE scope=$1),(SELECT count(*) FROM roo_app.outbox WHERE scope=$1 AND NOT delivered) FROM roo_app.orders WHERE scope=$1",&[&s])?.ok_or(Error::Input("scope does not exist"))?;
+        Ok((format!(
             "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
             label,
             r.get::<_, String>(0),
@@ -200,7 +283,8 @@ impl Database {
             last,
             r.get::<_, Option<String>>(2).as_deref().unwrap_or("-"),
             r.get::<_, Option<String>>(3).as_deref().unwrap_or("-")
-        ))
+        ), true))
+        })
     }
 }
 
@@ -315,11 +399,19 @@ enum Prepared {
     Done(Outcome),
     Ready(Request),
 }
+
+/// Private delivery authority borrowed from the relay transaction. Its lifetime
+/// prevents the independently committed inbox effect from outliving that lock.
+struct RelayAuthority<'a, 'connection> {
+    scope: &'a str,
+    _policy_transaction: &'a Transaction<'connection>,
+}
+
 impl Database {
     pub fn step(&self, s: &str, action: &Action) -> Result<Outcome> {
         scope(s)?;
         match action {
-            Action::Add(Number::Value(unit),Number::Value(qty)) => self.short(|tx| {
+            Action::Add(Number::Value(unit),Number::Value(qty)) => self.scoped_short(s, |tx| {
                 let mut o=load(tx,s)?;
                 let result=o.add(*unit,*qty);
                 if result==Outcome::Added {
@@ -331,14 +423,16 @@ impl Database {
                 Ok((result,true))
             }),
             Action::Add(_,_) | Action::Conflict(_,Number::Overflow) => {
-                self.short(|tx| { load(tx,s)?; Ok((Outcome::Overflow,true)) })
+                self.scoped_short(s, |tx| { load(tx,s)?; Ok((Outcome::Overflow,true)) })
             },
             Action::Relay(mode) => self.relay(s,*mode),
             Action::Conflict(id,Number::Value(amount)) => {
-                self.short(|tx| { load(tx,s)?; Ok(((),true)) })?;
-                let mut c=self.connect()?;
-                let r=c.query_opt("SELECT order_id,currency,amount,payment_id,result FROM roo_provider.records WHERE scope=$1 AND kind='payment' AND operation_id=$2",&[&s,&id.as_str()])?.ok_or(Error::Input("conflict requires recorded payment"))?;
-                if *amount<=0 || *amount==r.get::<_,i64>(2) { return Err(Error::Input("conflict requires different positive amount")); }
+                self.scoped_short(s, |tx| {
+                    load(tx,s)?;
+                    let r=tx.query_opt("SELECT order_id,currency,amount,payment_id,result FROM roo_provider.records WHERE scope=$1 AND kind='payment' AND operation_id=$2",&[&s,&id.as_str()])?.ok_or(Error::Input("conflict requires recorded payment"))?;
+                    if *amount<=0 || *amount==r.get::<_,i64>(2) { return Err(Error::Input("conflict requires different positive amount")); }
+                    Ok(((),true))
+                })?;
                 let request=Request::Payment(domain::PaymentRequest { id:id.clone(),order:OrderId::new("O1").map_err(|_|Error::Input("invalid constant"))?,currency:"USD".into(),amount:Money::new(*amount).map_err(|_|Error::Input("invalid conflict amount"))? });
                 self.provider(s,&request,Mode::Approve,false)
             },
@@ -350,7 +444,7 @@ impl Database {
             Action::Pay(_, _, f) | Action::Refund(_, _, f) | Action::Reconcile(_, f) => *f,
             _ => return Err(Error::Input("invalid operation")),
         };
-        let prepared = self.short(|tx| {
+        let prepared = self.scoped_short(s, |tx| {
             let mut o = load(tx, s)?;
             let mut changed = false;
             let done = match action {
@@ -424,7 +518,7 @@ impl Database {
             }
             Action::Reconcile(lookup, _) => {
                 if *lookup == Lookup::Unavailable {
-                    Outcome::Unknown
+                    self.scoped_short(s, |_| Ok((Outcome::Unknown, true)))?
                 } else {
                     self.provider(s, &request, Mode::Approve, true)?
                 }
@@ -435,7 +529,7 @@ impl Database {
         if ![Outcome::Approved, Outcome::Declined].contains(&observation) {
             return Ok(observation);
         }
-        let (result, committed) = self.short(|tx| {
+        let (result, committed) = self.scoped_short(s, |tx| {
             let mut o = load(tx, s)?;
             // A payment may already have advanced through a refund in another worker.
             let noop = match &request {
@@ -475,7 +569,7 @@ impl Database {
         Ok(result)
     }
     fn provider(&self, s: &str, request: &Request, mode: Mode, lookup: bool) -> Result<Outcome> {
-        self.short(|tx| {
+        self.scoped_short(s, |tx| {
             let (kind,id,order,currency,amount,payment)=request.parts();
             if !lookup { tx.query_one("SELECT pg_advisory_xact_lock(hashtextextended($1,0))",&[&s])?; }
             if let Some(r)=tx.query_opt("SELECT order_id,currency,amount,payment_id,result FROM roo_provider.records WHERE scope=$1 AND kind=$2 AND operation_id=$3",&[&s,&kind,&id])? {
@@ -495,12 +589,17 @@ impl Database {
     }
     fn relay(&self, s: &str, mode: RelayMode) -> Result<Outcome> {
         loop {
-            let (result,more)=self.short(|tx| {
+            let (result,more)=self.scoped_short(s, |tx| {
                 load(tx,s)?;
                 let Some(row)=tx.query_opt("SELECT event_id,event_kind,order_id,currency,payment_id,refund_id,amount FROM roo_app.outbox WHERE scope=$1 AND NOT delivered ORDER BY seq LIMIT 1",&[&s])? else { return Ok(((Outcome::RelayOk,false),true)); };
                 if mode==RelayMode::SendFail {return Ok(((Outcome::RelaySendFailed,false),true));}
                 let fact=Fact::from_row(&row);
-                self.inbox(s,&fact)?;
+                // The outer transaction retains the policy lock until delivery/ack
+                // completes. Reacquiring it in another transaction could wait behind
+                // a revoker that is itself waiting for this outer transaction.
+                self.gate("before_delivery")?;
+                let authority = RelayAuthority { scope: s, _policy_transaction: tx };
+                self.inbox_under_relay_authority(authority,&fact)?;
                 self.gate("after_delivery")?;
                 if mode==RelayMode::AckFail {return Ok(((Outcome::RelayAckFailed,false),false));}
                 tx.execute("UPDATE roo_app.outbox SET delivered=true WHERE scope=$1 AND event_id=$2",&[&s,&fact.id])?;
@@ -511,7 +610,13 @@ impl Database {
             }
         }
     }
-    fn inbox(&self, s: &str, f: &Fact) -> Result<()> {
+    fn inbox_under_relay_authority(
+        &self,
+        authority: RelayAuthority<'_, '_>,
+        f: &Fact,
+    ) -> Result<()> {
+        let s = authority.scope;
+        self.check_authorization_scope(s)?;
         self.short(|tx| {
             tx.execute("INSERT INTO roo_consumer.inbox(scope,event_id,event_kind,order_id,currency,payment_id,refund_id,amount) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING",&[&s,&f.id,&f.kind,&f.order,&f.currency,&f.payment,&f.refund,&f.amount])?;
             let r=tx.query_one("SELECT event_id,event_kind,order_id,currency,payment_id,refund_id,amount FROM roo_consumer.inbox WHERE scope=$1 AND event_id=$2",&[&s,&f.id])?;
@@ -562,4 +667,61 @@ fn insert_event(tx: &mut Transaction<'_>, s: &str, e: &Event) -> Result<()> {
         return Err(Error::Input("outbox event fingerprint conflict"));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod authorization_tests {
+    use super::*;
+
+    fn unconnected() -> Database {
+        Database {
+            config: Config::new(),
+            gate: None,
+            authorization: None,
+        }
+    }
+
+    #[test]
+    fn authority_is_an_immutable_single_scope_clone() {
+        let base = unconnected();
+        let alice = base.authorized("first", "alice").unwrap();
+        let bob = base.authorized("second", "bob").unwrap();
+        assert!(base.authorization.is_none());
+        assert_eq!(alice.authorization, Some(("first".into(), "alice".into())));
+        assert_eq!(bob.authorization, Some(("second".into(), "bob".into())));
+        assert!(alice.authorized("second", "bob").is_err());
+        assert!(matches!(alice.init("second", false), Err(Error::Forbidden)));
+        assert!(matches!(
+            alice.snapshot("second", "second", "-"),
+            Err(Error::Forbidden)
+        ));
+        assert!(matches!(
+            alice.authorization_allowed("second"),
+            Err(Error::Forbidden)
+        ));
+        assert!(matches!(
+            alice.reserve_fresh(&["second".into()]),
+            Err(Error::Forbidden)
+        ));
+        let action = crate::fixture::parse_action("add:1:1").unwrap();
+        assert!(matches!(
+            alice.step("second", &action),
+            Err(Error::Forbidden)
+        ));
+    }
+
+    #[test]
+    fn authority_rejects_invalid_principals_before_any_connection() {
+        let base = unconnected();
+        for principal in ["", "a,b", "a b", "a-b", "é"] {
+            assert!(base.authorized("scope", principal).is_err());
+        }
+        assert!(base.authorized("scope", &"a".repeat(33)).is_err());
+        assert!(base.authorized("scope", &"a".repeat(32)).is_ok());
+        assert!(base.authorized("scope", "A_1").is_ok());
+        assert!(matches!(
+            base.authorization_allowed("scope"),
+            Err(Error::Input(_))
+        ));
+    }
 }
