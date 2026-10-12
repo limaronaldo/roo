@@ -22,6 +22,8 @@ struct App {
     database: Database,
     test: bool,
     gate: Option<Gate>,
+    authorization: bool,
+    authorization_gate: Option<Gate>,
     admission: Arc<Semaphore>,
 }
 #[derive(Clone)]
@@ -73,14 +75,19 @@ fn error(fault: Fault) -> Response {
 }
 
 async fn handle(State(app): State<App>, request: Request<Body>) -> Response {
-    let (scope, route) = match boundary::route(request.uri(), app.test) {
-        Ok(v) => v,
-        Err(e) => return error(e),
-    };
+    let (scope, route) =
+        match boundary::route_with_authorization(request.uri(), app.test, app.authorization) {
+            Ok(v) => v,
+            Err(e) => return error(e),
+        };
     if !boundary::method_allowed(route, request.method()) {
         return response(405, Fault::MethodNotAllowed.body(), Some(route.allow()));
     }
     let method = request.method().clone();
+    let principal = match boundary::principal(request.headers(), app.authorization) {
+        Ok(v) => v,
+        Err(e) => return error(e),
+    };
     let key = match boundary::headers(request.headers(), route, &method) {
         Ok(v) => v,
         Err(e) => return error(e),
@@ -108,7 +115,7 @@ async fn handle(State(app): State<App>, request: Request<Body>) -> Response {
     let result = tokio::task::spawn_blocking(move || {
         // Permit follows blocking work even if its HTTP client disconnects.
         let _permit = permit;
-        execute(&app, &scope, route, &method, action)
+        execute(&app, &scope, route, &method, action, principal.as_deref())
     })
     .await;
     match result {
@@ -124,24 +131,49 @@ fn execute(
     route: Route,
     method: &Method,
     action: Option<Action>,
+    principal: Option<&str>,
 ) -> Result<(u16, Value), Fault> {
     let probe = route == Route::Probe;
+    let database = match principal {
+        Some(principal) => app
+            .database
+            .authorized(scope, principal)
+            .map_err(|e| boundary::database_fault(e, probe))?,
+        None => app.database.clone(),
+    };
+    if route == Route::Authorization {
+        let allowed = database
+            .authorization_allowed(scope)
+            .map_err(|e| boundary::database_fault(e, probe))?;
+        return Ok((
+            200,
+            serde_json::json!({"authorization":{"allowed":allowed}}),
+        ));
+    }
+    if method == Method::POST && app.authorization {
+        // Observation is advisory even when denied. Execution rechecks policy
+        // under a row lock after the configured deterministic test gate.
+        let _ = database
+            .authorization_allowed(scope)
+            .map_err(|e| boundary::database_fault(e, probe))?;
+        if let Some(gate) = &app.authorization_gate {
+            gate.wait()?;
+        }
+    }
     let (status, last) = if method == Method::PUT {
-        app.database
+        database
             .init(scope, false)
             .map_err(|e| boundary::database_fault(e, probe))?;
         (200, "-".into())
     } else if let Some(action) = action {
-        let outcome = app
-            .database
+        let outcome = database
             .step(scope, &action)
             .map_err(|e| boundary::database_fault(e, probe))?;
         (boundary::domain_status(outcome), outcome.to_string())
     } else {
         (200, "-".into())
     };
-    let tsv = app
-        .database
+    let tsv = database
         .snapshot(scope, scope, &last)
         .map_err(|e| boundary::database_fault(e, probe))?;
     let body = boundary::snapshot(&tsv)?;
@@ -183,6 +215,14 @@ fn configure() -> Result<(u16, App), ()> {
         _ => return Err(()),
     };
     let gate_key = value("ROO_HTTP_GATE_LOCK")?;
+    let authorization_mode = value("ROO_HTTP_AUTH_MODE")?;
+    let authorization_gate_key = value("ROO_HTTP_AUTH_GATE_LOCK")?;
+    let authorization = boundary::AuthorizationConfig::parse(
+        authorization_mode.as_deref(),
+        authorization_gate_key.as_deref(),
+        test,
+    )
+    .map_err(|_| ())?;
     if !test
         && (gate_key.is_some()
             || value("ROO_GATE_POINT")?.is_some()
@@ -216,12 +256,32 @@ fn configure() -> Result<(u16, App), ()> {
             Some(Gate { config, key })
         }
     };
+    let authorization_gate = match authorization.gate_key {
+        None => None,
+        Some(key) => {
+            let worker = value("ROO_WORKER_ID")?.unwrap_or_else(|| "rust".into());
+            let mut config = Config::new();
+            config
+                .host("127.0.0.1")
+                .port(required("ROO_PG_PORT")?.parse::<u16>().map_err(|_| ())?)
+                .dbname("roo_test")
+                .user("roo_test")
+                .connect_timeout(Duration::from_secs(5))
+                .application_name(&format!(
+                    "roo:{worker}:http_after_authorization_observation"
+                ))
+                .options("-c statement_timeout=30000 -c lock_timeout=30000");
+            Some(Gate { config, key })
+        }
+    };
     Ok((
         port,
         App {
             database,
             test,
             gate,
+            authorization: authorization.enabled,
+            authorization_gate,
             admission: Arc::new(Semaphore::new(WORKERS)),
         },
     ))

@@ -23,7 +23,72 @@ public final class HttpUnitTests {
     private static void bad(String body) throws Exception {
         rejects("/v1/scopes/demo/payments", "POST", JSON, body.getBytes(StandardCharsets.UTF_8), false, 400, "InvalidRequest");
     }
+    private static void authorizationRejects(String path, String method, Map<String, List<String>> headers,
+        byte[] body, int status, String code, String allow) throws Exception {
+        try { HttpProtocol.validate(URI.create(path), method, headers, body, true, true); throw new AssertionError("Accepted rejected authorization request"); }
+        catch (HttpProtocol.Rejection rejected) {
+            check(rejected.status == status && rejected.code.equals(code) && java.util.Objects.equals(rejected.allow, allow));
+        }
+    }
+    private static void invalidConfig(Map<String, String> env) {
+        try { HttpService.Config.parse(env); throw new AssertionError("Accepted invalid authorization configuration"); }
+        catch (IllegalArgumentException expected) { checks++; }
+    }
+    private static void authorizationChecks() throws Exception {
+        byte[] empty = new byte[0];
+        Map<String, List<String>> caller = Map.of("X-Roo-Principal", List.of("caller_1"));
+        check(HttpProtocol.principal(Map.of(), false) == null);
+        check(HttpProtocol.principal(caller, true).equals("caller_1"));
+        authorizationRejects("/v1/scopes/demo", "GET", Map.of(), empty, 401, "PrincipalRequired", null);
+        for (String principal : List.of("", " caller", "caller ", "a-b", "a,b", "é", "a".repeat(33)))
+            authorizationRejects("/v1/scopes/demo", "GET", Map.of("X-Roo-Principal", List.of(principal)), empty, 400, "InvalidRequest", null);
+        authorizationRejects("/v1/scopes/demo", "GET", Map.of("X-Roo-Principal", List.of("caller", "caller")), empty, 400, "InvalidRequest", null);
+        authorizationRejects("/v1/scopes/demo", "GET", Map.of("X-Roo-Principal", List.of("caller"), "x-roo-principal", List.of("caller")), empty, 400, "InvalidRequest", null);
+        check(HttpProtocol.principal(Map.of("x-roo-principal", List.of("a".repeat(32))), true).length() == 32);
+        check(HttpProtocol.validate(URI.create("/v1/scopes/missing/authorization"), "GET", caller, empty, true, true).route().resource().equals("authorization"));
+        rejects("/v1/scopes/demo/authorization", "GET", caller, empty, true, 404, "RouteNotFound");
+        for (String method : List.of("PUT", "POST", "DELETE", "HEAD"))
+            authorizationRejects("/v1/scopes/demo/authorization", method, caller, empty, 405, "MethodNotAllowed", "GET");
+        authorizationRejects("/v1/scopes/demo/authorization", "GET", caller, "{}".getBytes(StandardCharsets.UTF_8), 400, "InvalidRequest", null);
+        authorizationRejects("/v1/scopes/demo/authorization", "GET", Map.of("X-Roo-Principal", List.of("caller"), "Idempotency-Key", List.of("p1")), empty, 400, "InvalidRequest", null);
+        check(new String(HttpProtocol.error("PrincipalRequired"), StandardCharsets.UTF_8).equals("{\"error\":{\"code\":\"PrincipalRequired\",\"message\":\"Principal required\"}}"));
+        check(new String(HttpProtocol.error("Forbidden"), StandardCharsets.UTF_8).equals("{\"error\":{\"code\":\"Forbidden\",\"message\":\"Access forbidden\"}}"));
+        var env = new HashMap<String, String>();
+        env.put("ROO_HTTP_HOST", "127.0.0.1"); env.put("ROO_HTTP_PORT", "0");
+        check(!HttpService.Config.parse(env).authorization());
+        env.put("ROO_HTTP_AUTH_MODE", "fixture"); invalidConfig(env);
+        env.put("ROO_HTTP_TEST_MODE", "1"); check(HttpService.Config.parse(env).authorization());
+        env.put("ROO_HTTP_AUTH_MODE", "unknown"); invalidConfig(env);
+        env.put("ROO_HTTP_AUTH_MODE", ""); invalidConfig(env);
+        env.remove("ROO_HTTP_AUTH_MODE"); env.put("ROO_HTTP_AUTH_GATE_LOCK", "1"); invalidConfig(env);
+        env.put("ROO_HTTP_AUTH_MODE", "fixture");
+        check(HttpService.Config.parse(env).authorizationGate() == 1L);
+        env.put("ROO_HTTP_AUTH_GATE_LOCK", "9223372036854775807");
+        check(HttpService.Config.parse(env).authorizationGate() == Long.MAX_VALUE);
+        for (String key : List.of("", "0", "-1", "+1", " 1", "1 ", "1.0", "9223372036854775808")) {
+            env.put("ROO_HTTP_AUTH_GATE_LOCK", key); invalidConfig(env);
+        }
+        env.put("ROO_HTTP_AUTH_GATE_LOCK", "1"); env.remove("ROO_HTTP_TEST_MODE"); invalidConfig(env);
+        Database base = new Database(Map.of("ROO_PG_HOST", "127.0.0.1", "ROO_PG_PORT", "1",
+            "ROO_PG_DATABASE", "roo_test", "ROO_PG_USER", "roo_test"));
+        Database guarded = base.authorized("demo", "caller");
+        // These reject before opening a connection, proving accidental scope reuse cannot
+        // turn a guarded adapter into authority for another scope or an unscoped callback.
+        try { guarded.transaction("other", c -> { throw new AssertionError("Callback entered"); }); throw new AssertionError("Scope mismatch accepted"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { guarded.transaction(c -> { throw new AssertionError("Callback entered"); }); throw new AssertionError("Unscoped callback accepted"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { guarded.observeAuthorization("demo", "other"); throw new AssertionError("Principal mismatch accepted"); }
+        catch (Database.Forbidden expected) { checks++; }
+        try { guarded.authorized("demo", "other"); throw new AssertionError("Context rebound"); }
+        catch (IllegalStateException expected) { checks++; }
+        // A request clone does not bind or mutate the shared base adapter.
+        check(base.authorized("other", "other") != guarded);
+        try { base.authorized("demo", "bad-principal"); throw new AssertionError("Invalid context accepted"); }
+        catch (IllegalArgumentException expected) { checks++; }
+    }
     public static void main(String[] args) throws Exception {
+        authorizationChecks();
         check(parse("/v1/scopes/demo", "PUT", "{}", false).action() == null);
         check(parse("/v1/scopes/demo/payments", "POST", "{\"payment_id\":\"p1\"}", false).action().equals(Action.parse("pay:p1:approve:none")));
         check(parse("/v1/scopes/demo/refunds", "POST", "{\"refund_id\":\"r1\",\"mode\":\"timeout_after\",\"failure\":\"commit\"}", true).action().equals(Action.parse("refund:r1:timeout_after:commit")));

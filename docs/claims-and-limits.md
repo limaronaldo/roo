@@ -16,6 +16,7 @@ ROO improves delivery speed, defect rates, or architectural quality.
 | Persistent recovery handles the tested competing workers and restarts | [PostgreSQL specification](../case-studies/orders-payments/postgres/SPEC.md) and [dated validation](../research/postgres-validation.md) | A dedicated local PostgreSQL cluster; provider and inbox use that same server/WAL |
 | HTTP retry and response-loss recovery preserve the specified effects | [HTTP specification](../case-studies/orders-payments/http/SPEC.md) and [dated validation](../research/http-validation.md) | Loopback APIs, bounded inputs/workers, synthetic provider |
 | The adoption track ran on a hosted AMD64 runner | [Hosted reproduction](10-github-reproduction.md) with run and artifact references | The identified commit, run, platform, and scenarios |
+| Durable HTTP policy is rechecked at each protected transaction and survives restart | [HTTP authorization extension](../case-studies/orders-payments/http/AUTHORIZATION.md) and shared HTTP verifier | Explicit fixture mode, asserted synthetic principals, one PostgreSQL/WAL domain; no real authentication |
 | Execution rechecks permission after an observed grant is revoked | [Authorization example](../case-studies/orders-payments/authorization/README.md), paired thread tests and shared oracle | Trusted synthetic principals, one process-local policy/transition lock; no authentication or durable effects |
 
 A green badge identifies the latest workflow result. For a behavioral claim,
@@ -24,9 +25,11 @@ describe their original candidate; editing a chapter does not rerun them.
 
 ## What requires further work
 
-The payment simulators and their PostgreSQL/HTTP extensions omit caller
-authentication, tenant authorization, revocation, and real payment networks.
-The separate authorization example checks local revocation using trusted
+The payment simulators omit real caller authentication, tenant policy, and real
+payment networks. The HTTP extension adds opt-in synthetic scope authorization
+and durable revocation checks; its asserted principal header is not authentication.
+Legacy HTTP mode remains unauthenticated. The separate authorization example
+checks process-local revocation using trusted
 synthetic principals; it does not retrofit security into those services.
 Scope keys and loopback restrictions are fixture controls. A live system must
 implement an authorization policy, verify its provider's idempotency/key-retention

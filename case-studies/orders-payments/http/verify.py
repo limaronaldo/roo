@@ -164,7 +164,18 @@ def graceful_drain(server):
                 listener_closed = False
                 while time.monotonic() < deadline:
                     try:
-                        gated.get(scope)
+                        status, payload, _ = gated.request("GET", "/v1/scopes/" + scope)
+                        if status == 503:
+                            # Admission can close before the listener finishes closing.
+                            # This is an intermediate state, not evidence of closure.
+                            if payload != {"error": {"code": "Busy", "message": MESSAGES["Busy"]}}:
+                                raise AssertionError("Unexpected error during graceful shutdown")
+                        elif (status != 200 or set(payload) != {"snapshot"}
+                              or set(payload["snapshot"]) != set(HEADER)
+                              or not all(type(v) is str for v in payload["snapshot"].values())
+                              or payload["snapshot"]["scenario"] != scope
+                              or payload["snapshot"]["last_result"] != "-"):
+                            raise AssertionError("Invalid read during graceful shutdown")
                     except (ConnectionRefusedError, ConnectionResetError, http.client.RemoteDisconnected):
                         listener_closed = True
                         break
@@ -413,7 +424,8 @@ def main():
     finally:
         cleanup()
     EVIDENCE["all_http_processes_stopped"] = all(s.process.poll() is not None for s in PROCESSES)
-    (CASE.parents[2] / "research/http-integration-evidence.json").write_text(json.dumps(EVIDENCE, indent=2) + "\n")
+    (CASE / ".runtime").mkdir(parents=True, exist_ok=True)
+    (CASE / ".runtime/http-last-run.json").write_text(json.dumps(EVIDENCE, indent=2) + "\n")
     print("PASS PostgreSQL immediate restart: 12 HTTP snapshots preserved/recovered; 3 surviving HTTP servers returned bounded503 then reconnected", flush=True)
     print("PASS all owned HTTP processes stopped", flush=True)
 

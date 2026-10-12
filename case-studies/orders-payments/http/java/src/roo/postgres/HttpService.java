@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** Stateless adapter composition shared by the two independently selectable coordinators. */
 final class HttpService {
     private HttpService() { }
-    record Config(int port, boolean test, Long gate, String worker) {
+    record Config(int port, boolean test, Long gate, String worker, boolean authorization, Long authorizationGate) {
         static Config parse(Map<String, String> env) {
             if (!"127.0.0.1".equals(env.get("ROO_HTTP_HOST"))) throw new IllegalArgumentException("Invalid host");
             String port = env.get("ROO_HTTP_PORT");
@@ -25,6 +26,12 @@ final class HttpService {
             String test = env.get("ROO_HTTP_TEST_MODE");
             if (test != null && !test.equals("1")) throw new IllegalArgumentException("Invalid test mode");
             String gate = env.get("ROO_HTTP_GATE_LOCK");
+            String mode = env.get("ROO_HTTP_AUTH_MODE");
+            if (mode != null && !mode.equals("fixture")) throw new IllegalArgumentException("Invalid authorization mode");
+            if (mode != null && test == null) throw new IllegalArgumentException("Authorization requires test mode");
+            String authorizationGate = env.get("ROO_HTTP_AUTH_GATE_LOCK");
+            if (authorizationGate != null && (mode == null || test == null))
+                throw new IllegalArgumentException("Authorization gate requires fixture test mode");
             if (test == null && (gate != null || env.containsKey("ROO_GATE_POINT") || env.containsKey("ROO_GATE_LOCK")))
                 throw new IllegalArgumentException("Test mode required");
             Long key = null;
@@ -35,7 +42,13 @@ final class HttpService {
             }
             String worker = env.getOrDefault("ROO_WORKER_ID", "java");
             if (!worker.matches("[A-Za-z0-9_]{1,32}")) throw new IllegalArgumentException("Invalid worker");
-            return new Config(Integer.parseInt(port), test != null, key, worker);
+            Long authorizationKey = null;
+            if (authorizationGate != null) {
+                if (!authorizationGate.matches("[0-9]+")) throw new IllegalArgumentException("Invalid authorization gate");
+                authorizationKey = Long.valueOf(authorizationGate);
+                if (authorizationKey <= 0) throw new IllegalArgumentException("Invalid authorization gate");
+            }
+            return new Config(Integer.parseInt(port), test != null, key, worker, mode != null, authorizationKey);
         }
     }
     static void run(String[] args, boolean template) {
@@ -46,15 +59,12 @@ final class HttpService {
             Map<String, String> env = Map.copyOf(System.getenv());
             Config config = Config.parse(env);
             Database db = new Database(env);
-            Store store = new Store(db);
-            Provider provider = new Provider(db);
-            Application app = template ? new JdbcTemplateApplication(store, provider, db) : new CompositionApplication(store, provider, db);
             var admission = new Semaphore(16);
             workers = new ThreadPoolExecutor(32, 32, 0L, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(64), new ThreadPoolExecutor.CallerRunsPolicy());
             server = HttpServer.create(new InetSocketAddress("127.0.0.1", config.port()), 64);
             server.setExecutor(workers);
-            server.createContext("/", exchange -> handle(exchange, config, db, store, app, admission));
+            server.createContext("/", exchange -> handle(exchange, config, db, template, admission));
             HttpServer listener = server;
             ThreadPoolExecutor pool = workers;
             AtomicBoolean stopped = new AtomicBoolean();
@@ -76,15 +86,30 @@ final class HttpService {
             System.exit(1);
         }
     }
-    private static void handle(HttpExchange exchange, Config config, Database db, Store store, Application app, Semaphore admission) {
+    private static void handle(HttpExchange exchange, Config config, Database db, boolean template, Semaphore admission) {
         boolean admitted = false;
         try (exchange) {
             try {
                 byte[] body = HttpProtocol.read(exchange.getRequestBody());
-                HttpProtocol.Input input = HttpProtocol.validate(exchange.getRequestURI(), exchange.getRequestMethod(), exchange.getRequestHeaders(), body, config.test());
+                HttpProtocol.Input input = HttpProtocol.validate(exchange.getRequestURI(), exchange.getRequestMethod(), exchange.getRequestHeaders(), body, config.test(), config.authorization());
                 admitted = admission.tryAcquire();
                 if (!admitted) throw new HttpProtocol.Rejection(503, "Busy");
                 String scope = input.route().scope();
+                String principal = HttpProtocol.principal(exchange.getRequestHeaders(), config.authorization());
+                if (input.route().resource().equals("authorization")) {
+                    boolean allowed = db.observeAuthorization(scope, principal);
+                    send(exchange, 200, ("{\"authorization\":{\"allowed\":" + allowed + "}}").getBytes(StandardCharsets.UTF_8));
+                    return;
+                }
+                if (input.method().equals("POST") && config.authorization()) {
+                    // Observation is advisory even when false; execution always reads fresh policy.
+                    db.observeAuthorization(scope, principal);
+                    gate(db, config.worker(), config.authorizationGate(), "http_after_authorization_observation");
+                }
+                Database requestDb = config.authorization() ? db.authorized(scope, principal) : db;
+                Store store = new Store(requestDb);
+                Provider provider = new Provider(requestDb);
+                Application app = template ? new JdbcTemplateApplication(store, provider, requestDb) : new CompositionApplication(store, provider, requestDb);
                 if (input.method().equals("PUT")) store.init(scope);
                 else {
                     // Only this read's documented missing-row exception becomes a 404.
@@ -104,6 +129,8 @@ final class HttpService {
             } catch (HttpProtocol.Rejection rejected) {
                 if (rejected.allow != null) exchange.getResponseHeaders().set("Allow", rejected.allow);
                 send(exchange, rejected.status, HttpProtocol.error(rejected.code));
+            } catch (Database.Forbidden forbidden) {
+                send(exchange, 403, HttpProtocol.error("Forbidden"));
             } catch (SQLException unavailable) {
                 send(exchange, 503, HttpProtocol.error("DatabaseUnavailable"));
             } catch (RuntimeException unexpected) {
@@ -117,16 +144,19 @@ final class HttpService {
         }
     }
     private static void gate(Database db, Config config) throws SQLException {
-        if (config.gate() == null) return;
+        gate(db, config.worker(), config.gate(), "http_after_snapshot");
+    }
+    private static void gate(Database db, String worker, Long key, String point) throws SQLException {
+        if (key == null) return;
         try (Connection connection = db.open(true)) {
             try (PreparedStatement statement = connection.prepareStatement("SELECT set_config('application_name', ?, false)")) {
-                statement.setString(1, "roo:" + config.worker() + ":http_after_snapshot"); statement.execute();
+                statement.setString(1, "roo:" + worker + ":" + point); statement.execute();
             }
             try (PreparedStatement statement = connection.prepareStatement("SELECT pg_advisory_lock(?)")) {
-                statement.setLong(1, config.gate()); statement.execute();
+                statement.setLong(1, key); statement.execute();
             }
             try (PreparedStatement statement = connection.prepareStatement("SELECT pg_advisory_unlock(?)")) {
-                statement.setLong(1, config.gate()); statement.execute();
+                statement.setLong(1, key); statement.execute();
             }
         }
     }

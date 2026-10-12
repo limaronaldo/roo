@@ -23,6 +23,7 @@ ENV JAVA_HOME=/opt/java/openjdk \
     PATH=/opt/java/openjdk/bin:/usr/lib/postgresql/18/bin:/usr/local/cargo/bin:/usr/local/bin:/usr/bin:/bin \
     CARGO_NET_OFFLINE=true \
     PYTHONDONTWRITEBYTECODE=1
+RUN rustup component add rustfmt clippy
 WORKDIR /workspace
 COPY --chown=roo:roo case-studies/orders-payments/ case-studies/orders-payments/
 RUN /sbin/ldconfig && chown roo:roo /workspace /usr/local/cargo /usr/local/rustup \

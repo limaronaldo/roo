@@ -70,6 +70,10 @@ Java composition, Java Template Method, and Rust composition use shared
 scenario inputs and expected results. Inheritance is a legitimate alternative
 when its hooks preserve the same behavioral contract.
 
+The [durable HTTP authorization extension](case-studies/orders-payments/http/AUTHORIZATION.md)
+adds opt-in synthetic policy checks to PostgreSQL transactions in all three API
+variants, including revocation and authorized recovery after restart.
+
 The [authorization example](case-studies/orders-payments/authorization/README.md)
 separately tests revocation between observing permission and executing an order
 approval, with the same policy and outcomes in Java and Rust.

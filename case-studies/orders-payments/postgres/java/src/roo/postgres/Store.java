@@ -23,7 +23,7 @@ final class Store {
         }
     }
     void init(String scope) throws SQLException {
-        db.transaction(c -> {
+        db.transaction(scope, c -> {
             try (PreparedStatement p = c.prepareStatement("INSERT INTO roo_app.orders(scope) VALUES (?) ON CONFLICT DO NOTHING")) { p.setString(1, scope); p.executeUpdate(); }
             load(c, scope, false); return Database.commit(null);
         });
@@ -39,7 +39,7 @@ final class Store {
     Result add(String scope, Action action) throws SQLException {
         // Parsing is complete before entering the transaction; overflow is a domain outcome.
         Long unit = integer(action.field(1)), quantity = integer(action.field(2));
-        return db.transaction(c -> {
+        return db.transaction(scope, c -> {
             Order o = load(c, scope, true);
             if (unit == null || quantity == null) return Database.commit(Result.Overflow);
             if (o.state() != State.Draft) return Database.commit(Result.InvalidState);
@@ -60,7 +60,7 @@ final class Store {
         try { return Long.valueOf(text); } catch (NumberFormatException overflow) { return null; }
     }
     Prepared prepare(String scope, Action action) throws SQLException {
-        return db.transaction(c -> {
+        return db.transaction(scope, c -> {
             Order o = load(c, scope, true);
             Prepared decision = Domain.prepare(o, action);
             if (decision.rejection() != null) return Database.commit(decision);
@@ -82,8 +82,9 @@ final class Store {
     }
     record Finalized(Result result, boolean committed) { }
     Finalized finish(String scope, Request request, Result observed, Failure failure) throws SQLException {
+        db.checkScope(scope);
         if (observed != Result.Approved && observed != Result.Declined) return new Finalized(observed, false);
-        return db.transaction(c -> {
+        return db.transaction(scope, c -> {
             Order current = load(c, scope, true);
             Result replay = Domain.replay(current, request);
             if (replay != null) return Database.commit(new Finalized(replay, false));
@@ -119,7 +120,7 @@ final class Store {
     }
     Result relay(String scope, Relay mode) throws SQLException {
         while (true) {
-            Result result = db.transaction(c -> {
+            Result result = db.transaction(scope, c -> {
                 load(c, scope, true);
                 Event event;
                 try (PreparedStatement p = c.prepareStatement("SELECT event_id,event_kind,order_id,currency,payment_id,refund_id,amount FROM roo_app.outbox WHERE scope=? AND NOT delivered ORDER BY seq LIMIT 1")) {
@@ -130,8 +131,11 @@ final class Store {
                     }
                 }
                 if (mode == Relay.send_fail) return Database.commit(Result.RelaySendFailed);
-                // Order lock deliberately spans this independently committed local inbox effect.
-                db.transaction(inbox -> { insertEvent(inbox, "roo_consumer.inbox", scope, event); return Database.commit(null); });
+                // The outer transaction retains the policy and order locks through this effect.
+                // Reacquiring the same policy on another connection can deadlock with a queued
+                // revoker. Only this private nested effect inherits the outer authorization.
+                db.gate("before_delivery");
+                deliverInbox(event, scope);
                 db.gate("after_delivery");
                 try (PreparedStatement p = c.prepareStatement("UPDATE roo_app.outbox SET delivered=true WHERE scope=? AND event_id=?")) {
                     p.setString(1, scope); p.setString(2, event.id().value()); p.executeUpdate();
@@ -143,25 +147,39 @@ final class Store {
             if (result != null) return result;
         }
     }
-    String snapshot(String scope, String label, String result) throws SQLException {
-        try (Connection c = db.open(false); PreparedStatement p = c.prepareStatement("""
-            SELECT state,total,
-              (SELECT count(*) FROM roo_provider.records WHERE scope=o.scope AND kind='payment' AND result='Approved'),
-              (SELECT count(*) FROM roo_provider.records WHERE scope=o.scope AND kind='refund' AND result='Approved'),
-              (SELECT count(*) FROM roo_app.outbox WHERE scope=o.scope),
-              (SELECT count(*) FROM roo_consumer.inbox WHERE scope=o.scope),
-              (SELECT count(*) FROM roo_app.outbox WHERE scope=o.scope AND NOT delivered),
-              payment_id,refund_id FROM roo_app.orders o WHERE scope=?
-            """)) {
-            p.setString(1, scope);
-            try (ResultSet r = p.executeQuery()) {
-                if (!r.next()) throw new IllegalArgumentException("Missing scope");
-                StringBuilder out = new StringBuilder(label);
-                for (int i = 1; i <= 7; i++) out.append('\t').append(r.getString(i));
-                out.append('\t').append(result);
-                for (int i = 8; i <= 9; i++) { String v = r.getString(i); out.append('\t').append(v == null ? "-" : v); }
-                return out.append('\n').toString();
+    private void deliverInbox(Event event, String scope) throws SQLException {
+        try (Connection inbox = db.open(false)) {
+            inbox.setAutoCommit(false);
+            try {
+                insertEvent(inbox, "roo_consumer.inbox", scope, event);
+                inbox.commit();
+            } catch (SQLException | RuntimeException failure) {
+                try { inbox.rollback(); } catch (SQLException ignored) { /* Preserve original failure. */ }
+                throw failure;
             }
         }
+    }
+    String snapshot(String scope, String label, String result) throws SQLException {
+        return db.transaction(scope, c -> {
+            try (PreparedStatement p = c.prepareStatement("""
+                SELECT state,total,
+                  (SELECT count(*) FROM roo_provider.records WHERE scope=o.scope AND kind='payment' AND result='Approved'),
+                  (SELECT count(*) FROM roo_provider.records WHERE scope=o.scope AND kind='refund' AND result='Approved'),
+                  (SELECT count(*) FROM roo_app.outbox WHERE scope=o.scope),
+                  (SELECT count(*) FROM roo_consumer.inbox WHERE scope=o.scope),
+                  (SELECT count(*) FROM roo_app.outbox WHERE scope=o.scope AND NOT delivered),
+                  payment_id,refund_id FROM roo_app.orders o WHERE scope=?
+                """)) {
+                p.setString(1, scope);
+                try (ResultSet r = p.executeQuery()) {
+                    if (!r.next()) throw new IllegalArgumentException("Missing scope");
+                    StringBuilder out = new StringBuilder(label);
+                    for (int i = 1; i <= 7; i++) out.append('\t').append(r.getString(i));
+                    out.append('\t').append(result);
+                    for (int i = 8; i <= 9; i++) { String v = r.getString(i); out.append('\t').append(v == null ? "-" : v); }
+                    return Database.commit(out.append('\n').toString());
+                }
+            }
+        });
     }
 }

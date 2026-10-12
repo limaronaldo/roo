@@ -20,6 +20,9 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ### Added
 
+- Opt-in HTTP fixture authorization backed by durable PostgreSQL policy in Java
+  and Rust, with transaction-level revocation checks, equivalent HTTP schedules,
+  and recovery of the original payment identity after process/database restart.
 - A bounded caller-authorization example in Java and Rust: execution rechecks
   permission under the order transition's lock, with revocation between
   observation and execution, shared outcomes, controlled thread tests, and CI.

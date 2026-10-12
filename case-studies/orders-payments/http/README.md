@@ -8,6 +8,12 @@ requests and responses; it does not own another copy of the payment workflow.
 The accepted PostgreSQL source/evidence baseline remains
 `d1594cd230a03bcad6edbb2b590cbcb3bbcbc5f94604cdc4fbb0af59596bd7ac`.
 
+The [durable authorization extension](AUTHORIZATION.md) adds explicit fixture
+policy to the same APIs and transactions, with revocation and restart checks.
+Legacy mode retains the behavior described below. Its historical receipts
+describe their original bytes; optional authorization contexts extend the current
+PostgreSQL adapters without rewriting those records.
+
 The normative wire and runtime contract is [SPEC.md](SPEC.md). The accepted
 database behavior is in the [PostgreSQL tutorial](../postgres/README.md) and
 [PostgreSQL contract](../postgres/SPEC.md). This page walks through how the HTTP
@@ -505,7 +511,7 @@ reactor thread. A full admission gate returns `503 Busy`. No global application
 mutex hides the row-lock schedule. Different requests can therefore contend at
 PostgreSQL and the test harness can witness the actual database lock wait.
 
-## ROO's eight-field relationship contract at the HTTP boundary
+## ROO's eight-field relationship contract at the legacy HTTP boundary
 
 The matrix applies the eight fields from
 [ROO relationship design](../../../docs/02-relationship-design.md): owner or
@@ -513,6 +519,12 @@ resource custodian, stable identity, invariant coordinator, authorization,
 access regime, validity horizon, execution domain, and failure boundary. Memory
 custody, domain responsibility, durable database identity, and caller permission
 are named separately where they differ.
+
+This matrix describes the default legacy mode. In the opt-in authorization
+fixture, every row's permission rule changes: the current `(scope, principal)`
+grant must allow execution and remains locked through each protected transaction.
+The [durable authorization contract](AUTHORIZATION.md#relationship-contract)
+describes that extension, including authorization of provider effects and reads.
 
 | Relationship | Owner / custodian | Stable identity | Invariant coordinator | Authorization | Access regime | Validity horizon | Execution domain | Failure boundary |
 |---|---|---|---|---|---|---|---|---|
@@ -704,7 +716,7 @@ check where the server was stopped, what the client observed, and what recovery 
 | [Rust HTTP crate](rust/src/lib.rs) | Route and JSON boundary, duplicate-name rejection, snapshots, status mapping |
 | [Rust HTTP binary](rust/src/main.rs) | Axum/Tokio listener, bounded blocking admission, shutdown, and DB calls |
 | [Rust crate manifest and lockfile](rust/Cargo.toml) | Direct accepted-crate reuse and pinned HTTP dependency graph |
-| [HTTP schema note](schema.sql) | Documents that HTTP uses the accepted PostgreSQL schema with no receipt-table migration |
+| [HTTP authorization schema](schema.sql) | Adds durable fixture policy beside the existing PostgreSQL schemas; no command receipt |
 | [Shared HTTP verifier](verify.sh) | Owns the three-variant local qualification lifecycle |
 | [Historical regression runner](regression.sh) | Rechecks the original in-memory, PostgreSQL, and ROO cases with new receipts |
 | [Accepted PostgreSQL Java adapters](../postgres/java/src/roo/postgres/Database.java) | Structured loopback connections, short transaction policy, database gates |

@@ -97,6 +97,7 @@ nav:
       - HTTP APIs:
           - case-studies/orders-payments/http/README.md
           - HTTP specification: case-studies/orders-payments/http/SPEC.md
+          - Durable authorization: case-studies/orders-payments/http/AUTHORIZATION.md
           - Java API: case-studies/orders-payments/http/java/README.md
           - Rust API: case-studies/orders-payments/http/rust/README.md
       - Executable adoption track:

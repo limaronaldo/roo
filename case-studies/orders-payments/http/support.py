@@ -32,7 +32,10 @@ MESSAGES = {"InvalidRequest": "Invalid request", "RouteNotFound": "Route not fou
             "MethodNotAllowed": "Method not allowed", "ScopeNotFound": "Scope not found",
             "UnsupportedMediaType": "Unsupported media type", "BodyTooLarge": "Body too large",
             "NotAcceptable": "Not acceptable", "DatabaseUnavailable": "Database unavailable",
-            "InternalError": "Internal error", "Busy": "Server busy"}
+            "InternalError": "Internal error", "Busy": "Server busy",
+            "PrincipalRequired": "Principal required", "Forbidden": "Access forbidden"}
+
+_DEFAULT_PRINCIPAL = object()
 
 
 def unique(label):
@@ -52,9 +55,11 @@ def command(variant):
     return [str(CASE / "rust/target/debug/roo-http")]
 
 
-def environment(test=True, point=None, key=None, http_key=None, worker=None):
+def environment(test=True, point=None, key=None, http_key=None, worker=None,
+                auth=False, auth_key=None, auth_mode=None):
     env = {**os.environ, **cluster.environment()}
-    for name in ("ROO_GATE_POINT", "ROO_GATE_LOCK", "ROO_HTTP_GATE_LOCK", "ROO_HTTP_TEST_MODE", "ROO_RUN_ID"):
+    for name in ("ROO_GATE_POINT", "ROO_GATE_LOCK", "ROO_HTTP_GATE_LOCK",
+                 "ROO_HTTP_TEST_MODE", "ROO_HTTP_AUTH_MODE", "ROO_HTTP_AUTH_GATE_LOCK", "ROO_RUN_ID"):
         env.pop(name, None)
     env.update(ROO_HTTP_HOST="127.0.0.1", ROO_HTTP_PORT="0", ROO_WORKER_ID=worker or unique("worker")[-32:])
     if test:
@@ -63,13 +68,18 @@ def environment(test=True, point=None, key=None, http_key=None, worker=None):
         env.update(ROO_GATE_POINT=point, ROO_GATE_LOCK=str(key))
     if http_key:
         env["ROO_HTTP_GATE_LOCK"] = str(http_key)
+    if auth or auth_mode is not None:
+        env["ROO_HTTP_AUTH_MODE"] = auth_mode if auth_mode is not None else "fixture"
+    if auth_key is not None:
+        env["ROO_HTTP_AUTH_GATE_LOCK"] = str(auth_key)
     return env
 
 
 class Server:
-    def __init__(self, variant, **settings):
+    def __init__(self, variant, *, auth=False, principal=None, auth_key=None, **settings):
         self.variant = variant
-        self.env = environment(**settings)
+        self.principal = principal
+        self.env = environment(auth=auth, auth_key=auth_key, **settings)
         self.worker = self.env["ROO_WORKER_ID"]
         runtime = CASE / ".runtime"
         runtime.mkdir(mode=0o700, exist_ok=True)
@@ -118,12 +128,20 @@ class Server:
         self.process.stdout.close()
         self.log.close()
 
-    def request(self, method, path, body=None, *, headers=None, raw=False, chunked=False):
+    def request(self, method, path, body=None, *, headers=None, raw=False, chunked=False,
+                principal=_DEFAULT_PRINCIPAL):
         data = body if raw else json.dumps(body, separators=(",", ":")).encode() if body is not None else None
         connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=35)
         try:
             connection.putrequest(method, path)
-            for key, value in (headers if headers is not None else [("Accept", "application/json"), *([("Content-Type", "application/json")] if data is not None else [])]):
+            request_headers = list(headers) if headers is not None else [
+                ("Accept", "application/json"),
+                *([("Content-Type", "application/json")] if data is not None else []),
+            ]
+            selected_principal = self.principal if principal is _DEFAULT_PRINCIPAL else principal
+            if selected_principal is not None and not any(key.lower() == "x-roo-principal" for key, _ in request_headers):
+                request_headers.append(("X-Roo-Principal", selected_principal))
+            for key, value in request_headers:
                 connection.putheader(key, value)
             if chunked:
                 connection.putheader("Transfer-Encoding", "chunked")
@@ -156,30 +174,31 @@ class Server:
             raise AssertionError(f"{self.variant}: {row['last_result']} status {status}, expected {expected}")
         return row
 
-    def get(self, scope):
-        return self.snapshot_response("GET", "/v1/scopes/" + scope)
+    def get(self, scope, *, principal=_DEFAULT_PRINCIPAL):
+        return self.snapshot_response("GET", "/v1/scopes/" + scope, principal=principal)
 
-    def init(self, scope):
-        return self.snapshot_response("PUT", "/v1/scopes/" + scope, {})
+    def init(self, scope, *, principal=_DEFAULT_PRINCIPAL):
+        return self.snapshot_response("PUT", "/v1/scopes/" + scope, {}, principal=principal)
 
-    def step(self, scope, action, outcome=None):
+    def step(self, scope, action, outcome=None, *, principal=_DEFAULT_PRINCIPAL):
         endpoint, body = translate(action)
         headers = [("Accept", "application/json"), ("Content-Type", "application/json")]
         if endpoint in ("payments", "refunds"):
             headers.append(("Idempotency-Key", body.get("payment_id", body.get("refund_id"))))
-        row = self.snapshot_response("POST", "/v1/scopes/" + scope + "/" + endpoint, body, headers=headers)
+        row = self.snapshot_response("POST", "/v1/scopes/" + scope + "/" + endpoint, body,
+                                     headers=headers, principal=principal)
         if outcome is not None:
             require(row, last_result=outcome)
         return row
 
-    def seed(self, label, state="Draft"):
+    def seed(self, label, state="Draft", *, principal=_DEFAULT_PRINCIPAL):
         scope = unique(label)
-        self.init(scope)
-        self.step(scope, "add:250:1", "Added")
+        self.init(scope, principal=principal)
+        self.step(scope, "add:250:1", "Added", principal=principal)
         if state in ("Paid", "Refunded"):
-            self.step(scope, "pay:p1:approve:none", "Approved")
+            self.step(scope, "pay:p1:approve:none", "Approved", principal=principal)
         if state == "Refunded":
-            self.step(scope, "refund:r1:approve:none", "Approved")
+            self.step(scope, "refund:r1:approve:none", "Approved", principal=principal)
         return scope
 
 
