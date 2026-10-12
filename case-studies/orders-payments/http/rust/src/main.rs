@@ -134,27 +134,28 @@ fn execute(
     principal: Option<&str>,
 ) -> Result<(u16, Value), Fault> {
     let probe = route == Route::Probe;
+    let operation = boundary::operation_for(route, method)?;
     let database = match principal {
         Some(principal) => app
             .database
-            .authorized(scope, principal)
+            .authorized(scope, principal, operation)
             .map_err(|e| boundary::database_fault(e, probe))?,
         None => app.database.clone(),
     };
-    if route == Route::Authorization {
+    if let Route::Authorization(operation) = route {
         let allowed = database
-            .authorization_allowed(scope)
+            .operation_allowed(scope)
             .map_err(|e| boundary::database_fault(e, probe))?;
         return Ok((
             200,
-            serde_json::json!({"authorization":{"allowed":allowed}}),
+            serde_json::json!({"authorization":{"operation":operation.token(),"allowed":allowed}}),
         ));
     }
     if method == Method::POST && app.authorization {
         // Observation is advisory even when denied. Execution rechecks policy
         // under a row lock after the configured deterministic test gate.
         let _ = database
-            .authorization_allowed(scope)
+            .operation_allowed(scope)
             .map_err(|e| boundary::database_fault(e, probe))?;
         if let Some(gate) = &app.authorization_gate {
             gate.wait()?;

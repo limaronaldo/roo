@@ -58,6 +58,59 @@ pub mod database;
 pub mod domain;
 pub mod fixture;
 pub use domain::*;
+
+/// The closed set of caller-authorized operations exposed by the HTTP fixture.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Operation {
+    Read,
+    Init,
+    Add,
+    Pay,
+    Refund,
+    Reconcile,
+    Relay,
+    ProviderConflict,
+}
+impl Operation {
+    pub const ALL: [Self; 8] = [
+        Self::Read,
+        Self::Init,
+        Self::Add,
+        Self::Pay,
+        Self::Refund,
+        Self::Reconcile,
+        Self::Relay,
+        Self::ProviderConflict,
+    ];
+
+    pub const fn token(self) -> &'static str {
+        match self {
+            Self::Read => "read",
+            Self::Init => "init",
+            Self::Add => "add",
+            Self::Pay => "pay",
+            Self::Refund => "refund",
+            Self::Reconcile => "reconcile",
+            Self::Relay => "relay",
+            Self::ProviderConflict => "provider_conflict",
+        }
+    }
+
+    pub fn parse(token: &str) -> Option<Self> {
+        match token {
+            "read" => Some(Self::Read),
+            "init" => Some(Self::Init),
+            "add" => Some(Self::Add),
+            "pay" => Some(Self::Pay),
+            "refund" => Some(Self::Refund),
+            "reconcile" => Some(Self::Reconcile),
+            "relay" => Some(Self::Relay),
+            "provider_conflict" => Some(Self::ProviderConflict),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mode {
     Approve,
@@ -81,4 +134,38 @@ pub enum RelayMode {
     Ok,
     SendFail,
     AckFail,
+}
+
+#[cfg(test)]
+mod operation_tests {
+    use super::Operation;
+
+    #[test]
+    fn operation_tokens_are_closed_and_exact() {
+        let tokens = [
+            "read",
+            "init",
+            "add",
+            "pay",
+            "refund",
+            "reconcile",
+            "relay",
+            "provider_conflict",
+        ];
+        assert_eq!(Operation::ALL.len(), tokens.len());
+        for (operation, token) in Operation::ALL.into_iter().zip(tokens) {
+            assert_eq!(operation.token(), token);
+            assert_eq!(Operation::parse(token), Some(operation));
+        }
+        for invalid in [
+            "",
+            "READ",
+            " ProviderConflict",
+            "provider-conflict",
+            "provider_conflict ",
+            "unknown",
+        ] {
+            assert_eq!(Operation::parse(invalid), None);
+        }
+    }
 }

@@ -23,12 +23,14 @@ final class Store {
         }
     }
     void init(String scope) throws SQLException {
-        db.transaction(scope, c -> {
+        db.requireOperation(Operation.INIT);
+        db.transaction(scope, Operation.INIT, c -> {
             try (PreparedStatement p = c.prepareStatement("INSERT INTO roo_app.orders(scope) VALUES (?) ON CONFLICT DO NOTHING")) { p.setString(1, scope); p.executeUpdate(); }
             load(c, scope, false); return Database.commit(null);
         });
     }
     void fresh(List<String> scopes) throws SQLException {
+        db.requireUnbound();
         db.transaction(c -> {
             for (String scope : scopes) {
                 try (PreparedStatement p = c.prepareStatement("INSERT INTO roo_app.orders(scope) VALUES (?)")) { p.setString(1, scope); p.executeUpdate(); }
@@ -37,9 +39,10 @@ final class Store {
         });
     }
     Result add(String scope, Action action) throws SQLException {
+        db.requireOperation(Operation.ADD);
         // Parsing is complete before entering the transaction; overflow is a domain outcome.
         Long unit = integer(action.field(1)), quantity = integer(action.field(2));
-        return db.transaction(scope, c -> {
+        return db.transaction(scope, Operation.ADD, c -> {
             Order o = load(c, scope, true);
             if (unit == null || quantity == null) return Database.commit(Result.Overflow);
             if (o.state() != State.Draft) return Database.commit(Result.InvalidState);
@@ -60,7 +63,14 @@ final class Store {
         try { return Long.valueOf(text); } catch (NumberFormatException overflow) { return null; }
     }
     Prepared prepare(String scope, Action action) throws SQLException {
-        return db.transaction(scope, c -> {
+        Operation expected = switch (action.op()) {
+            case "pay" -> Operation.PAY;
+            case "refund" -> Operation.REFUND;
+            case "reconcile" -> Operation.RECONCILE;
+            default -> null;
+        };
+        db.requireOperation(expected);
+        return db.transaction(scope, expected, c -> {
             Order o = load(c, scope, true);
             Prepared decision = Domain.prepare(o, action);
             if (decision.rejection() != null) return Database.commit(decision);
@@ -82,9 +92,15 @@ final class Store {
     }
     record Finalized(Result result, boolean committed) { }
     Finalized finish(String scope, Request request, Result observed, Failure failure) throws SQLException {
+        Operation expected = switch (request.kind()) {
+            case "payment" -> db.requireOneOf(Operation.PAY, Operation.RECONCILE);
+            case "refund" -> db.requireOneOf(Operation.REFUND, Operation.RECONCILE);
+            default -> null;
+        };
+        db.requireOperation(expected);
         db.checkScope(scope);
         if (observed != Result.Approved && observed != Result.Declined) return new Finalized(observed, false);
-        return db.transaction(scope, c -> {
+        return db.transaction(scope, expected, c -> {
             Order current = load(c, scope, true);
             Result replay = Domain.replay(current, request);
             if (replay != null) return Database.commit(new Finalized(replay, false));
@@ -119,8 +135,9 @@ final class Store {
         return new Event(new EventId(r.getString(1)), r.getString(2), new OrderId(r.getString(3)), new Money(r.getLong(7), r.getString(4)), new PaymentId(r.getString(5)), refund == null ? null : new RefundId(refund));
     }
     Result relay(String scope, Relay mode) throws SQLException {
+        db.requireOperation(Operation.RELAY);
         while (true) {
-            Result result = db.transaction(scope, c -> {
+            Result result = db.transaction(scope, Operation.RELAY, c -> {
                 load(c, scope, true);
                 Event event;
                 try (PreparedStatement p = c.prepareStatement("SELECT event_id,event_kind,order_id,currency,payment_id,refund_id,amount FROM roo_app.outbox WHERE scope=? AND NOT delivered ORDER BY seq LIMIT 1")) {
@@ -148,6 +165,7 @@ final class Store {
         }
     }
     private void deliverInbox(Event event, String scope) throws SQLException {
+        db.requireOperation(Operation.RELAY);
         try (Connection inbox = db.open(false)) {
             inbox.setAutoCommit(false);
             try {
@@ -160,7 +178,7 @@ final class Store {
         }
     }
     String snapshot(String scope, String label, String result) throws SQLException {
-        return db.transaction(scope, c -> {
+        return db.transaction(scope, db.operation(), c -> {
             try (PreparedStatement p = c.prepareStatement("""
                 SELECT state,total,
                   (SELECT count(*) FROM roo_provider.records WHERE scope=o.scope AND kind='payment' AND result='Approved'),

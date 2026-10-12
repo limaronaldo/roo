@@ -126,6 +126,15 @@ contract; native HTTP parser rejections for invalid framing/header syntax are
 outside cross-stack JSON parity. No header-count/slow-client hardening claim is
 implied by a body cap.
 
+For requests with multiple application-level errors, all three variants use the
+same precedence: path/route, method, asserted principal (in fixture mode), header
+multiplicity and unsupported control header, Accept, idempotency-key syntax,
+Content-Type, streamed body limit, then body/command validation. Metadata checks
+run before reading the body and before database admission. A malformed
+authorization path with extra segments returns 400 even when fixture mode is off;
+the well-formed observation route remains unavailable (404) in that mode. Native
+HTTP framing errors remain outside this application-level ordering.
+
 Money and quantity are decimal **strings**, never JSON numbers or floating
 point. The grammar is `[+-]?[0-9]+`, with at most 128 ASCII characters total;
 it deliberately preserves the accepted signed integer parser. A syntactically
@@ -206,6 +215,32 @@ with another transaction cannot provide that guarantee. This narrow transport
 scope preserves the accepted adapters without duplicating domain/SQL logic.
 [schema.sql](schema.sql) adds only the opt-in fixture authorization policy; it
 introduces no durable command receipt or change to line replay semantics.
+
+## Optional operation permissions
+
+The [authorization contract](AUTHORIZATION.md) defines fixture mode separately
+from the default legacy mode. Current policy uses the exact
+`(scope, principal, operation)` key in `roo_authorization.operation_grants`.
+The closed tokens are `read`, `init`, `add`, `pay`, `refund`, `reconcile`, `relay`,
+and `provider_conflict`. No token implies another. Old coarse grants remain
+stored and are not consulted or expanded; fixture owners explicitly grant the
+desired operations.
+
+Fixture observations use `GET /v1/scopes/{scope}/authorization/{operation}` and
+return `{"authorization":{"operation":"pay","allowed":true}}` (or false).
+They accept no body, query, or idempotency key. Missing/unknown operation is 400
+in fixture mode; the route is unavailable in legacy mode. Each request binds its
+operation once. Every protected transaction, including the existence precheck
+and response snapshot, reads its exact permission `FOR SHARE` before business
+state. A command therefore needs its own permission but no additional `read`
+permission; a separate GET always requires `read`.
+
+Reconciliation permission permits only lookup/finalization of an existing
+Pending payment or Refunding refund, using the retained full fingerprint. It
+does not create provider effects and can belong to a different principal from
+the original caller. Denials use 403 `Forbidden` / `Access forbidden`; a missing
+asserted principal uses 401 `PrincipalRequired` / `Principal required`. A later
+denial can follow an earlier committed phase and does not prove rollback.
 
 ## Synthetic controls and gates
 

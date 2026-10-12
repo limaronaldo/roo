@@ -90,6 +90,8 @@ final class HttpService {
         boolean admitted = false;
         try (exchange) {
             try {
+                // Match Rust's route, method, principal, and header precedence before reading the stream.
+                HttpProtocol.preflight(exchange.getRequestURI(), exchange.getRequestMethod(), exchange.getRequestHeaders(), config.test(), config.authorization());
                 byte[] body = HttpProtocol.read(exchange.getRequestBody());
                 HttpProtocol.Input input = HttpProtocol.validate(exchange.getRequestURI(), exchange.getRequestMethod(), exchange.getRequestHeaders(), body, config.test(), config.authorization());
                 admitted = admission.tryAcquire();
@@ -97,16 +99,16 @@ final class HttpService {
                 String scope = input.route().scope();
                 String principal = HttpProtocol.principal(exchange.getRequestHeaders(), config.authorization());
                 if (input.route().resource().equals("authorization")) {
-                    boolean allowed = db.observeAuthorization(scope, principal);
-                    send(exchange, 200, ("{\"authorization\":{\"allowed\":" + allowed + "}}").getBytes(StandardCharsets.UTF_8));
+                    boolean allowed = db.observeAuthorization(scope, principal, input.operation());
+                    send(exchange, 200, HttpProtocol.authorization(input.operation(), allowed));
                     return;
                 }
                 if (input.method().equals("POST") && config.authorization()) {
                     // Observation is advisory even when false; execution always reads fresh policy.
-                    db.observeAuthorization(scope, principal);
+                    db.observeAuthorization(scope, principal, input.operation());
                     gate(db, config.worker(), config.authorizationGate(), "http_after_authorization_observation");
                 }
-                Database requestDb = config.authorization() ? db.authorized(scope, principal) : db;
+                Database requestDb = config.authorization() ? db.authorized(scope, principal, input.operation()) : db;
                 Store store = new Store(requestDb);
                 Provider provider = new Provider(requestDb);
                 Application app = template ? new JdbcTemplateApplication(store, provider, requestDb) : new CompositionApplication(store, provider, requestDb);

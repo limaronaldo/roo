@@ -24,7 +24,7 @@ and coordinators alongside new same-package HTTP adapters:
 Dependencies are JDK 26 targeting Java 21, standard module `jdk.httpserver`,
 pgJDBC `42.7.14` at `../../postgres/.deps/postgresql-42.7.14.jar`, and Jackson-core
 `2.22.3` at `../.deps/jackson-core-2.22.3.jar`. No databind, annotations, framework,
-RTK runtime, dependency download, or schema reset is used by these scripts.
+dependency download or schema reset is used by these scripts.
 Expected artifact SHA-256 values are:
 
 ```text

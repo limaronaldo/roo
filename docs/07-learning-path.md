@@ -70,7 +70,7 @@ For each friction point, reduce the code to a small example, name the desired in
 
 ## Stage 6 — Capstone: build, explain, and translate
 
-Implement a small lending service in Rust. Include copy/member/loan IDs, checkout and return, conflict and not-found failures, an in-memory repository, and a persistence-facing boundary. Keep durable identity distinct from memory ownership. Use the Java design sketch in [cross-language portability](06-cross-language.md) as a separate mapping exercise; it is illustrative and uncompiled. A future Java implementation would be a separate project and would not add evidence to the Rust laboratory.
+Implement a small lending service in Rust. Include copy/member/loan IDs, checkout and return, conflict and not-found failures, an in-memory repository, and a persistence-facing boundary. Keep durable identity distinct from memory ownership. Use the Java example in [cross-language portability](06-cross-language.md) as a mapping exercise; CI compiles and executes its assertions separately from the Rust doctests. Those checks cover the chapter examples, not a complete lending service. For a complete shared Java/Rust exercise with persistence and failure recovery, follow the [orders and payments track](../case-studies/orders-payments/track/README.md).
 
 **Capstone deliverables:**
 

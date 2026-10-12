@@ -100,9 +100,11 @@ status and named-container removal log confirm scoped cleanup.
 See the [hosted run metadata](../research/roo-github-hosted-run.json),
 [self-contained receipts and evidence](../research/roo-github-hosted-evidence.json),
 and [independent publication review](../research/roo-github-publication-review.md).
-The subsequent publication update contains documentation and evidence only;
-the executable workflow, Compose configuration, case-study source, evaluator,
-and dependency locks remain identical to the tested commit.
+The publication update immediately following that initial run changed only
+documentation and evidence. This historical receipt validates the linked
+commit, not later development. For current code, select the exact PR or main
+commit's workflow run and reconcile its artifact using the procedure above;
+workflow, case-study, and dependency changes require their own evidence.
 
 The scenarios are educational, bounded checks of concurrency and recovery.
 They do not establish every interleaving, physical power-loss behavior,

@@ -2,7 +2,7 @@
 
 use axum::http::{HeaderMap, Method, Uri};
 use roo_postgres_case::{
-    Outcome, database,
+    Operation, Outcome, database,
     fixture::{self, Action},
 };
 use serde::{
@@ -66,7 +66,7 @@ impl Fault {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Route {
     Scope,
-    Authorization,
+    Authorization(Operation),
     Lines,
     Payments,
     Refunds,
@@ -76,7 +76,7 @@ pub enum Route {
 }
 impl Route {
     pub fn allow(self) -> &'static str {
-        if self == Self::Authorization {
+        if matches!(self, Self::Authorization(_)) {
             "GET"
         } else if self == Self::Scope {
             "GET, PUT"
@@ -121,7 +121,12 @@ pub fn route_with_authorization(
     }
     let kind = match &parts[4..] {
         [] => Route::Scope,
-        ["authorization"] if authorization => Route::Authorization,
+        ["authorization"] if authorization => return Err(Fault::InvalidRequest),
+        ["authorization"] => return Err(Fault::RouteNotFound),
+        ["authorization", token] if authorization => {
+            Route::Authorization(Operation::parse(token).ok_or(Fault::InvalidRequest)?)
+        }
+        ["authorization", _] => return Err(Fault::RouteNotFound),
         ["lines"] => Route::Lines,
         ["payments"] => Route::Payments,
         ["refunds"] => Route::Refunds,
@@ -136,12 +141,27 @@ pub fn route_with_authorization(
 }
 
 pub fn method_allowed(route: Route, method: &Method) -> bool {
-    if route == Route::Authorization {
+    if matches!(route, Route::Authorization(_)) {
         method == Method::GET
     } else if route == Route::Scope {
         method == Method::GET || method == Method::PUT
     } else {
         method == Method::POST
+    }
+}
+
+pub fn operation_for(route: Route, method: &Method) -> Result<Operation, Fault> {
+    match route {
+        Route::Scope if method == Method::GET => Ok(Operation::Read),
+        Route::Scope if method == Method::PUT => Ok(Operation::Init),
+        Route::Authorization(operation) if method == Method::GET => Ok(operation),
+        Route::Lines if method == Method::POST => Ok(Operation::Add),
+        Route::Payments if method == Method::POST => Ok(Operation::Pay),
+        Route::Refunds if method == Method::POST => Ok(Operation::Refund),
+        Route::Reconciliation if method == Method::POST => Ok(Operation::Reconcile),
+        Route::Relay if method == Method::POST => Ok(Operation::Relay),
+        Route::Probe if method == Method::POST => Ok(Operation::ProviderConflict),
+        _ => Err(Fault::MethodNotAllowed),
     }
 }
 
@@ -299,7 +319,7 @@ pub fn action(
     let text = std::str::from_utf8(body).map_err(|_| Fault::InvalidRequest)?;
     let Fields(fields) = serde_json::from_str::<Fields>(text).map_err(|_| Fault::InvalidRequest)?;
     let ordinary: &[&str] = match route {
-        Route::Scope | Route::Authorization | Route::Reconciliation | Route::Relay => &[],
+        Route::Scope | Route::Authorization(_) | Route::Reconciliation | Route::Relay => &[],
         Route::Lines => &["unit_minor", "quantity"],
         Route::Payments => &["payment_id"],
         Route::Refunds => &["refund_id"],
@@ -342,7 +362,7 @@ pub fn action(
         }
     }
     let script = match route {
-        Route::Scope | Route::Authorization => return Ok(None),
+        Route::Scope | Route::Authorization(_) => return Ok(None),
         Route::Lines => format!("add:{}:{}", field("unit_minor"), field("quantity")),
         Route::Payments => format!(
             "pay:{}:{}:{}",
@@ -493,18 +513,59 @@ mod tests {
         let uri: Uri = "/v1/scopes/missing/authorization".parse().unwrap();
         assert_eq!(route(&uri, true).unwrap_err(), Fault::RouteNotFound);
         assert_eq!(
-            route_with_authorization(&uri, true, true).unwrap(),
-            ("missing".into(), Route::Authorization)
+            route_with_authorization(&uri, true, true).unwrap_err(),
+            Fault::InvalidRequest
         );
-        assert!(method_allowed(Route::Authorization, &Method::GET));
-        for method in [Method::PUT, Method::POST, Method::HEAD, Method::DELETE] {
-            assert!(!method_allowed(Route::Authorization, &method));
+        let unknown: Uri = "/v1/scopes/missing/authorization/Read".parse().unwrap();
+        assert_eq!(
+            route_with_authorization(&unknown, true, true).unwrap_err(),
+            Fault::InvalidRequest
+        );
+        assert_eq!(
+            route_with_authorization(&unknown, true, false).unwrap_err(),
+            Fault::RouteNotFound
+        );
+        let extra: Uri = "/v1/scopes/missing/authorization/read/extra"
+            .parse()
+            .unwrap();
+        for enabled in [false, true] {
+            assert_eq!(
+                route_with_authorization(&extra, true, enabled).unwrap_err(),
+                Fault::InvalidRequest
+            );
         }
-        assert_eq!(Route::Authorization.allow(), "GET");
+
+        for operation in Operation::ALL {
+            let path = format!("/v1/scopes/missing/authorization/{}", operation.token());
+            let uri: Uri = path.parse().unwrap();
+            assert_eq!(
+                route_with_authorization(&uri, true, true).unwrap(),
+                ("missing".into(), Route::Authorization(operation))
+            );
+            assert!(method_allowed(
+                Route::Authorization(operation),
+                &Method::GET
+            ));
+            assert_eq!(
+                operation_for(Route::Authorization(operation), &Method::GET).unwrap(),
+                operation
+            );
+        }
+        assert!(!method_allowed(
+            Route::Authorization(Operation::Read),
+            &Method::PUT
+        ));
+        for method in [Method::PUT, Method::POST, Method::HEAD, Method::DELETE] {
+            assert!(!method_allowed(
+                Route::Authorization(Operation::Read),
+                &method
+            ));
+        }
+        assert_eq!(Route::Authorization(Operation::Read).allow(), "GET");
         let mut h = HeaderMap::new();
         h.insert("idempotency-key", "p1".parse().unwrap());
         assert_eq!(
-            headers(&h, Route::Authorization, &Method::GET).unwrap_err(),
+            headers(&h, Route::Authorization(Operation::Read), &Method::GET).unwrap_err(),
             Fault::InvalidRequest
         );
         assert_eq!(
@@ -520,6 +581,26 @@ mod tests {
         assert_eq!(
             Fault::PrincipalRequired.body(),
             json!({"error":{"code":"PrincipalRequired","message":"Principal required"}})
+        );
+    }
+
+    #[test]
+    fn request_routes_bind_the_expected_operation() {
+        for (route, method, operation) in [
+            (Route::Scope, Method::GET, Operation::Read),
+            (Route::Scope, Method::PUT, Operation::Init),
+            (Route::Lines, Method::POST, Operation::Add),
+            (Route::Payments, Method::POST, Operation::Pay),
+            (Route::Refunds, Method::POST, Operation::Refund),
+            (Route::Reconciliation, Method::POST, Operation::Reconcile),
+            (Route::Relay, Method::POST, Operation::Relay),
+            (Route::Probe, Method::POST, Operation::ProviderConflict),
+        ] {
+            assert_eq!(operation_for(route, &method).unwrap(), operation);
+        }
+        assert_eq!(
+            operation_for(Route::Scope, &Method::POST).unwrap_err(),
+            Fault::MethodNotAllowed
         );
     }
     #[test]
