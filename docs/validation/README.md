@@ -53,7 +53,7 @@ publish their material without their agreement.
 | Traceability | Every report identifies method, kit, inspected sources, reviewer role, assistance, and actual checks | Missing scope; trial remains partial |
 | Clarity | A reviewer can explain the invariant, all eight decisions, and one failure path from the submitted contract | Ambiguous field or contradictory interpretation |
 | Exercise completeness | Each selected relationship answers eight fields; all P1–P7 scenarios have a predicted outcome and a named enforcement boundary | Open decision or missing scenario |
-| Transfer | Two proposed technology mappings preserve the same observable promises, or explicitly identify a changed promise | Hidden reliance on a language, store, or protocol |
+| Transfer | Both proposed technology mappings preserve every required observable promise under their stated guarantees | Changed promise or infeasible mapping: unmet; unresolved feasibility: unknown |
 | Practical value | The participant records at least one concrete clarification, changed decision, or useful confirmation, with before/after text | No observed benefit in this attempt |
 | Candor | Findings distinguish defects, questions, and improvements; walkthroughs, executed checks, and assumptions remain separate | Unsupported claim or unavailable evidence |
 

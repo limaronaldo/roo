@@ -54,6 +54,11 @@ predictions; disagreements recorded before clarification; or not performed].
 
 ## Technology transfer
 
+For the exercise, mark Transfer **met** only when both proposed mappings
+preserve every required observable promise. A disclosed weakened promise or
+infeasible mapping is **unmet**; unresolved feasibility is **unknown**. These
+are paper-design assessments, not implementation qualification.
+
 | Candidate language/runtime/store/protocol | Mechanism and needed guarantee | Scenario covered | Preserved or changed promise | Evidence or open assumption |
 |---|---|---|---|---|
 | First mapping | | | | |

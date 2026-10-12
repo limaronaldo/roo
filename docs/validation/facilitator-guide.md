@@ -57,8 +57,10 @@ Have a second reader predict two outcomes from the contract before the
 participant explains them. Record disagreements before editing. Compare the
 two technology mappings: can each retain intent, order admission with policy,
 exclude competing target admissions, and recover the same archive identity?
-One mapping may be infeasible under its stated guarantees; that is a valid
-finding when explicit, not a successful transfer demonstration.
+A disclosed weakened promise or infeasible mapping makes Transfer **unmet**;
+unresolved feasibility makes it **unknown**. Both mappings must preserve every
+required observable promise to meet Transfer. This is a paper-design assessment;
+implementation qualification and unobserved provider guarantees remain separate.
 
 Separate first-attempt results from changes after feedback. Ask what the form
 clarified, duplicated, or obscured, which question needed explanation, and
