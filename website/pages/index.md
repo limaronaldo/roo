@@ -33,26 +33,23 @@ Maintained by [Ronaldo Martins](https://github.com/limaronaldo).
 <div class="roo-note">
 <dl>
 <dt>custodian</dt>
-<dd>Local store retains intent; provider independently retains its result.</dd>
+<dd>Local store keeps intent; provider keeps its result.</dd>
 <dt>identity</dt>
-<dd>A scoped attempt ID binds immutable order, currency, and amount facts.</dd>
+<dd>One scoped attempt ID binds the order, currency, and amount.</dd>
 <dt>coordinator</dt>
-<dd>Application sequences prepare, provider call, and finalization; domain operations validate transitions.</dd>
+<dd>Application prepares, calls, then finalizes; domain checks transitions.</dd>
 <dt>authorization</dt>
-<dd>Not implemented in the teaching case. A live service needs authenticated caller policy.</dd>
+<dd>Caller policy is not implemented in this teaching case.</dd>
 <dt>access</dt>
-<dd>Order retains an attempt ID and a read-only status observation.</dd>
+<dd>Order keeps an attempt ID and a read-only status snapshot.</dd>
 <dt>horizon</dt>
-<dd>Intent survives recovery; a status observation can become stale while still readable.</dd>
+<dd>Intent survives restart; a status snapshot can become stale.</dd>
 <dt>execution</dt>
-<dd>Persist intent, call the provider, then finalize locally. Short local transactions do not span the provider call.</dd>
+<dd>Short local transactions; the provider commits separately.</dd>
 <dt>failure</dt>
-<dd>A timeout may follow a charge. Retain Pending and reconcile by the same attempt ID; recovery must not add a charge.</dd>
+<dd>Timeout can follow a charge. Keep Pending; reconcile by the same ID.</dd>
 </dl>
 </div>
-<figcaption>A class diagram draws the arrow. A Relationship Contract writes down the eight decisions it leaves out.
-This is the <a href="https://limaronaldo.github.io/roo/dev/docs/02-relationship-design/">current development contract</a>;
-tagged chapters retain their original wording.</figcaption>
 </figure>
 
 </div>
@@ -97,6 +94,7 @@ fill is an open design decision, not permission to assume.
 ```text
 Relationship: Source -> Target [cardinality]
 Invariant: allowed result; forbidden result; when state must agree
+
 Custodian: who retains the resource and releases it
 Identity: key, scope, version, reuse, and deletion rules, or value only
 Coordinator: component and operations that preserve the invariant
@@ -105,12 +103,13 @@ Access: observation, controlled command, snapshot, lookup, sharing, or transfer
 Horizon: memory validity, business lifecycle, and freshness limits
 Execution: task, process, transaction, and overlap coordination
 Failure: surviving effects, retry, reconciliation, and compensation
+
 Evidence: observed checks and references
 Open: unresolved requirements and assumptions
 ```
 
 No installs. Paste the result into a pull request or an architecture decision
-record. Follow the [canonical six-step procedure](https://limaronaldo.github.io/roo/dev/docs/02-relationship-design/#23-the-six-step-decision-procedure).
+record. Follow the [canonical six-step procedure](../../docs/02-relationship-design.md#23-the-six-step-decision-procedure).
 The [Relationship Contract worksheet](../../templates/relationship-contract.md)
 is the edition's reusable form; the
 [payment recovery contract](../../case-studies/orders-payments/adoption/relationship-contract.md)
@@ -162,12 +161,10 @@ expected results. Six exercises run in Docker.
 
 ## Bring it a real design
 
-**Pre-1.0 editions are previews.** v0.1.0 is the first edition; v0.2.0
-records the eight-field contract. This shared introduction shows the current
-method; tagged chapters and release notes preserve each edition's decisions.
-The [claims and limits](https://limaronaldo.github.io/roo/dev/docs/claims-and-limits/)
+**Pre-1.0 editions are previews.**
+The [claims and limits](../../docs/claims-and-limits.md)
 page maps evidence to its scope;
-[How ROO was made](https://limaronaldo.github.io/roo/dev/docs/how-roo-was-made/)
+[How ROO was made](../../docs/how-roo-was-made.md)
 describes AI-assisted authorship and same-family agent review.
 Original material uses [MIT OR Apache-2.0](license.md).
 What ROO needs most is evidence from real systems: if you write a contract for a design of yours, share what it caught
@@ -175,7 +172,5 @@ and what it missed.
 
 [Share a case](https://github.com/limaronaldo/roo/issues/new?title=Case%20report%3A%20){ .md-button .md-button--primary }
 [Read the release notes](../../RELEASE_NOTES.md){ .md-button }
-
-[Release {{release_version}}](https://github.com/limaronaldo/roo/releases/tag/{{release_version}})
 
 </div>

@@ -32,6 +32,7 @@ class ReleaseTagsTests(unittest.TestCase):
         (self.root / ".gitignore").write_text(".site-build/\n__pycache__/\n")
         (self.root / "docs/chapter.md").write_text("# Release chapter\n\nFrozen initial text.\n")
         (self.root / "website/pages/index.md").write_text("# ROO\n\n{{edition_status}}\n\nRelease {{release_version}}.\n")
+        (self.root / "website/releases/v0.1.0-home.md").write_text("# ROO first edition\n\n{{edition_status}}\n\nRelease {{release_version}}.\n")
         self.config = """site_name: ROO
 site_url: https://limaronaldo.github.io/roo/
 strict: true

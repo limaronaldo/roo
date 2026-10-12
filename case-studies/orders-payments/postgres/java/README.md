@@ -10,8 +10,8 @@ order state and its event commit together. The [frozen PostgreSQL contract](../S
 and [original case](../../README.md) define those invariants. Chapter 2's
 [Relationship Contract](../../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../../templates/relationship-contract.md) help separate
-resource custody, domain responsibility, durable operation identity, mutation
-authority, access duration, execution, and failure before choosing Java, JDBC,
+resource custody, durable operation identity, invariant coordination, caller
+authorization, access, horizon, execution, and failure before choosing Java, JDBC,
 and SQL mechanisms. IDs identify records, not authorized callers; this local
 case models no caller authentication or authorization.
 

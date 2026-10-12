@@ -45,9 +45,9 @@
 .roo-edge { position: relative; flex: 1 1 auto; min-width: 2.4rem; height: 2px; margin-right: 3px; background: #143d35; }
 .roo-edge::after { content: ""; position: absolute; right: 1px; top: 50%; width: .62rem; height: .62rem; border-top: 2px solid #143d35; border-right: 2px solid #143d35; transform: translateY(-50%) rotate(45deg); }
 .roo-attach { width: 0; height: 2.75rem; margin: -1.3rem 0 0 calc(50% - 1px); border-left: 2px dashed #a74320; }
-.md-typeset .roo-note { position: relative; padding: 1.05rem 2.5rem 1.1rem 1.15rem; background: #f1e8d7; border: 1px solid #c7b088; font-size: .72rem; line-height: 1.5; clip-path: polygon(0 0, calc(100% - 1.6rem) 0, 100% 1.6rem, 100% 100%, 0 100%); }
+.md-typeset .roo-note { position: relative; padding: .85rem 2.5rem .9rem 1.15rem; background: #f1e8d7; border: 1px solid #c7b088; font-size: .72rem; line-height: 1.5; clip-path: polygon(0 0, calc(100% - 1.6rem) 0, 100% 1.6rem, 100% 100%, 0 100%); }
 .md-typeset .roo-note::after { content: ""; position: absolute; top: -1px; right: -1px; width: 1.6rem; height: 1.6rem; border-left: 1px solid #c7b088; border-bottom: 1px solid #c7b088; background: linear-gradient(to bottom left, transparent calc(50% - .7px), #c7b088 calc(50% - .7px), #c7b088 calc(50% + .7px), #e3d3b1 calc(50% + .7px)); }
-.md-typeset .roo-note dl { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr); gap: .5rem 1rem; margin: 0; }
+.md-typeset .roo-note dl { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr); gap: .35rem 1rem; margin: 0; }
 .md-typeset .roo-note dt { margin: 0; font-weight: 700; color: #143d35; }
 .md-typeset .roo-note dd { margin: 0; }
 .md-typeset .roo-contract figcaption { max-width: 34em; margin: .8rem 0 0; font-size: .68rem; font-style: normal; color: #4f6259; }
@@ -69,7 +69,7 @@
 .md-typeset .roo-home-close h2 { margin-top: 0; }
 
 @media (min-width: 60em) {
-  .md-typeset .roo-home-hero { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); margin-top: 2.4rem; }
+  .md-typeset .roo-home-hero { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); margin-top: 1.4rem; }
 }
 @media (max-width: 760px) {
   .roo-paths { grid-template-columns: 1fr; gap: .5rem; }

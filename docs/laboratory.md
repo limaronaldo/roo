@@ -10,7 +10,7 @@ This package defines the Rust laboratory qualification for selected Rust mechani
 
 ## Relationship map
 
-| Relationship | Owner and authority | Representation | Evidence |
+| Relationship | Custody and local coordination | Representation | Evidence |
 |---|---|---|---|
 | Order → lines | `Order` owns its lines and changes them through checked operations | Private `Vec<OrderLine>` | Overflow leaves both aggregate state and rejected line recoverable |
 | Order → customer | Order retains an identifier, not the customer | Validated `CustomerId` value | Empty identifiers rejected; existence remains an external concern |

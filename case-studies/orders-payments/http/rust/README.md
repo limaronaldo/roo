@@ -10,9 +10,9 @@ inspection before another attempt. The [HTTP contract](../SPEC.md),
 [PostgreSQL tutorial](../../postgres/README.md), and [original case](../../README.md)
 define the boundary. Chapter 2's [Relationship Contract](../../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../../templates/relationship-contract.md) guide decisions
-about request custody, the application's domain responsibility, durable scope
-and operation identity, mutation authority, access duration, execution, and
-failure before choosing Rust mechanisms. Rust ownership and borrows govern local
+about request custody, durable scope and operation identity, invariant coordination,
+caller authorization, access, horizon, execution, and failure before choosing Rust
+mechanisms. Rust ownership and borrows govern local
 access; SQL coordinates processes. IDs are not credentials, and the service
 models no caller authentication or authorization.
 

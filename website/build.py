@@ -89,6 +89,8 @@ def prepare(entry, source_root, publisher_commit, dirty, default="v0.1.0"):
     content.mkdir(parents=True)
     commit = publisher_commit if entry["id"] == "dev" else entry["source_commit"]
     sources = {page: CUSTOM.get(page, page) for page in entry["pages"]}
+    if entry["id"] == "v0.1.0" and "index.md" in sources:
+        sources["index.md"] = "website/releases/v0.1.0-home.md"
     reverse = {source: page for page, source in sources.items()}
 
     def origin(source):
@@ -151,7 +153,7 @@ def prepare(entry, source_root, publisher_commit, dirty, default="v0.1.0"):
             raise ValueError(f"Excluded documentation source: {source}")
         data = path.read_bytes()
         text = data.decode("utf-8")
-        if source == "website/pages/index.md":
+        if source in {"website/pages/index.md", "website/releases/v0.1.0-home.md"}:
             status = f"Release documentation from the {entry['id']} tag." if entry["id"] != "dev" else f"Development documentation from main. Changes here are not part of {default}."
             text = text.replace("{{edition_status}}", status)
             text = text.replace("{{checkout_ref}}", entry["id"] if entry["id"] != "dev" else "main")

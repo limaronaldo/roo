@@ -9,7 +9,7 @@ drives reconciliation when the caller cannot know the provider outcome. The
 [shared contract](../SPEC.md) and [case walkthrough](../README.md) fix that
 invariant; chapter 2's [Relationship Contract](../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../templates/relationship-contract.md) guide custody,
-domain responsibility, stable identity, mutation authority, access lifetime,
+stable identity, invariant coordination, caller authorization, access, horizon,
 execution, and failure decisions. This in-memory PaymentId lasts one scenario,
 not a restart, and grants no authorization. Java types, private APIs, and final
 methods express local boundaries, but do not statically enforce exclusive

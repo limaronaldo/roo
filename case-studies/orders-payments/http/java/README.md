@@ -10,8 +10,8 @@ receipt and must be inspected before a caller chooses another attempt. The
 [HTTP contract](../SPEC.md), [PostgreSQL tutorial](../../postgres/README.md), and
 [original case](../../README.md) define the behavior. Chapter 2's [contract](../../../../docs/02-relationship-design.md#21-the-eight-field-relationship-contract)
 and [worksheet](../../../../templates/relationship-contract.md) help separate
-request custody, the accepted application's domain responsibility, durable
-scope and operation identity, mutation authority, access duration, execution,
+request custody, durable scope and operation identity, invariant coordination,
+caller authorization, access, horizon, execution,
 and failure before choosing HTTP and Java mechanisms. IDs do not authorize
 callers; this service models no caller authentication or authorization.
 

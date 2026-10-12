@@ -8,7 +8,7 @@ Use the [canonical contract and six-step procedure](02-relationship-design.md)
 to frame each concept below. The [foundations commitments](01-foundations.md#15-core-commitments)
 explain the method's intent.
 
-**Portable reading.** In Java, C#, C++, and other languages, keep the same questions about identity, mutation authority, collaborator lifetime, and who closes a resource. Map the answers to each language's own mechanisms, such as `AutoCloseable`, RAII, or managed references. Rust makes more aliasing and lifetime constraints visible in types; it does not make the underlying responsibility irrelevant elsewhere.
+**Portable reading.** In Java, C#, C++, and other languages, keep the same questions about identity, invariant coordination, caller authorization, collaborator lifetime, and who closes a resource. Map the answers to each language's own mechanisms, such as `AutoCloseable`, RAII, or managed references. Rust makes more aliasing and lifetime constraints visible in types; it does not make the underlying responsibility irrelevant elsewhere.
 
 For every stored relation, distinguish **domain identity** (which entity this is) from **memory ownership** (which value controls its lifetime). A database key does not own an object in memory; an `Arc` does not by itself establish domain identity. Rust's ownership checks constrain aliasing and lifetimes, while domain invariants and behavioral promises remain design responsibilities. The [Rust Book](https://doc.rust-lang.org/stable/book/ch04-01-what-is-ownership.html) and [Rust Reference](https://doc.rust-lang.org/reference/) describe language rules; this atlas adds a design reading of those rules.
 
@@ -24,7 +24,7 @@ The entries follow **Classical intent → Relationship decision → Rust transla
 
 **Rust translation.** Put data in a `struct` or `enum`, behavior in inherent `impl` blocks or trait implementations, and control access with module privacy. Keep fields private when arbitrary writes could break an invariant; expose methods that express allowed operations. Rust's [module privacy rules](https://doc.rust-lang.org/stable/book/ch07-02-defining-modules-to-control-scope-and-privacy.html) form part of this boundary.
 
-**Rust ownership mapping.** Use `&self` for observation, `&mut self` for exclusive in-place change, or a consuming `self` method when an operation transfers or replaces the value. A method's receiver is an ownership and authority choice, not just syntax.
+**Rust ownership mapping.** Use `&self` for observation, `&mut self` for exclusive in-place change, or a consuming `self` method when an operation transfers or replaces the value. A method's receiver is a custody and local access choice, not just syntax.
 
 **Tradeoff.** More invariants can be protected at the API boundary, but callers may need purpose-built methods instead of direct field access. Privacy does not prove that a business rule is correct; it only limits where the representation can be changed.
 
@@ -72,7 +72,7 @@ The entries follow **Classical intent → Relationship decision → Rust transla
 
 **Rust translation.** Represent an association with the least powerful link that fits: a borrowed reference for a scoped relation, an ID for a relation resolved elsewhere, or an owning handle when the object retains another value. A dependency may be only a function argument, generic parameter, imported trait, or service field. Represent a composed part as an owned field, `Box<T>`, or owned collection when the whole controls its lifetime. Model intentionally shared ownership with `Rc<T>` or `Arc<T>`; pair with `RefCell<T>` or a synchronization primitive only if shared mutation is required.
 
-**Rust ownership mapping.** Name the owner, borrowers, mutation authority, sharing rule, and destruction rule for each relation. If a part can leave the whole, provide an explicit transfer operation. If two aggregates need the same entity, consider a stable ID or shared handle rather than claiming unique composition. For queued or spawned work, decide whether the task takes owned data or IDs or only borrows during a bounded call; state how it reports a missing target or failed operation.
+**Rust ownership mapping.** Name the custodian, borrowers, invariant coordinator, caller permissions, sharing rule, and destruction rule for each relation. If a part can leave the whole, provide an explicit transfer operation. If two aggregates need the same entity, consider a stable ID or shared handle rather than claiming unique composition. For queued or spawned work, decide whether the task takes owned data or IDs or only borrows during a bounded call; state how it reports a missing target or failed operation.
 
 **Tradeoff.** Inline composition is simple and makes destruction follow ownership, but Rust references cannot outlive their referents. IDs make persistence and cycles easier but move resolution and missing-target errors to runtime. Reference counting permits shared lifetimes but introduces counting overhead and can leak on strong reference cycles; it does not make mutation automatically safe.
 
@@ -196,7 +196,7 @@ The entries follow **Classical intent → Relationship decision → Rust transla
 
 **Rust translation.** The compiler checks trait implementation shape and type compatibility, not the truth of a behavioral promise. A type can implement `Iterator`, `Read`, or a domain trait while still violating expectations in its documentation. Write trait contracts in terms of preconditions, results, side effects, and state guarantees; test implementations against those contracts.
 
-**Rust ownership mapping.** Choose receivers that expose mutation authority: `&self` should not secretly imply an externally observable state change unless interior mutability is part of the contract; `&mut self` makes exclusive mutation visible; a consuming method signals that the prior value is replaced or no longer available.
+**Rust ownership mapping.** Choose receivers that expose local mutation access: `&self` should not secretly imply an externally observable state change unless interior mutability is part of the contract; `&mut self` makes exclusive mutation visible; a consuming method signals that the prior value is replaced or no longer available.
 
 **Tradeoff.** Explicit ownership narrows some aliasing hazards, but it cannot establish logical substitutability. Favor a smaller capability trait or a sum type when a proposed subtype has exceptions to the parent contract.
 

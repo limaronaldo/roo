@@ -26,7 +26,7 @@ Use the same small domain throughout: a library lends physical book copies to me
 
 **Deliver:** a contract table for five relationships that fills all eight fields, plus a short note for each boundary where a reference, ID, copied value, or command is the right interface. Mark every promise by its intended enforcement mechanism—compiler, runtime, storage/protocol, or convention/test—and record the available evidence.
 
-**Review question:** are custody, domain responsibility, stable identity, mutation authority, and caller authorization each explicit rather than collapsed into one answer?
+**Review question:** are custody, stable identity, invariant coordination, and caller authorization each explicit rather than collapsed into one answer?
 
 ## Stage 3 — Learn Rust ownership by implementing the small model
 
@@ -56,7 +56,7 @@ For each friction point, reduce the code to a small example, name the desired in
 
 **Exercise:** choose one behavioral, one structural, and one creational pattern from a real feature. For each, describe the pressure it addresses, then compare the original object participants with Rust alternatives such as enums, traits, closures, owned components, or borrowed collaborators. Try at least one design that uses no named pattern.
 
-**Deliver:** three short pattern decision records. Each record names the relationship contract for its participants, expected lifetime, mutation authority, and reason to keep or remove the indirection. Include one pattern that is not a fit and why.
+**Deliver:** three short pattern decision records. Each record names the relationship contract for its participants, expected lifetime, invariant coordinator, caller permissions, and reason to keep or remove the indirection. Include one pattern that is not a fit and why.
 
 **Review question:** did the pattern make a variation or collaboration easier to change, or did it merely add types and allocations?
 

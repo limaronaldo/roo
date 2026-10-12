@@ -9,9 +9,25 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import build as site
 from release_tags import edition_label
+from check_site import Page, homepage_errors
 
 
 class VersionTests(unittest.TestCase):
+    def test_homepage_contract_and_teaching_links_stay_in_their_edition(self):
+        versions = [{"url": f"/roo/{edition}/"} for edition in ("v0.2.0", "v0.1.0", "dev")]
+        old = "<dl>" + "".join(f"<dt>{key}</dt><dd>Decision</dd>" for key in
+            ("owner", "identity", "mutation authority", "access", "horizon", "execution", "failure")) + "</dl>"
+        self.assertFalse(homepage_errors(Page(old), "v0.1.0", versions))
+        self.assertTrue(homepage_errors(Page(old), "v0.2.0", versions))
+        self.assertTrue(homepage_errors(Page("<p>Missing contract</p>"), "v0.2.0", versions))
+        for path in ("docs/02-relationship-design/", "templates/relationship-contract/", "docs/claims-and-limits/"):
+            html = f'<a href="/roo/dev/{path}">Read</a>'
+            with self.subTest(path=path):
+                self.assertTrue(homepage_errors(Page(html), "v0.2.0", versions, require_contract=False))
+                self.assertFalse(homepage_errors(Page(html), "dev", versions, require_contract=False))
+        selector = '<select><option value="/roo/dev/">Development</option></select>'
+        self.assertFalse(homepage_errors(Page(selector), "v0.2.0", versions, require_contract=False))
+
     def test_preview_labels_do_not_imply_maturity(self):
         self.assertEqual(edition_label("v0.1.0", "v0.1.0"), "v0.1.0 (first edition · preview)")
         self.assertEqual(edition_label("v0.1.0", "v0.2.0"), "v0.1.0 (first edition · preview · archived)")

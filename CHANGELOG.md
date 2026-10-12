@@ -8,7 +8,20 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
-No changes recorded yet.
+### Changed
+
+- Remove remaining retired contract labels from current chapters and case
+  guides; distinguish invariant coordination, caller authorization, and local
+  mutation access.
+- Keep homepage teaching and links within the selected documentation edition,
+  including an introduction matching the archived first edition.
+- Shorten the worked homepage contract, separate its eight fields from framing
+  lines, and remove the caveat caption and redundant release link.
+
+### Added
+
+- A CI vocabulary check for retired field labels and summaries, with narrow
+  migration exceptions and regression tests.
 
 ## [0.2.0] — 2026-10-11
 
