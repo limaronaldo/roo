@@ -85,3 +85,7 @@ effect uniqueness, transactionality, or compensation success.
 The new candidate manifest and independent review are separate artifacts in
 this run; historical `candidate.json`, `validation.md` and `review.md` continue
 to describe ROO v0.1 and are not rewritten by this case study.
+
+## Note added 2026-10-13: recovery example evidence
+
+Added after the fact; the table above is not rewritten. The `recovery` row (line 32) describes what the integrator reported observing: exit 0, Unknown/Pending with one remote charge, Approved recovery, Approved refund, failed relay acknowledgement, retry, two unique consumed facts. **That run is not recorded.** [orders-payments-checks.log](orders-payments-checks.log) has no output from the example (a case-insensitive search for "recovery" finds nothing in it or in [orders-payments-negative-evidence.json](orders-payments-negative-evidence.json)), and no other file under `research/` retains it. The example source is `case-studies/orders-payments/rust/examples/recovery.rs`. Read the row as an unrecorded integrator observation, not as retained evidence; it was not re-run for this note.

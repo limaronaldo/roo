@@ -3,6 +3,7 @@
 
 import hashlib
 from pathlib import Path
+import tempfile
 import urllib.request
 
 VERSION = "42.7.14"
@@ -22,7 +23,20 @@ def main():
         if len(artifact) > 4_000_000 or hashlib.sha256(artifact).hexdigest() != SHA256:
             raise SystemExit("Downloaded JDBC artifact failed its size or SHA-256 check")
         DIRECTORY.mkdir(mode=0o700, exist_ok=True)
-        JAR.write_bytes(artifact)
+        temporary_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                dir=DIRECTORY,
+                prefix=f".{JAR.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as temporary:
+                temporary_path = Path(temporary.name)
+                temporary.write(artifact)
+            temporary_path.replace(JAR)
+        finally:
+            if temporary_path is not None:
+                temporary_path.unlink(missing_ok=True)
     print(f"PASS pgJDBC {VERSION}: pinned SHA-256 verified")
 
 

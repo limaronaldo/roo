@@ -27,7 +27,7 @@ Use the same small domain throughout: a library lends physical book copies to me
 
 **Read:** [ROO foundations](01-foundations.md) and [relationship design](02-relationship-design.md) in this project. Then use the Relationship Contract in [cross-language portability](06-cross-language.md).
 
-**Exercise:** for `Library → Copy`, `Library → Loan`, and `Loan → Member`, fill all eight Relationship Contract fields. In the owner/resource-custodian field, distinguish memory or external-resource custody from domain responsibility when they differ. Decide which object graph links are useful only in memory and which relationships must survive loading from a store.
+**Exercise:** for `Library → Copy`, `Library → Loan`, and `Loan → Member`, fill all eight Relationship Contract fields. In Owner / resource custodian, distinguish memory or external-resource custody from the Invariant coordinator when they differ. Decide which object graph links are useful only in memory and which relationships must survive loading from a store.
 
 **Deliver:** a contract table for five relationships that fills all eight fields, plus a short note for each boundary where a reference, ID, copied value, or command is the right interface. Mark every promise by its intended enforcement mechanism—compiler, runtime, storage/protocol, or convention/test—and record the available evidence.
 
@@ -75,7 +75,7 @@ For each friction point, reduce the code to a small example, name the desired in
 
 ## Stage 6 — Capstone: build, explain, and translate
 
-Implement a small lending service in Rust. Include copy/member/loan IDs, checkout and return, conflict and not-found failures, an in-memory repository, and a persistence-facing boundary. Keep durable identity distinct from memory ownership. Use the Java example in [cross-language portability](06-cross-language.md) as a mapping exercise; CI compiles and executes its assertions separately from the Rust doctests. Those checks cover the chapter examples, not a complete lending service. For a complete shared Java/Rust exercise with persistence and failure recovery, follow the [orders and payments track](../case-studies/orders-payments/track/README.md).
+Implement a small lending service in Rust. Include copy/member/loan IDs, checkout and return, conflict and not-found failures, an in-memory repository, and a persistence-facing boundary. Keep stable identity distinct from memory ownership. Use the Java example in [cross-language portability](06-cross-language.md) as a mapping exercise; CI compiles and executes its assertions separately from the Rust doctests. Those checks cover the chapter examples, not a complete lending service. For a complete shared Java/Rust exercise with persistence and failure recovery, follow the [orders and payments track](../case-studies/orders-payments/track/README.md).
 
 **Capstone deliverables:**
 
@@ -92,7 +92,7 @@ Score each dimension from 0 to 3: **0** absent or incorrect; **1** named but imp
 
 | Dimension | Evidence for a strong result |
 | --- | --- |
-| Ownership and responsibility | Memory owner, domain invariant owner, and external resource custodian are identified separately. |
+| Custody and coordination | Owner / resource custodian and Invariant coordinator are identified separately, including memory owner versus external resource custodian. |
 | Identity and validity | IDs survive serialization as intended; stale or missing IDs produce defined outcomes; borrowed references have a stated horizon. |
 | Mutation and access | Commands protect invariants; read paths avoid leaking mutable internals; concurrency matches the declared execution domain. |
 | Lifecycle and failure | Files/connections/transactions have explicit cleanup; partial failure does not silently violate the invariant. |

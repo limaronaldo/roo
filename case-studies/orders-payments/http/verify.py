@@ -2,10 +2,14 @@
 """One independent oracle for real Java/Rust HTTP and durable recovery."""
 
 from concurrent.futures import ThreadPoolExecutor
+import argparse
 import csv
 import http.client
 import json
+import os
 from pathlib import Path
+import select
+import socket
 import subprocess
 import sys
 import time
@@ -13,7 +17,14 @@ import time
 from support import (CASE, HEADER, MESSAGES, PROCESSES, RUN, Server, cleanup, cluster,
                      command, environment, pg_verify, require, state, unique)
 
+# A local run writes only the scratch receipt under .runtime/, so the dated
+# receipts tracked in research/ are never replaced by accident. Pass
+# --evidence-output or set this variable to publish a receipt somewhere else;
+# CI gives each verification phase its own path.
+EVIDENCE_ENV = "ROO_EVIDENCE_PATH"
 EVIDENCE = {"run_id": RUN, "variants": {}, "restart": {}, "status": "RUNNING"}
+BODY_READERS = 16
+BODY_READ_DEADLINE_SECONDS = 5
 
 
 def error(server, method, path, body, status, code, **options):
@@ -93,6 +104,8 @@ def validation(server):
         ("missing_scope_get", "GET", "/v1/scopes/" + unique("missing"), None, 404, "ScopeNotFound", {}),
         ("missing_scope_post", "POST", "/v1/scopes/" + unique("missing") + "/payments", {"payment_id": "p1"}, 404, "ScopeNotFound", {}),
         ("query_string", "GET", path + "?x=1", None, 400, "InvalidRequest", {}),
+        ("fragment", "GET", path + "#ignored", None, 400, "InvalidRequest", {}),
+        ("empty_fragment", "GET", path + "#", None, 400, "InvalidRequest", {}),
         ("encoded_path", "GET", path.replace("_", "%5F", 1), None, 400, "InvalidRequest", {}),
         ("trailing_slash", "GET", path + "/", None, 400, "InvalidRequest", {}),
         ("duplicate_content_type", "POST", pay, {"payment_id": "p1"}, 400, "InvalidRequest", {"headers": [*json_headers, *json_headers]}),
@@ -105,6 +118,7 @@ def validation(server):
         ("unsupported_drop_header", "POST", pay, {"payment_id": "p1"}, 400, "InvalidRequest", {"headers": [*json_headers, ("X-Roo-Test-Drop-Response", "true")]}),
         ("get_body", "GET", path, {}, 400, "InvalidRequest", {}),
         ("invalid_control_enum", "POST", pay, {"payment_id": "p1", "mode": "random"}, 400, "InvalidRequest", {}),
+        ("empty_put_missing_media_type", "PUT", path, None, 415, "UnsupportedMediaType", {"headers": []}),
     ]
     for label, method, target, body, status, code, options in cases:
         error(server, method, target, body, status, code, **options)
@@ -124,6 +138,174 @@ def negotiation(server):
     if row != before:
         raise AssertionError("Absent Accept changed response")
     EVIDENCE["variants"][server.variant]["negotiation_cases"] = ["media_case_charset_whitespace_wildcard_accept", "absent_accept"]
+
+
+def bounded_body_readers(server):
+    """A stalled body must hold a bounded permit for a bounded time, not a worker forever."""
+    scope = server.seed("slow_body")
+    before = server.get(scope)
+    target = "/v1/scopes/" + scope + "/payments"
+    prefix = (f"POST {target} HTTP/1.1\r\n"
+              f"Host: 127.0.0.1:{server.port}\r\n"
+              "Accept: application/json\r\n"
+              "Content-Type: application/json\r\n"
+              "Content-Length: 20\r\n"
+              "Connection: close\r\n\r\n").encode("ascii")
+    # Warm the same reject-before-mutation body path so a cold handler cannot be
+    # mistaken for an unsaturated gate inside the bounded observation window.
+    error(server, "POST", target, b"", 400, "InvalidRequest", raw=True)
+    clients = []
+    try:
+        for _ in range(BODY_READERS):
+            client = socket.create_connection(("127.0.0.1", server.port), timeout=3)
+            client.sendall(prefix)
+            client.setblocking(False)
+            clients.append(client)
+        # Saturation must be observable strictly before the first reader's deadline.
+        gate_deadline = time.monotonic() + BODY_READ_DEADLINE_SECONDS - 1
+        while True:
+            status, payload, _ = server.request("GET", "/v1/scopes/" + scope)
+            if status == 503 and payload == {"error": {"code": "Busy", "message": MESSAGES["Busy"]}}:
+                break
+            if status != 200 or time.monotonic() >= gate_deadline:
+                raise AssertionError(f"{server.variant}: {BODY_READERS} stalled body readers did not saturate the gate: {status} {payload}")
+            time.sleep(0.025)
+        pending = set(clients)
+        deadline = time.monotonic() + BODY_READ_DEADLINE_SECONDS + 5
+        while pending and time.monotonic() < deadline:
+            readable, _, _ = select.select(list(pending), [], [], 0.1)
+            for client in readable:
+                try:
+                    data = client.recv(4096)
+                except OSError:
+                    data = b""
+                if not data:
+                    pending.remove(client)
+        if pending:
+            raise AssertionError(f"{server.variant}: stalled body readers outlived their deadline")
+        recovery_deadline = time.monotonic() + 2
+        while True:
+            status, payload, _ = server.request("GET", "/v1/scopes/" + scope)
+            if status == 200 and payload == {"snapshot": before}:
+                break
+            if status != 503 or payload != {"error": {"code": "Busy", "message": MESSAGES["Busy"]}}:
+                raise AssertionError(f"{server.variant}: body-reader recovery returned {status} {payload}")
+            if time.monotonic() >= recovery_deadline:
+                raise AssertionError(f"{server.variant}: body-reader permits remained exhausted after deadline")
+            time.sleep(0.025)
+    finally:
+        for client in clients:
+            client.close()
+    if server.get(scope) != before:
+        raise AssertionError(f"{server.variant}: a stalled body reader mutated existing state")
+    EVIDENCE["variants"][server.variant]["slow_body"] = {
+        "concurrent_readers": BODY_READERS,
+        "deadline_seconds": BODY_READ_DEADLINE_SECONDS,
+        "overflow_request": "503 Busy",
+        "connections_closed": len(clients),
+        "capacity_recovered": True,
+    }
+
+
+def raw_request_targets(server):
+    """Rust transport regressions use actual bytes, before any URI normalization."""
+    if server.variant != "Rust composition":
+        return
+    scope = server.seed("raw_target")
+    path = "/v1/scopes/" + scope
+    before = server.get(scope)
+    expected_error = {"error": {"code": "InvalidRequest", "message": MESSAGES["InvalidRequest"]}}
+
+    def request(target, method="GET", body=b"", framing=None):
+        headers = (f"{method} {target} HTTP/1.1\r\nHost: 127.0.0.1:{server.port}\r\n"
+                   "Accept: application/json\r\nConnection: keep-alive\r\n")
+        if method == "POST":
+            headers += "Content-Type: application/json\r\n"
+        headers += framing if framing is not None else f"Content-Length: {len(body)}\r\n"
+        return (headers + "\r\n").encode("ascii") + body
+
+    def receive(client):
+        result = bytearray()
+        while True:
+            try:
+                data = client.recv(4096)
+            except ConnectionResetError:
+                if not result:
+                    raise
+                break
+            if not data:
+                break
+            result.extend(data)
+            if len(result) > 65536:
+                raise AssertionError("Raw-wire response exceeded harness bound")
+        return bytes(result)
+
+    def parse(wire, expected_status, expected_payload):
+        head, body = wire.split(b"\r\n\r\n", 1)
+        lines = head.decode("ascii").split("\r\n")
+        headers = dict(line.lower().split(": ", 1) for line in lines[1:])
+        if (int(lines[0].split()[1]) != expected_status
+                or headers.get("connection") != "close"
+                or headers.get("content-type", "").split(";")[0] != "application/json"
+                or headers.get("cache-control") != "no-store"
+                or int(headers.get("content-length", "-1")) != len(body)
+                or json.loads(body) != expected_payload):
+            raise AssertionError(f"Unexpected raw-wire response: {wire!r}")
+
+    labels = []
+    for label, target, status, payload in (
+        ("literal_fragment", path + "#ignored", 400, expected_error),
+        ("empty_fragment", path + "#", 400, expected_error),
+        ("query_fragment", path + "?x=1#ignored", 400, expected_error),
+        ("encoded_fragment", path + "%23ignored", 400, expected_error),
+        ("query", path + "?x=1", 400, expected_error),
+        ("normal_path", path, 200, {"snapshot": before}),
+    ):
+        with socket.create_connection(("127.0.0.1", server.port), timeout=8) as client:
+            client.sendall(request(target))
+            parse(receive(client), status, payload)
+        labels.append(label)
+
+    mutation = request(path + "/lines#ignored", "POST", b'{"unit_minor":"1","quantity":"1"}')
+    # The second target would mutate state if Hyper were permitted to normalize it.
+    with socket.create_connection(("127.0.0.1", server.port), timeout=8) as client:
+        client.sendall(request(path) + mutation)
+        parse(receive(client), 200, {"snapshot": before})
+    labels.append("pipelined_second_request_not_dispatched")
+    with socket.create_connection(("127.0.0.1", server.port), timeout=8) as client:
+        client.sendall(request(path))
+        parse(receive(client), 200, {"snapshot": before})
+        try:
+            client.sendall(mutation)
+            if receive(client):
+                raise AssertionError("A closed connection dispatched a second request")
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+    labels.append("sequential_second_request_not_dispatched")
+
+    # A truncated or malformed-framing body is not an oversize body: never 413.
+    for label, wire in (
+        ("truncated_body", request(path + "/lines", "POST", b"{", "Content-Length: 20\r\n")),
+        ("malformed_chunk", request(path + "/lines", "POST", b"invalid\r\n", "Transfer-Encoding: chunked\r\n")),
+    ):
+        with socket.create_connection(("127.0.0.1", server.port), timeout=8) as client:
+            client.sendall(wire)
+            client.shutdown(socket.SHUT_WR)
+            parse(receive(client), 400, expected_error)
+        labels.append(label)
+
+    for label, prefix in (("oversized_request_line", b"GET /" + b"x" * 8192),
+                          ("request_line_deadline", b"GET /v1/")):
+        with socket.create_connection(("127.0.0.1", server.port), timeout=8) as client:
+            started = time.monotonic()
+            client.sendall(prefix)
+            parse(receive(client), 400, expected_error)
+            if time.monotonic() - started > 7:
+                raise AssertionError("Request-line rejection exceeded the bounded deadline")
+        labels.append(label)
+    if server.get(scope) != before:
+        raise AssertionError("Raw targets or second requests mutated existing state")
+    EVIDENCE["variants"][server.variant]["raw_request_target_cases"] = labels
 
 
 def admission(server):
@@ -405,7 +587,30 @@ def configuration(variant):
     EVIDENCE["variants"][variant]["startup_rejections"] = len(cases)
 
 
+def evidence_destination(cli_path=None, environ=os.environ):
+    """Pick an extra receipt path, or None to write only the scratch receipt.
+
+    A plain local run returns None, so the dated receipts tracked under research/
+    are never replaced by accident. The flag wins over the environment variable.
+    """
+    chosen = cli_path if cli_path is not None else (environ.get(EVIDENCE_ENV) or None)
+    if chosen is None:
+        return None
+    destination = Path(chosen)
+    if destination.is_dir() or not destination.parent.is_dir():
+        raise ValueError(f"Evidence output must be a file in an existing directory: {destination}")
+    return destination
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--evidence-output",
+        type=Path,
+        help=f"also write the receipt here (overrides {EVIDENCE_ENV})",
+    )
+    # Resolve before the long run so a bad destination fails fast.
+    output = evidence_destination(parser.parse_args().evidence_output)
     servers = []
     try:
         for variant in ("Java composition", "Java inheritance", "Rust composition"):
@@ -416,9 +621,14 @@ def main():
             oracle(server)
             validation(server)
             negotiation(server)
+            bounded_body_readers(server)
+            raw_request_targets(server)
             default_mode(server)
             record = EVIDENCE["variants"][variant]
+            raw_cases = record.get("raw_request_target_cases")
             print(f"PASS {variant}: {record['oracle_rows']} HTTP oracle rows, {len(record['validation_cases'])} rejection cases, {len(record['negotiation_cases'])} negotiation cases, 8 ordinary-mode cases, 4 startup rejections", flush=True)
+            transport = f"; {len(raw_cases)} raw-wire transport cases" if raw_cases else ""
+            print(f"PASS {variant}: {record['slow_body']['concurrent_readers']} stalled body readers bounded by a {BODY_READ_DEADLINE_SECONDS}s deadline, overflow 503 Busy{transport}", flush=True)
             admission(server)
             print(f"PASS {variant}: 16 admitted operations witnessed; request 17 returned Busy; capacity recovered", flush=True)
             graceful_drain(server)
@@ -433,8 +643,13 @@ def main():
     finally:
         cleanup()
     EVIDENCE["all_http_processes_stopped"] = all(s.process.poll() is not None for s in PROCESSES)
-    (CASE / ".runtime").mkdir(parents=True, exist_ok=True)
-    (CASE / ".runtime/http-last-run.json").write_text(json.dumps(EVIDENCE, indent=2) + "\n")
+    scratch = CASE / ".runtime/http-last-run.json"
+    EVIDENCE["evidence_path"] = str(output or scratch)
+    scratch.parent.mkdir(parents=True, exist_ok=True)
+    receipt = json.dumps(EVIDENCE, indent=2) + "\n"
+    scratch.write_text(receipt)
+    if output is not None:
+        output.write_text(receipt)
     print("PASS PostgreSQL immediate restart: 12 HTTP snapshots preserved/recovered; 3 surviving HTTP servers returned bounded503 then reconnected", flush=True)
     print("PASS all owned HTTP processes stopped", flush=True)
 

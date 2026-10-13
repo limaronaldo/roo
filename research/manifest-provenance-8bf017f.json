@@ -1,0 +1,1155 @@
+{
+  "purpose": "Historical research manifests recorded a working tree before it was committed. This file measures them against git and does not modify them.",
+  "regenerate": "python3 -I research/manifest-audit.py --rev 8bf017f --also 0c3e2bb --also v0.1.0",
+  "commits": {
+    "8bf017f": "8bf017f99d66b39ca5026ae3fa1023f46cdf76e0",
+    "0c3e2bb": "0c3e2bb1bae85a2dcd6ed0ad0d98a06af27048a5",
+    "v0.1.0": "56374f78a7e78566e9edfcbb6aa281fe838eeb4d"
+  },
+  "blob_universe": "blobs reachable from any ref (git rev-list --objects --all)",
+  "totals": {
+    "manifests": 22,
+    "entries": 3479,
+    "no_git_blob": 228,
+    "unique_path_hash_pairs_no_git_blob": 47
+  },
+  "manifests": [
+    {
+      "manifest": "research/candidate-initial.json",
+      "entries": 27,
+      "no_git_blob": 14,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 11,
+          "changed": 16,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 13,
+          "changed": 14,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 13,
+          "changed": 14,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/candidate.json",
+      "entries": 27,
+      "no_git_blob": 14,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 11,
+          "changed": 16,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 13,
+          "changed": 14,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 13,
+          "changed": 14,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/http-candidate-initial.json",
+      "entries": 154,
+      "no_git_blob": 24,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 108,
+          "changed": 46,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 130,
+          "changed": 24,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 127,
+          "changed": 27,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/http-candidate.json",
+      "entries": 154,
+      "no_git_blob": 24,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 108,
+          "changed": 46,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 130,
+          "changed": 24,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 127,
+          "changed": 27,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/orders-payments-candidate-initial.json",
+      "entries": 43,
+      "no_git_blob": 6,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 35,
+          "changed": 8,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 37,
+          "changed": 6,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 36,
+          "changed": 7,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/orders-payments-candidate.json",
+      "entries": 43,
+      "no_git_blob": 6,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 35,
+          "changed": 8,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 37,
+          "changed": 6,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 36,
+          "changed": 7,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/postgres-candidate-initial.json",
+      "entries": 119,
+      "no_git_blob": 22,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 86,
+          "changed": 33,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 97,
+          "changed": 22,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 95,
+          "changed": 24,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/postgres-candidate.json",
+      "entries": 120,
+      "no_git_blob": 21,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 88,
+          "changed": 32,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 99,
+          "changed": 21,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 97,
+          "changed": 23,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-adoption-baseline.json",
+      "entries": 171,
+      "no_git_blob": 3,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 126,
+          "changed": 45,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 168,
+          "changed": 3,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 164,
+          "changed": 7,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-adoption-candidate.json",
+      "entries": 178,
+      "no_git_blob": 4,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 129,
+          "changed": 49,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 174,
+          "changed": 4,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 170,
+          "changed": 8,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-compose-baseline.json",
+      "entries": 215,
+      "no_git_blob": 2,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 162,
+          "changed": 53,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 213,
+          "changed": 2,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 206,
+          "changed": 9,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-compose-candidate.json",
+      "entries": 235,
+      "no_git_blob": 3,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 176,
+          "changed": 59,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 232,
+          "changed": 3,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 225,
+          "changed": 10,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-compose-source-candidate.json",
+      "entries": 223,
+      "no_git_blob": 3,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 164,
+          "changed": 59,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 220,
+          "changed": 3,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 213,
+          "changed": 10,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-github-publication-baseline.json",
+      "entries": 238,
+      "no_git_blob": 3,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 179,
+          "changed": 59,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 235,
+          "changed": 3,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 228,
+          "changed": 10,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-github-publication-candidate.json",
+      "entries": 247,
+      "no_git_blob": 0,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 188,
+          "changed": 59,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 240,
+          "changed": 1,
+          "absent": 6
+        },
+        "v0.1.0": {
+          "identical": 239,
+          "changed": 8,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-github-publication-source-candidate.json",
+      "entries": 239,
+      "no_git_blob": 0,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 181,
+          "changed": 58,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 239,
+          "changed": 0,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 231,
+          "changed": 8,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-method-baseline.json",
+      "entries": 165,
+      "no_git_blob": 23,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 119,
+          "changed": 46,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 142,
+          "changed": 23,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 138,
+          "changed": 27,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-method-candidate.json",
+      "entries": 168,
+      "no_git_blob": 3,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 123,
+          "changed": 45,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 165,
+          "changed": 3,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 161,
+          "changed": 7,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-name-baseline.json",
+      "entries": 158,
+      "no_git_blob": 24,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 112,
+          "changed": 46,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 134,
+          "changed": 24,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 131,
+          "changed": 27,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-name-candidate.json",
+      "entries": 162,
+      "no_git_blob": 23,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 116,
+          "changed": 46,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 139,
+          "changed": 23,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 135,
+          "changed": 27,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-track-baseline.json",
+      "entries": 181,
+      "no_git_blob": 4,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 132,
+          "changed": 49,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 177,
+          "changed": 4,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 173,
+          "changed": 8,
+          "absent": 0
+        }
+      }
+    },
+    {
+      "manifest": "research/roo-track-candidate.json",
+      "entries": 212,
+      "no_git_blob": 2,
+      "against_commit_tree": {
+        "8bf017f": {
+          "identical": 159,
+          "changed": 53,
+          "absent": 0
+        },
+        "0c3e2bb": {
+          "identical": 210,
+          "changed": 2,
+          "absent": 0
+        },
+        "v0.1.0": {
+          "identical": 203,
+          "changed": 9,
+          "absent": 0
+        }
+      }
+    }
+  ],
+  "no_git_blob_pairs": [
+    {
+      "path": ".github/workflows/roo-track.yml",
+      "recorded_sha256": "5739d0cfb932312c30daa20d529c5f37f1c4e0f3bbd810ef65b9a93812367e13",
+      "recorded_bytes": 1427,
+      "in_manifests": [
+        "research/roo-compose-candidate.json",
+        "research/roo-compose-source-candidate.json",
+        "research/roo-github-publication-baseline.json"
+      ],
+      "8bf017f_sha256": "3bd3b2b4bba7470700a7266e8536aa247b392017cb1b794cd002af263a470e12",
+      "8bf017f_bytes": 3659
+    },
+    {
+      "path": ".gitignore",
+      "recorded_sha256": "806c4e5fb5526b270bbd22334b387b34d885c2a391276a30e207bd6939cd1266",
+      "recorded_bytes": 493,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/roo-adoption-baseline.json",
+        "research/roo-adoption-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-method-candidate.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json",
+        "research/roo-track-baseline.json"
+      ],
+      "8bf017f_sha256": "c1eaf0339c4196b6bd1e4ebb758d8b9988cb47c9debeefe5c44c4cb9896f57aa",
+      "8bf017f_bytes": 724
+    },
+    {
+      "path": ".gitignore",
+      "recorded_sha256": "853bfefe0c74e4b77ce522a6cd00ee8c5c38723fb2e4c75262b5413c1c703238",
+      "recorded_bytes": 38,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json"
+      ],
+      "8bf017f_sha256": "c1eaf0339c4196b6bd1e4ebb758d8b9988cb47c9debeefe5c44c4cb9896f57aa",
+      "8bf017f_bytes": 724
+    },
+    {
+      "path": ".gitignore",
+      "recorded_sha256": "ca8dc854981523c955ab96b270432d2350e48bda56837818d8a66c0109cfa739",
+      "recorded_bytes": 315,
+      "in_manifests": [
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json"
+      ],
+      "8bf017f_sha256": "c1eaf0339c4196b6bd1e4ebb758d8b9988cb47c9debeefe5c44c4cb9896f57aa",
+      "8bf017f_bytes": 724
+    },
+    {
+      "path": ".gitignore",
+      "recorded_sha256": "f1cf95ffe2de18c620fc3ba8f33aca67c24fc69924e2a66ff1e7a4c979645b2b",
+      "recorded_bytes": 121,
+      "in_manifests": [
+        "research/orders-payments-candidate-initial.json",
+        "research/orders-payments-candidate.json"
+      ],
+      "8bf017f_sha256": "c1eaf0339c4196b6bd1e4ebb758d8b9988cb47c9debeefe5c44c4cb9896f57aa",
+      "8bf017f_bytes": 724
+    },
+    {
+      "path": ".gitignore",
+      "recorded_sha256": "feacbdcdde36d3d2d116b3e6b93c629c0339b484354b8f89cd675b91806304fd",
+      "recorded_bytes": 698,
+      "in_manifests": [
+        "research/roo-compose-baseline.json",
+        "research/roo-track-candidate.json"
+      ],
+      "8bf017f_sha256": "c1eaf0339c4196b6bd1e4ebb758d8b9988cb47c9debeefe5c44c4cb9896f57aa",
+      "8bf017f_bytes": 724
+    },
+    {
+      "path": "Cargo.toml",
+      "recorded_sha256": "189a2799f4660d9f4ec7848f16045a0fea763ec5486909b4e37ae2b3c8eb580c",
+      "recorded_bytes": 242,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-name-baseline.json"
+      ],
+      "8bf017f_sha256": "4d56834491f4eced6366a53e1ceba370a0266eedcb56a161e28aded781bea93a",
+      "8bf017f_bytes": 345
+    },
+    {
+      "path": "README.md",
+      "recorded_sha256": "0619671fbb9ee9653ba915dace2a3d016f9deda9d8bfd6c4434b6be25bbd3534",
+      "recorded_bytes": 13628,
+      "in_manifests": [
+        "research/roo-adoption-candidate.json",
+        "research/roo-track-baseline.json"
+      ],
+      "8bf017f_sha256": "5f68e67f79d5249fbb47f0b55d9f56e231149dd203445b6a7f3042ff458d7399",
+      "8bf017f_bytes": 6611
+    },
+    {
+      "path": "README.md",
+      "recorded_sha256": "39f549bc5efc0cfd89ff782c68c0d4614bf792cdbd701de3aee1420551810947",
+      "recorded_bytes": 10730,
+      "in_manifests": [
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json"
+      ],
+      "8bf017f_sha256": "5f68e67f79d5249fbb47f0b55d9f56e231149dd203445b6a7f3042ff458d7399",
+      "8bf017f_bytes": 6611
+    },
+    {
+      "path": "README.md",
+      "recorded_sha256": "4b4559da5908f36fc8df68079ecf6ffd111a3f246c29720c3de3f2ace3d60de5",
+      "recorded_bytes": 11705,
+      "in_manifests": [
+        "research/roo-method-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "5f68e67f79d5249fbb47f0b55d9f56e231149dd203445b6a7f3042ff458d7399",
+      "8bf017f_bytes": 6611
+    },
+    {
+      "path": "README.md",
+      "recorded_sha256": "6f41152031f5e8f7481217fd82d7c5857b3b93516260f79501b6ef8846aac3d5",
+      "recorded_bytes": 8540,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json"
+      ],
+      "8bf017f_sha256": "5f68e67f79d5249fbb47f0b55d9f56e231149dd203445b6a7f3042ff458d7399",
+      "8bf017f_bytes": 6611
+    },
+    {
+      "path": "README.md",
+      "recorded_sha256": "b4dc93943ef933fe73be3661785e63ac722ded613dc88af52450f13848a15333",
+      "recorded_bytes": 11537,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/roo-name-baseline.json"
+      ],
+      "8bf017f_sha256": "5f68e67f79d5249fbb47f0b55d9f56e231149dd203445b6a7f3042ff458d7399",
+      "8bf017f_bytes": 6611
+    },
+    {
+      "path": "README.md",
+      "recorded_sha256": "b92070acd140d586d55606efbba6368dbb71160091b447c95f98a17151792c73",
+      "recorded_bytes": 13465,
+      "in_manifests": [
+        "research/roo-adoption-baseline.json",
+        "research/roo-method-candidate.json"
+      ],
+      "8bf017f_sha256": "5f68e67f79d5249fbb47f0b55d9f56e231149dd203445b6a7f3042ff458d7399",
+      "8bf017f_bytes": 6611
+    },
+    {
+      "path": "README.md",
+      "recorded_sha256": "e82ef11befc75041ebb6db84efda69bc78c118ab685c9011b72389307f17b76d",
+      "recorded_bytes": 9836,
+      "in_manifests": [
+        "research/orders-payments-candidate-initial.json",
+        "research/orders-payments-candidate.json"
+      ],
+      "8bf017f_sha256": "5f68e67f79d5249fbb47f0b55d9f56e231149dd203445b6a7f3042ff458d7399",
+      "8bf017f_bytes": 6611
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "recorded_sha256": "343b33f099d8d2debfc1c8a1e8b517ffb21a9efc4c57a5a52a1b7583a2d11b28",
+      "recorded_bytes": 63392,
+      "in_manifests": [
+        "research/roo-adoption-candidate.json",
+        "research/roo-track-baseline.json"
+      ],
+      "8bf017f_sha256": "9a55b2a332bf28ba90f9efd5e9e3d081c9ca9296bc4804d31b21d2627382ee0e",
+      "8bf017f_bytes": 64607
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "recorded_sha256": "610a8f9d8f49bcf50422009a929d3caf16fde873bcd8bc9074ede61f9aebbbbd",
+      "recorded_bytes": 62999,
+      "in_manifests": [
+        "research/roo-adoption-baseline.json",
+        "research/roo-method-candidate.json"
+      ],
+      "8bf017f_sha256": "9a55b2a332bf28ba90f9efd5e9e3d081c9ca9296bc4804d31b21d2627382ee0e",
+      "8bf017f_bytes": 64607
+    },
+    {
+      "path": "case-studies/orders-payments/README.md",
+      "recorded_sha256": "f952972537d64f2172e0883678218ee14349b26041c63487cc15913a7346845c",
+      "recorded_bytes": 59817,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/orders-payments-candidate-initial.json",
+        "research/orders-payments-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "9a55b2a332bf28ba90f9efd5e9e3d081c9ca9296bc4804d31b21d2627382ee0e",
+      "8bf017f_bytes": 64607
+    },
+    {
+      "path": "case-studies/orders-payments/http/README.md",
+      "recorded_sha256": "a9607958ea8ce0146d2abb3c0fe11b8a7f7bfeb7940daa29acae8dade6e4fc39",
+      "recorded_bytes": 39120,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "725478c968abfd936479c86f93eb46e1e35aad73ae1fce240c1e539d981a5b52",
+      "8bf017f_bytes": 41876
+    },
+    {
+      "path": "case-studies/orders-payments/http/java/README.md",
+      "recorded_sha256": "54a55fe782ab991696a86a09ed1d8dd9dc6725aa6d5aa851c7bc41f626a50a18",
+      "recorded_bytes": 3738,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "0979fe1345e08be8ae51bd900043b691c70d56dd337cd38834bb9c6eb59097a6",
+      "8bf017f_bytes": 4740
+    },
+    {
+      "path": "case-studies/orders-payments/http/rust/README.md",
+      "recorded_sha256": "39ca7118cb107ea1fde347379817eb8e55938686ee0d22a3ac9570f66f4a5079",
+      "recorded_bytes": 3283,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "a044ac38c50b780da455b19aaefdd10649c867179e978a9c5507bf3295855713",
+      "8bf017f_bytes": 4311
+    },
+    {
+      "path": "case-studies/orders-payments/java/README.md",
+      "recorded_sha256": "b83a877a8e5630e4cc2a3885018127ee6461b003c11d65cabf00431f54a52093",
+      "recorded_bytes": 2498,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/orders-payments-candidate-initial.json",
+        "research/orders-payments-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "63f9a8a080083f7b2946f0c8f4011fa95e14cce0297e95af344f3adc295fe1c4",
+      "8bf017f_bytes": 3541
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/README.md",
+      "recorded_sha256": "10f7a9338359698a69c01d9ebcd9b4715c3ef2d617e3fd0ccff1e9f24eb5137e",
+      "recorded_bytes": 38144,
+      "in_manifests": [
+        "research/postgres-candidate-initial.json"
+      ],
+      "8bf017f_sha256": "9e91416afcb392df68993bdca563a6104cdc96fe8fd00f70f7e25f46505696e7",
+      "8bf017f_bytes": 40309
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/README.md",
+      "recorded_sha256": "ead406c2115f413024d58ba3a124193ad4ca862c04ec9f0c02fb56f1fb0da89f",
+      "recorded_bytes": 38198,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "9e91416afcb392df68993bdca563a6104cdc96fe8fd00f70f7e25f46505696e7",
+      "8bf017f_bytes": 40309
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/java/README.md",
+      "recorded_sha256": "7d5edb4a447e44c3821a8695882ddc14ef7cf5a5054f2088cf5c156407a839ea",
+      "recorded_bytes": 5097,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "27611d5a092215154e058d583033ef6f557822395f354469dbda62634092b569",
+      "8bf017f_bytes": 6065
+    },
+    {
+      "path": "case-studies/orders-payments/postgres/rust/README.md",
+      "recorded_sha256": "92b321fbdb8a537cbfd93ada73f04064e4c3858a0c255ef3af5338f348d12595",
+      "recorded_bytes": 4403,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "27c4ec200c62756a42ac66f381d576273f5d6378780d0de95f44807ef55a8dd3",
+      "8bf017f_bytes": 5438
+    },
+    {
+      "path": "case-studies/orders-payments/rust/README.md",
+      "recorded_sha256": "c63cdb1193cc67482b9aaa3d8b7275a18eb80d697916139b7d74ba205c8e8a26",
+      "recorded_bytes": 6894,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/orders-payments-candidate-initial.json",
+        "research/orders-payments-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "0ea020379d230325b6825b3eb8ac7f8ac67b0e23e9ce719aa097fdeeff7157dc",
+      "8bf017f_bytes": 8108
+    },
+    {
+      "path": "case-studies/orders-payments/track/DOCKER.md",
+      "recorded_sha256": "8b2804b2ba83db1fe9efc4a53e5bdcff411735f15fd45c9d6e1b104ccdc37e6a",
+      "recorded_bytes": 6857,
+      "in_manifests": [
+        "research/roo-compose-candidate.json",
+        "research/roo-compose-source-candidate.json",
+        "research/roo-github-publication-baseline.json"
+      ],
+      "8bf017f_sha256": "c834eec60ca625eb79f8c3571397bbf89255483f0118f7c7f71395ac5cbc3ee4",
+      "8bf017f_bytes": 8050
+    },
+    {
+      "path": "case-studies/orders-payments/track/README.md",
+      "recorded_sha256": "9a247e70fb91f8c3a9988eb760d6dd0fe745b5e19970cdc4f9ed955d4d82633e",
+      "recorded_bytes": 13031,
+      "in_manifests": [
+        "research/roo-compose-baseline.json",
+        "research/roo-track-candidate.json"
+      ],
+      "8bf017f_sha256": "c9d8c8c13511f40778eb9b54cfc14549114493cd3e5c965a1bfad581b41b4382",
+      "8bf017f_bytes": 12583
+    },
+    {
+      "path": "case-studies/orders-payments/track/compose.sh",
+      "recorded_sha256": "d9df9a623f035c09898cc0e8968563bb8bf164cd75d5f445783a108fc5fd69c9",
+      "recorded_bytes": 3906,
+      "in_manifests": [
+        "research/roo-compose-candidate.json",
+        "research/roo-compose-source-candidate.json",
+        "research/roo-github-publication-baseline.json"
+      ],
+      "8bf017f_sha256": "68d66fc4d4d9e8c4afde8f7b2a82e4a8a7f245be969cf5c8323c81010e5bdeae",
+      "8bf017f_bytes": 5363
+    },
+    {
+      "path": "docs/01-foundations.md",
+      "recorded_sha256": "e1201571942fcc36843da2daa2087b620a517ee41c98a1286b5c9e4d8abf195b",
+      "recorded_bytes": 15542,
+      "in_manifests": [
+        "research/roo-method-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "2e0a97bdc2342fbb26add018b9cd24d6c20aa97b226df735003dcfd3852d7bb2",
+      "8bf017f_bytes": 8481
+    },
+    {
+      "path": "docs/01-foundations.md",
+      "recorded_sha256": "f3e8fce919a0e8f8bc85448177cafa6c9a0457bea9aebb9f1f0008677a12a512",
+      "recorded_bytes": 15518,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-name-baseline.json"
+      ],
+      "8bf017f_sha256": "2e0a97bdc2342fbb26add018b9cd24d6c20aa97b226df735003dcfd3852d7bb2",
+      "8bf017f_bytes": 8481
+    },
+    {
+      "path": "docs/02-relationship-design.md",
+      "recorded_sha256": "9591ac6951dee7cc5e38b291d0ed89d60075748e4b2122180ee683b164137eba",
+      "recorded_bytes": 19224,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "b149488f4c67d69fe0fbedc30b452aa62b5b8b2493573b118e55aa5f7d114e73",
+      "8bf017f_bytes": 16859
+    },
+    {
+      "path": "docs/03-concept-atlas.md",
+      "recorded_sha256": "71b2b1f17da34cbbd2c80884cb9d30cec8ddd62f359947ddfcd3dbccb5e08d2e",
+      "recorded_bytes": 38669,
+      "in_manifests": [
+        "research/candidate-initial.json"
+      ],
+      "8bf017f_sha256": "53a8eb8e3a6e885043683416adca3d946869defef82b9280989a42c8c0176fd4",
+      "8bf017f_bytes": 44870
+    },
+    {
+      "path": "docs/03-concept-atlas.md",
+      "recorded_sha256": "af7ab8a4a9f7481ad84de33f716e2395ea09d546b2ecdcdf4366e8de6fbabb95",
+      "recorded_bytes": 38643,
+      "in_manifests": [
+        "research/roo-method-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "53a8eb8e3a6e885043683416adca3d946869defef82b9280989a42c8c0176fd4",
+      "8bf017f_bytes": 44870
+    },
+    {
+      "path": "docs/03-concept-atlas.md",
+      "recorded_sha256": "e518b1bedcced2f615a3a982da3620275dfb197dfd37dd4e99336a75a73730d8",
+      "recorded_bytes": 38668,
+      "in_manifests": [
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-name-baseline.json"
+      ],
+      "8bf017f_sha256": "53a8eb8e3a6e885043683416adca3d946869defef82b9280989a42c8c0176fd4",
+      "8bf017f_bytes": 44870
+    },
+    {
+      "path": "docs/04-pattern-catalog.md",
+      "recorded_sha256": "d17388ccc524e5be1616ccfa2cbd3ce1554f46d5c2667c6cc1b6c9d85647969d",
+      "recorded_bytes": 32290,
+      "in_manifests": [
+        "research/roo-method-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "dc3b84b4ff0c82d60e06ffc73443a576ec058d4211bfb2e068f0eca84fecd69a",
+      "8bf017f_bytes": 40868
+    },
+    {
+      "path": "docs/04-pattern-catalog.md",
+      "recorded_sha256": "d36cc261dca7d2207a5c728ca08de0d66e7c4cd574770b65de98f9def0a53199",
+      "recorded_bytes": 32316,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-name-baseline.json"
+      ],
+      "8bf017f_sha256": "dc3b84b4ff0c82d60e06ffc73443a576ec058d4211bfb2e068f0eca84fecd69a",
+      "8bf017f_bytes": 40868
+    },
+    {
+      "path": "docs/05-architecture.md",
+      "recorded_sha256": "e90eb7294d6f1be7d42d17c7168c3284fdbc528af778870f010a3b5928d7a0a8",
+      "recorded_bytes": 23371,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "f346c393f8473bb13f5d629401e42674b5baa1cf26182925da2510efa5ac2440",
+      "8bf017f_bytes": 24014
+    },
+    {
+      "path": "docs/06-cross-language.md",
+      "recorded_sha256": "5f2930df83e693ce7d3e5b53294b433cd5fbd073c4c92a6a7cb6c7aaae171681",
+      "recorded_bytes": 26223,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "8d3dd8f5692f0ea8683bf63e05872b529c494cad1a3ab0d478c458cfd86f1337",
+      "8bf017f_bytes": 28729
+    },
+    {
+      "path": "docs/07-learning-path.md",
+      "recorded_sha256": "94e7145df79019624bd8a1e8c3666d88b00707c7e915461688dcb9b8d9e56375",
+      "recorded_bytes": 12805,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "02d91f46c3db3e7eb23dcdb71316466e5551898eb1ef5cd90e6af679a52b6edb",
+      "8bf017f_bytes": 13831
+    },
+    {
+      "path": "docs/08-rust-and-object-design.md",
+      "recorded_sha256": "5b5835e8a0787a477aca3d87b5c5f49763e8ecf9d79edd54c9951261dba8addf",
+      "recorded_bytes": 64318,
+      "in_manifests": [
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/orders-payments-candidate-initial.json",
+        "research/orders-payments-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "68539de8046e15a7e1880b03d2fa246ccdf75020ca5a681f45946637336781a5",
+      "8bf017f_bytes": 61205
+    },
+    {
+      "path": "docs/09-adoption-guide.md",
+      "recorded_sha256": "ab630431729f4f48caf0b2c34e3071ab2bae698391ee5fd3f7725e40e923f86c",
+      "recorded_bytes": 21349,
+      "in_manifests": [
+        "research/roo-adoption-candidate.json",
+        "research/roo-track-baseline.json"
+      ],
+      "8bf017f_sha256": "0b138a151ca096a14aaa54867844db830cfd3589179babe319210528b1233e03",
+      "8bf017f_bytes": 21278
+    },
+    {
+      "path": "docs/laboratory.md",
+      "recorded_sha256": "01e192086e1a43b6773182507784b906ebe22fba1e801a3dc1ee221ef89c26e3",
+      "recorded_bytes": 6440,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "6daf4ede6d5109e79401629d11107724d247166a3183d16e6e3afde6808ac110",
+      "8bf017f_bytes": 7483
+    },
+    {
+      "path": "research/postgres-sources.md",
+      "recorded_sha256": "b16f7016551a843a474a80811842191c75dfa17d79a32ff9fffb33108c5f5ce8",
+      "recorded_bytes": 14590,
+      "in_manifests": [
+        "research/postgres-candidate-initial.json"
+      ],
+      "8bf017f_sha256": "951b39d3d5defd6d63fe525d5643a1ef401221e4fadfaff0eafc522bb86347d8",
+      "8bf017f_bytes": 14745
+    },
+    {
+      "path": "templates/architecture-decision.md",
+      "recorded_sha256": "dc201c01d32e5edcaebaa06f9b984681843a4a8567c406768129fb8318b35678",
+      "recorded_bytes": 1327,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "5b1f09704a229c51af438a349461954c669f46e6e646b6b9aa42d9e4aec6f75d",
+      "8bf017f_bytes": 2488
+    },
+    {
+      "path": "templates/design-review.md",
+      "recorded_sha256": "7355139483eff409d54ed15ca483e357a9e7c30186e4669fde74e8dfa5f8df7b",
+      "recorded_bytes": 1591,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "a097d731f037dae0b91944d3b760ad744c2e5462e6aa9e2f99e79f9ea6576429",
+      "8bf017f_bytes": 2743
+    },
+    {
+      "path": "templates/relationship-contract.md",
+      "recorded_sha256": "9d23bf802ba918b30d287300702a1a07e103d4f69f038a98b4ce0a4109ca6004",
+      "recorded_bytes": 2275,
+      "in_manifests": [
+        "research/candidate-initial.json",
+        "research/candidate.json",
+        "research/http-candidate-initial.json",
+        "research/http-candidate.json",
+        "research/postgres-candidate-initial.json",
+        "research/postgres-candidate.json",
+        "research/roo-method-baseline.json",
+        "research/roo-name-baseline.json",
+        "research/roo-name-candidate.json"
+      ],
+      "8bf017f_sha256": "a6601eea2d37082c9d33c4b04835aa989640858d769dbe6e44629cfe110e4595",
+      "8bf017f_bytes": 1816
+    }
+  ]
+}

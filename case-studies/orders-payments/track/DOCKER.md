@@ -99,6 +99,12 @@ packages, source identity, test status, and collection status. Selected track,
 PostgreSQL, and HTTP receipts and logs are copied out when checks pass or fail;
 image-build failures retain the host build diagnostics and exit status.
 
+Files the container produced are exported into the `container-evidence/`
+subdirectory of the run directory. Files in the run directory itself, such as
+`container-exit-code.txt`, `container-isolation.json`, and `image-platform.txt`,
+are written by the host wrapper only. A same-named file inside the container
+therefore cannot replace a host receipt.
+
 The wrapper exports this allowlisted evidence before removing only the
 container it created. It does not export the PostgreSQL data directory or
 environment credentials. Docker may keep the built image and build cache for
@@ -108,9 +114,23 @@ container entry point but does not perform the wrapper's host-side evidence
 export.
 
 The wrapper also records a restricted container inspection and image platform.
-It verifies the configured nonroot user, disabled external networking, absent
-mounts and port bindings, dropped capabilities, and no-new-privileges before
-waiting for test completion. This evidence omits container environment values.
+Before waiting for test completion, it verifies the configured nonroot user,
+disabled external networking, absent mounts and port bindings, dropped
+capabilities, no-new-privileges, and the configured 4 GiB memory, 2 CPU, and
+256-process limits. Threads count toward the process limit. This evidence omits
+container environment values.
+
+The wrapper takes the run status from the Docker daemon, never from a file the
+container can write. It reads `docker wait` and then `docker inspect` of the
+stopped container, requires both to be the same number from 0 to 255, and fails
+the run with status 1 if they disagree. It writes the agreed value to
+`container-exit-code.txt` and `container-exit-inspect-code.txt` on the host.
+
+These limits bound runaway CPU, memory, and process use by student code. They
+do not bound disk use: the container root filesystem remains writable and
+Docker offers no portable quota for its writable layer, so a runaway write can
+still fill the Docker host's disk. The limits do not make the container a
+sandbox for hostile code.
 
 ## GitHub Actions
 

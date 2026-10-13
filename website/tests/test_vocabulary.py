@@ -50,6 +50,49 @@ class VocabularyTests(unittest.TestCase):
             self.assertEqual([p.relative_to(root).as_posix() for p in sources], ["docs/new.md"])
             self.assertEqual(errors, ["docs/new.md:1: retired field 'Mutation authority'"])
 
+    def test_rust_doc_comments_in_src_and_examples_reject_retired_grouped_headings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            library = root / "src/lib.rs"
+            example = root / "examples/nested/demo.rs"
+            library.parent.mkdir(parents=True)
+            example.parent.mkdir(parents=True)
+            library.write_text(
+                "//! Current relationship table\n"
+                "//! | Owner and identity |\n"
+                "// | Execution and failure |\n"
+                "pub fn library() {}\n"
+            )
+            example.write_text(
+                "/**\n"
+                " * A public example.\n"
+                " * | Mutation and validity |\n"
+                " */\n"
+                "pub fn demo() {}\n"
+            )
+
+            sources, errors = vocabulary.check(root)
+            self.assertEqual(
+                [path.relative_to(root).as_posix() for path in sources],
+                ["src/lib.rs", "examples/nested/demo.rs"],
+            )
+            self.assertEqual(errors, [
+                "src/lib.rs:2: retired grouped relationship heading",
+                "examples/nested/demo.rs:3: retired grouped relationship heading",
+            ])
+
+    def test_rust_doc_comment_extraction_ignores_code_and_non_doc_comments(self):
+        source = (
+            "// | Owner and identity |\n"
+            "let text = \"//! | Mutation and validity |\";\n"
+            "//! | Execution and failure |\n"
+        )
+        checked = vocabulary.rust_doc_comments(source)
+        self.assertEqual(
+            vocabulary.violations(checked, "src/example.rs"),
+            [(3, "retired grouped relationship heading")],
+        )
+
     def test_only_unreleased_changelog_prose_is_checked(self):
         text = "# Changelog\n\n## [Unreleased]\n\n- Use mutation authority\n\n## [0.1.0]\n\nThe seven-field contract."
         self.assertEqual(vocabulary.violations(text, "CHANGELOG.md"), [(5, "retired field 'Mutation authority'")])

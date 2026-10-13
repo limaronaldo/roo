@@ -188,3 +188,33 @@ still stopped with its captured hashes unchanged. All six delegates and root
 completed their assigned scope. Hosted CI was prepared and syntax-checked,
 but was not dispatched. No commit, push, publication, unrelated resource
 cleanup, host database mutation, or global configuration change was performed.
+
+## Provenance and drift note (2026-10-13)
+
+Added after the fact; the earlier text is not rewritten. This report relies on the Compose manifests listed below. Those manifests list `{path, sha256, bytes}` for a working tree as it stood **before** it was committed; they are preserved unedited. Measured on 2026-10-13 against git with `python3 -I research/manifest-audit.py --rev 8bf017f --also 0c3e2bb --also v0.1.0` (full results: [manifest-provenance-8bf017f.json](manifest-provenance-8bf017f.json)):
+
+| Manifest | Entries | Match no git blob | Identical at `0c3e2bb` | Identical at `8bf017f` (v0.4.3) | Identical at `0c3e2bb` but changed by later commits |
+|---|---:|---:|---:|---:|---:|
+| `roo-compose-baseline.json` | 215 | 2 | 213 | 162 | 51 |
+| `roo-compose-source-candidate.json` | 223 | 3 | 220 | 164 | 56 |
+| `roo-compose-candidate.json` | 235 | 3 | 232 | 176 | 56 |
+
+- **Pre-commit state.** "Match no git blob" counts entries whose recorded SHA-256 equals no blob reachable from any git ref: those bytes were never committed, and the repository does not retain their intermediate content. `0c3e2bb` is the commit that first contains these manifests.
+- **What "matched" means here.** Where this report says the candidate files matched the manifest, that was a working-tree comparison made at review time. This note neither repeats nor disproves it; it only shows that the claim cannot be reproduced from git for the entries counted above.
+- **Drift after acceptance.** "Frozen" and "unchanged" in this report hold for the acceptance date only. At `8bf017f`, 59 of 235 entries in `roo-compose-candidate.json` differ from the manifest (by area: 41 in `case-studies/`, 10 in `docs/`, 4 in `repository root files`, 2 in `templates/`, 1 in `.github/`, 1 in `src/`). 56 of those were byte-identical at `0c3e2bb` and were changed by later commits; the rest were already different from git at the first commit. The manifest was not updated, because historical manifests are not edited.
+
+## Compose script note (2026-10-13)
+
+Added after the fact; the text above is not rewritten.
+
+Line 147 ("No implementation source changed after the successful runtime qualifications") holds for the Compose qualification window only. The `case-studies/orders-payments/track/compose.sh` that the local native and AMD64 qualifications ran is not the file that was later published. Hashes and sizes computed on 2026-10-13:
+
+| Version | SHA-256 | Bytes | Where it is recorded |
+|---|---|---:|---|
+| Run locally | `d9df9a623f035c09898cc0e8968563bb8bf164cd75d5f445783a108fc5fd69c9` | 3906 | [roo-compose-candidate.json](roo-compose-candidate.json), [roo-compose-native-evidence.json](roo-compose-native-evidence.json), [roo-compose-amd64-evidence.json](roo-compose-amd64-evidence.json), [roo-compose-failure-evidence.json](roo-compose-failure-evidence.json) |
+| Published (`0c3e2bb` and `8bf017f`) | `68d66fc4d4d9e8c4afde8f7b2a82e4a8a7f245be969cf5c8323c81010e5bdeae` | 5363 | git blob; also the hash in [roo-github-hosted-evidence.json](roo-github-hosted-evidence.json) |
+
+- `git show 8bf017f:case-studies/orders-payments/track/compose.sh | shasum -a 256` gives the published hash; `git log --follow` lists a single commit (`0c3e2bb`) for the file.
+- The `d9df9a62...` bytes exist in no git blob (see [manifest-provenance-8bf017f.json](manifest-provenance-8bf017f.json)). They can be reconstructed: reversing the `compose.sh` hunk of [roo-github-publication-changes.diff](roo-github-publication-changes.diff) (lines 85-106) on the published file with `patch -R -p1` yields SHA-256 `d9df9a62...` and 3906 bytes, matching the locally run version.
+- The difference is that hunk: after `docker inspect` of the started container it adds a container isolation check (user, network mode, mounts, port bindings, privileged flag, dropped capabilities, security options) that writes `isolation-check-exit-code.txt` and exits 1 on failure, records `image-platform.txt`, and fails when `ROO_REQUIRE_AMD64_IMAGE=1` and the image is not `linux/amd64`.
+- So the local native and AMD64 runs executed the 3906-byte script, and the hosted AMD64 run recorded the published 5363-byte one. This report does not claim the local runs were repeated with the published script.

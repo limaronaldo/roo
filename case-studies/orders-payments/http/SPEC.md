@@ -51,8 +51,13 @@ authority and allow the common lock-witness schedules to run.
 
 Provider transactions remain independent, with no app lock spanning provider
 calls. The inherited relay deliberately retains its app lock during its small
-local inbox transaction. Accepted transaction timeouts and known-abort retry
-limits remain unchanged. HTTP must never replay an entire failed command.
+local inbox transaction. That hold is scoped to **one outbox event**: the relay
+loop opens a short transaction per pending event, delivers and acknowledges that
+event under the lock, then commits and releases before selecting the next one. A
+relay request that drains several pending events is therefore a sequence of
+per-event lock holds, never one lock held across the whole scan. Accepted
+transaction timeouts and known-abort retry limits remain unchanged. HTTP must
+never replay an entire failed command.
 
 ## Listener and configuration
 
@@ -88,6 +93,19 @@ strings, fragments, extra/trailing slash segments, or a malformed scope with
 `400 InvalidRequest` before SQL. An unknown well-formed route is `404 RouteNotFound`;
 a known route with another method is `405 MethodNotAllowed` with `Allow`.
 
+A fragment is rejected on the bytes the client actually sent, not on a
+normalized target. Java reads `URI.getRawFragment()` and rejects a non-null
+fragment; Rust validates the raw request line before handing it to Hyper,
+because URI parsing can silently discard a fragment. That Rust boundary rejects
+a literal `#` with `400 InvalidRequest`, requires exactly three CRLF-terminated
+request-line fields and `HTTP/1.0` or `HTTP/1.1`, limits the line to 8192 bytes
+and five seconds, and admits at most 16 request-line readers before replaying the
+consumed bytes to the native parser. HTTP/1 keep-alive is disabled: exactly one
+request is handled per connection, so a pipelined or subsequent request on the
+same connection is never dispatched. A five-second native header-read timeout
+follows the line check. These limits bound the request line and one body; they
+are not a cap on every accepted connection.
+
 | Method and path | Exact ordinary body | Meaning |
 |---|---|---|
 | `PUT /v1/scopes/{scope}` | `{}` | Initialize if absent; return existing state otherwise, never reset |
@@ -105,35 +123,58 @@ Default actions are `pay:<id>:approve:none`, `refund:<id>:approve:none`,
 and payment/refund amounts derive from the persisted frozen order. Clients
 cannot submit or override those fields. There is no generic script/action API.
 
-Requests with a body require `Content-Type: application/json` (optional
+Every non-GET request requires `Content-Type: application/json` (optional
 `charset=utf-8`, allowing whitespace around the charset `=` and case-insensitive
 media-type matching); unsupported media types
-return `415 UnsupportedMediaType`. Bodies are at most 8192 bytes including
+return `415 UnsupportedMediaType`. That requirement does not depend on the body:
+a `PUT` or `POST` carrying no body and no media type is `415 UnsupportedMediaType`,
+not `400 InvalidRequest`. Bodies are at most 8192 bytes including
 whitespace. Enforce the actual streamed byte limit even without Content-Length;
 oversize returns `413 BodyTooLarge`. Validate UTF-8 strictly, one JSON object,
 no duplicate properties, no unknown properties, no trailing JSON, and string
 values for every nonempty field. Empty body differs from `{}`. Malformed JSON,
 null/array/scalar, missing fields, invalid types, and invalid enums return
 `400 InvalidRequest` before SQL. GET rejects a nonempty body.
+The trailing-content rule belongs to the adapter, not to the parser library: a
+streaming JSON parser accepts several root values in sequence, so the Java
+adapter asks for one more token after the root object's closing brace and
+rejects any remainder. Rust rejects the same input through a single whole-input
+deserialization that permits no trailing bytes.
 
 `Accept` may be absent, `application/json`, or `*/*` (surrounding optional
-whitespace allowed); other values return `406 NotAcceptable`. This deliberately
+whitespace allowed); other values return `406 NotAcceptable`. The media-type
+token is compared case-insensitively, so `Application/JSON` is accepted, while
+`*/*` is matched literally after trimming. The value is never list-parsed: a
+comma-separated list such as `application/json, */*`, and any weighted range,
+return `406 NotAcceptable`. This deliberately
 small educational negotiation contract does not implement weighted media ranges.
 Reject multiple Content-Type, Accept, Idempotency-Key, or synthetic control
 header values with 400. Responses include `Connection: close`; do not depend on
 persistent connections. Application-level validation errors obey the JSON error
-contract; native HTTP parser rejections for invalid framing/header syntax are
-outside cross-stack JSON parity. No header-count/slow-client hardening claim is
-implied by a body cap.
+contract. Native parser rejections for invalid request-line or header syntax are
+outside cross-stack JSON parity; a malformed or truncated **body** is inside it
+and returns `400 InvalidRequest`. Only a typed stream-length-limit failure
+returns `413 BodyTooLarge`, so a malformed chunked body, a body truncated below
+its declared `Content-Length`, and a body-read timeout never masquerade as
+oversize. Each implementation admits at most 16 concurrent body readers and
+applies an absolute five-second body-read deadline; a full body-reader gate
+returns `503 Busy` without reading the body, and a reader that exceeds the
+deadline loses its connection (Java closes the exchange, Rust answers
+`400 InvalidRequest`). That bounds body buffering and slow body readers. It is
+not a header-count limit, nor a cap on connection establishment.
 
 For requests with multiple application-level errors, all three variants use the
 same precedence: path/route, method, asserted principal (in fixture mode), header
 multiplicity and unsupported control header, Accept, idempotency-key syntax,
-Content-Type, streamed body limit, then body/command validation. Metadata checks
-run before reading the body and before database admission. A malformed
+Content-Type, body-reader admission, streamed body limit, then body/command
+validation. Metadata checks run before reading the body and before database
+admission. The body-reader gate and the database admission gate are independent
+and both reject with `503 Busy`. A malformed
 authorization path with extra segments returns 400 even when fixture mode is off;
 the well-formed observation route remains unavailable (404) in that mode. Native
-HTTP framing errors remain outside this application-level ordering.
+request-line and header-syntax errors remain outside this application-level
+ordering; body framing errors do not, and take the `400 InvalidRequest` place of
+the streamed body limit in the same order.
 
 Money and quantity are decimal **strings**, never JSON numbers or floating
 point. The grammar is `[+-]?[0-9]+`, with at most 128 ASCII characters total;
@@ -304,7 +345,14 @@ Required checks, with exact results recorded only after execution:
    types, oversized body, bad media type, method/route/missing-scope distinctions,
    overflow/negative/zero boundaries, disabled controls/probe, rejected drop header, and
    accepted matching Idempotency-Key and rejected mismatched/duplicate/unsupported
-   keys. Verify no state mutation for rejected input.
+   keys. Verify no state mutation for rejected input. Include a literal `#`
+   fragment target and a non-GET request with an empty body and no `Content-Type`
+   in every variant. On raw sockets, exercise the Rust request-line boundary
+   directly: literal, empty, query-joined and percent-encoded fragments, an
+   undispatched pipelined and sequential second request, a body truncated below
+   its declared `Content-Length`, a malformed chunked body, an oversized request
+   line and a request line that never completes. Each must answer with the JSON
+   error contract and must not answer `413` for a framing failure.
 3. Concurrent different payment/refund identities and same-key duplicates;
    add-before-pay and pay-before-add; duplicate relay. Witness inherited database
    row/advisory lock waits rather than infer order from elapsed time. Verify no
@@ -324,6 +372,19 @@ Required checks, with exact results recorded only after execution:
 7. Start all listeners explicitly on loopback, reject other hosts before bind,
    retain process cleanup on every failure, and preserve the accepted source hash
    manifest. Run appropriate new checks and the accepted regressions serially.
+8. Saturate the body-reader gate with 16 connections that announce a body and
+   never send it, observe `503 Busy` on an unrelated request while the gate is
+   full, observe every stalled connection closed by the five-second deadline, and
+   observe capacity recover afterwards without state mutation.
+
+The harness always writes a run log to `.runtime/http-last-run.json`, which is not
+tracked. It writes a second copy of that receipt only when a destination is named,
+by the `--evidence-output` path or else the `ROO_EVIDENCE_PATH` environment
+variable, the flag taking precedence. A named destination is validated before the
+long run starts so an unusable path fails fast. A local run therefore names none
+and replaces no tracked file: the dated receipt
+`research/http-integration-evidence.json` belongs to its own run and is not
+refreshed by a later one. Hosted runs name a distinct path per phase.
 
 No HTTP check is marked passed by this specification. Record compiler, dependency,
 transport, concurrency, process recovery and PostgreSQL WAL-recovery evidence

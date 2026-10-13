@@ -242,7 +242,8 @@ pub fn headers(
         return Err(Fault::InvalidRequest);
     }
     if let Some(accept) = one_header(headers, "accept")?
-        && !matches!(accept.trim(), "application/json" | "*/*")
+        && !accept.trim().eq_ignore_ascii_case("application/json")
+        && accept.trim() != "*/*"
     {
         return Err(Fault::NotAcceptable);
     }
@@ -752,6 +753,19 @@ mod tests {
         assert_eq!(
             headers(&h, Route::Scope, &Method::GET).unwrap_err(),
             Fault::InvalidRequest
+        );
+        h.remove("x-roo-test-drop-response");
+        h.insert("accept", "Application/JSON".parse().unwrap());
+        assert!(headers(&h, Route::Scope, &Method::GET).is_ok());
+        h.insert("accept", "application/json, */*".parse().unwrap());
+        assert_eq!(
+            headers(&h, Route::Scope, &Method::GET).unwrap_err(),
+            Fault::NotAcceptable
+        );
+        h.remove("accept");
+        assert_eq!(
+            headers(&h, Route::Scope, &Method::PUT).unwrap_err(),
+            Fault::UnsupportedMediaType
         );
     }
 }

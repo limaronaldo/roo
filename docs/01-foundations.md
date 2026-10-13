@@ -43,7 +43,7 @@ system, a storage guarantee, or evidence that every design using it is correct.
 
 These terms describe design obligations. Each platform has its own vocabulary
 and enforcement rules. A handler can retain loaded order data while a domain
-component coordinates transitions and a store retains the durable identity.
+component coordinates transitions and a store retains the stable identity.
 Record those roles separately even when one component performs several.
 
 ## 1.3 Ownership is not identity
@@ -52,7 +52,7 @@ Transferring or copying a representation does not decide whether it represents
 the same customer. Specify whether a copy is a detached observation, another
 handle to shared state, or a new entity with a new identity.
 
-Durable identity needs explicit scope, uniqueness, version, reuse, and deletion
+Stable identity needs explicit scope, uniqueness, version, reuse, and deletion
 rules. A local address or collection position may stop identifying the same
 entity after replacement. Knowing an identifier does not by itself authorize
 access. Typed IDs and checked handles are implementation choices described in

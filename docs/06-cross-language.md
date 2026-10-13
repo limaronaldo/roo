@@ -78,7 +78,7 @@ Before selecting either language, decide that one domain coordinator controls av
 | Access regime | Reads return a value snapshot. Commands go through the aggregate. Concurrent commands are serialized at the chosen boundary. |
 | Validity horizon | An in-memory borrow/reference is valid only during its language-defined lifetime. A durable ID can outlive an object instance, but every lookup must still handle deletion or stale state. |
 | Execution domain | Serialize commands for the same loaded aggregate. Rust realizes this with exclusive `&mut self` access in the single-threaded API; a shared service can place the aggregate behind a lock. Java serializes methods on this instance with `synchronized`, or can confine it to one executor. |
-| Failure boundary | Checkout returns a typed failure for unknown copy, unknown member, or already-loaned copy. The persistence adapter separately reports transaction and I/O failures. |
+| Failure boundary | Checkout rejects an unknown copy, an unknown member, an already-loaned copy, or a duplicate loan ID. Return rejects an unknown loan or inconsistent state; the Rust sketch also reports an unknown copy. Rust distinguishes failures by enum variant; the Java sketch uses one exception type and distinguishes cases only by message text. The persistence adapter separately reports transaction and I/O failures. |
 
 The Rust example makes one local writer explicit and checks checkout rejection and return behavior.
 

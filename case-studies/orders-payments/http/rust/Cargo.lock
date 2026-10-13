@@ -615,11 +615,15 @@ name = "roo-http-case"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
  "postgres",
  "roo-postgres-case",
  "serde",
  "serde_json",
  "tokio",
+ "tower",
 ]
 
 [[package]]

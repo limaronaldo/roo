@@ -85,7 +85,9 @@ Lifetimes and garbage collectors manage the first clock. The other two are
 managed only where the design says how; that is what the `horizon` line in a
 contract is for.
 
-## Try it on one relationship { #try-it }
+<a id="try-it"></a>
+
+## Try it on one relationship
 
 Pick one arrow in a system you know, preferably one that crosses a process, a
 transaction, a lifecycle, or a trust boundary. Fill in the eight fields. A line you can’t

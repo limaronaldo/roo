@@ -19,7 +19,8 @@ public final class UnitTests {
     private static final RefundId R1 = new RefundId("r1");
     public static void main(String[] args) {
         for (boolean template : new boolean[] { false, true }) {
-            additions(template); paymentRecovery(template); refunds(template); declined(template); persistedBeforeRemote(template);
+            additions(template); paymentRecovery(template); refunds(template); declined(template);
+            refundDecline(template); persistedBeforeRemote(template);
         }
         providerContract();
         System.out.println("Java unit checks: " + checks);
@@ -119,6 +120,15 @@ public final class UnitTests {
         equal(a.pay(P1, Mode.approve, Failure.commit), Result.AlreadyDeclined);
         equal(a.refund(R1, Mode.approve, Failure.none), Result.InvalidState);
         equal(a.reconcile(false, Failure.none), Result.InvalidState); equal(p.requests(), 1);
+    }
+    private static void refundDecline(boolean template) {
+        Store s = new Store(); Provider p = new Provider(); Application a = app(template, s, p);
+        equal(a.add(250, 1), Result.Added);
+        equal(a.pay(P1, Mode.approve, Failure.none), Result.Approved);
+        int requests = p.requests();
+        equal(a.refund(R1, Mode.decline, Failure.none), Result.InvalidState);
+        equal(s.load().state(), State.Paid); equal(s.load().refund(), null);
+        equal(s.events().size(), 1); equal(p.requests(), requests); equal(p.refundCount(), 0);
     }
     private static void persistedBeforeRemote(boolean template) {
         Store store = new Store(); Provider delegate = new Provider();

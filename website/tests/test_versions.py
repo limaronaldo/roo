@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -13,6 +14,54 @@ from check_site import Page, homepage_errors
 
 
 class VersionTests(unittest.TestCase):
+    def test_homepage_try_it_button_has_a_github_stable_fragment_target(self):
+        source = (site.WEBSITE / "pages/index.md").read_text()
+        self.assertIn('[Try it on one relationship](#try-it)', source)
+        self.assertRegex(source, r'<a id="try-it"></a>\s+## Try it on one relationship')
+
+    def test_github_source_links_require_targets_to_match_the_pinned_commit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "chapter.md"
+            target.write_text("published\n")
+            completed = SimpleNamespace(returncode=0, stdout="blob\n")
+            with patch.object(site.subprocess, "run", return_value=completed), patch.object(
+                site.subprocess, "check_output", return_value=b"published\n"
+            ):
+                site.verify_pinned_target(target, "docs/chapter.md", "HEAD", "development")
+
+            target.write_text("dirty working copy\n")
+            with patch.object(site.subprocess, "run", return_value=completed), patch.object(
+                site.subprocess, "check_output", return_value=b"published\n"
+            ), self.assertRaisesRegex(ValueError, "differs from pinned commit"):
+                site.verify_pinned_target(target, "docs/chapter.md", "HEAD", "development")
+
+    def test_github_source_links_reject_targets_absent_from_the_pinned_commit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "untracked.md"
+            target.write_text("working-tree only\n")
+            missing = SimpleNamespace(returncode=128, stdout="")
+            with patch.object(site.subprocess, "run", return_value=missing), self.assertRaisesRegex(
+                ValueError, "absent from pinned commit"
+            ):
+                site.verify_pinned_target(target, "research/untracked.md", "HEAD", "development")
+
+    def test_build_output_refuses_to_overwrite_nonempty_directories(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            root.mkdir()
+            output = Path(directory) / "site-output"
+            output.mkdir()
+            sentinel = output / "keep.txt"
+            sentinel.write_text("preserve")
+            old_build, old_site = site.BUILD, site.SITE
+            try:
+                with patch.object(site, "ROOT", root):
+                    with self.assertRaisesRegex(ValueError, "nonempty build output"):
+                        site.configure_output(output)
+                self.assertEqual(sentinel.read_text(), "preserve")
+            finally:
+                site.BUILD, site.SITE = old_build, old_site
+
     def test_homepage_contract_and_teaching_links_stay_in_their_edition(self):
         versions = [{"url": f"/roo/{edition}/"} for edition in ("v0.2.0", "v0.1.0", "dev")]
         old = "<dl>" + "".join(f"<dt>{key}</dt><dd>Decision</dd>" for key in

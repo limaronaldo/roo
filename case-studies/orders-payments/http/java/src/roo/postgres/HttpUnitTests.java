@@ -157,7 +157,13 @@ public final class HttpUnitTests {
         rejects("/v1/scopes/demo/payments", "GET", JSON, new byte[0], false, 405, "MethodNotAllowed");
         rejects("/v1/scopes/demo", "GET", JSON, new byte[]{32}, false, 400, "InvalidRequest");
         rejects("/v1/scopes/demo", "PUT", Map.of(), "{}".getBytes(StandardCharsets.UTF_8), false, 415, "UnsupportedMediaType");
+        rejects("/v1/scopes/demo", "PUT", Map.of(), new byte[0], false, 415, "UnsupportedMediaType");
+        rejects("/v1/scopes/demo/payments", "GET", JSON, new byte[8193], false, 405, "MethodNotAllowed");
+        rejects("/v1/scopes/demo#fragment", "GET", Map.of(), new byte[0], false, 400, "InvalidRequest");
         rejects("/v1/scopes/demo", "GET", Map.of("Accept", List.of("text/plain")), new byte[0], false, 406, "NotAcceptable");
+        check(HttpProtocol.preflight(URI.create("/v1/scopes/demo"), "GET",
+            Map.of("Accept", List.of("Application/JSON")), false, false).scope().equals("demo"));
+        rejects("/v1/scopes/demo", "GET", Map.of("Accept", List.of("application/json, */*")), new byte[0], false, 406, "NotAcceptable");
         rejects("/v1/scopes/demo", "GET", Map.of("Accept", List.of("application/json", "application/json")), new byte[0], false, 400, "InvalidRequest");
         rejects("/v1/scopes/demo", "GET", Map.of("X-Roo-Test-Drop-Response", List.of("1")), new byte[0], false, 400, "InvalidRequest");
         rejects("/v1/scopes/demo", "GET", Map.of("Idempotency-Key", List.of("p1")), new byte[0], false, 400, "InvalidRequest");

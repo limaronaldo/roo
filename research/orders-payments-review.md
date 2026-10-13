@@ -53,3 +53,16 @@ ledger are excluded from the content identity to avoid a circular hash.
 The [validation record](orders-payments-validation.md) and executed-check log
 are included in the candidate identity. No executable or documentary candidate
 content changed after review.
+
+## Provenance and drift note (2026-10-13)
+
+Added after the fact; the earlier text is not rewritten. This report relies on the orders-payments manifests listed below. Those manifests list `{path, sha256, bytes}` for a working tree as it stood **before** it was committed; they are preserved unedited. Measured on 2026-10-13 against git with `python3 -I research/manifest-audit.py --rev 8bf017f --also 0c3e2bb --also v0.1.0` (full results: [manifest-provenance-8bf017f.json](manifest-provenance-8bf017f.json)):
+
+| Manifest | Entries | Match no git blob | Identical at `0c3e2bb` | Identical at `8bf017f` (v0.4.3) | Identical at `0c3e2bb` but changed by later commits |
+|---|---:|---:|---:|---:|---:|
+| `orders-payments-candidate-initial.json` | 43 | 6 | 37 | 35 | 2 |
+| `orders-payments-candidate.json` | 43 | 6 | 37 | 35 | 2 |
+
+- **Pre-commit state.** "Match no git blob" counts entries whose recorded SHA-256 equals no blob reachable from any git ref: those bytes were never committed, and the repository does not retain their intermediate content. `0c3e2bb` is the commit that first contains these manifests.
+- **What "matched" means here.** Where this report says the candidate files matched the manifest, that was a working-tree comparison made at review time. This note neither repeats nor disproves it; it only shows that the claim cannot be reproduced from git for the entries counted above.
+- **Drift after acceptance.** "Frozen" and "unchanged" in this report hold for the acceptance date only. At `8bf017f`, 8 of 43 entries in `orders-payments-candidate.json` differ from the manifest (by area: 5 in `case-studies/`, 2 in `repository root files`, 1 in `docs/`). 2 of those were byte-identical at `0c3e2bb` and were changed by later commits; the rest were already different from git at the first commit. The manifest was not updated, because historical manifests are not edited.

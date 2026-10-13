@@ -484,6 +484,13 @@ impl Database {
     fn operation(&self, s: &str, action: &Action) -> Result<Outcome> {
         let operation = action_operation(action);
         self.assert_operation(operation)?;
+        // The schema forbids a Declined refund record, and the refund intent is
+        // committed before the provider is called. Reject before any
+        // transaction so a doomed request can never leave a Refunding order.
+        if matches!(action, Action::Refund(_, Mode::Decline, _)) {
+            self.check_authorization_scope(s)?;
+            return Ok(Outcome::InvalidState);
+        }
         let failure = match action {
             Action::Pay(_, _, f) | Action::Refund(_, _, f) | Action::Reconcile(_, f) => *f,
             _ => return Err(Error::Input("invalid operation")),
@@ -960,5 +967,45 @@ mod authorization_tests {
                 ));
             }
         }
+    }
+
+    fn refund(mode: Mode) -> Action {
+        Action::Refund(RefundId::new("r1").unwrap(), mode, Failure::None)
+    }
+
+    #[test]
+    fn declined_refund_is_rejected_before_database_access() {
+        // An unconnected handle cannot open a transaction: a database error
+        // proves an attempted connection, an Ok outcome proves none was made.
+        let base = unconnected();
+        assert!(matches!(
+            base.step("scope", &refund(Mode::Decline)),
+            Ok(Outcome::InvalidState)
+        ));
+        assert!(matches!(
+            base.step("scope", &refund(Mode::Approve)),
+            Err(Error::Database(_))
+        ));
+    }
+
+    #[test]
+    fn declined_refund_still_honors_the_bound_operation_and_scope() {
+        let base = unconnected();
+        let bound = base
+            .authorized("scope", "alice", Operation::Refund)
+            .unwrap();
+        assert!(matches!(
+            bound.step("scope", &refund(Mode::Decline)),
+            Ok(Outcome::InvalidState)
+        ));
+        assert!(matches!(
+            bound.step("other", &refund(Mode::Decline)),
+            Err(Error::Forbidden)
+        ));
+        let pay = base.authorized("scope", "alice", Operation::Pay).unwrap();
+        assert!(matches!(
+            pay.step("scope", &refund(Mode::Decline)),
+            Err(Error::Forbidden)
+        ));
     }
 }

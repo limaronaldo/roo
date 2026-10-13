@@ -54,7 +54,7 @@ sequenceDiagram
     Administrator->>Coordinator: revoke(alice, order-1)
     Coordinator-->>Administrator: revoked
     Caller->>Coordinator: approve(alice, order-1)
-    Coordinator-->>Caller: Forbidden; order remains Draft
+    Coordinator-->>Caller: Forbidden#59; order remains Draft
 ```
 
 - A revocation that completes before execution denies it, even after an

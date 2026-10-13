@@ -35,6 +35,8 @@ public final class CompositionApplication implements Application {
         return finish(persisted, provider().charge(persisted.payment(), mode), failure);
     }
     @Override public final Result refund(RefundId id, Mode mode, Failure failure) {
+        // The bounded protocol does not support a declined refund; reject before any write.
+        if (mode == Mode.decline) return Result.InvalidState;
         Order candidate = store().load();
         if (candidate.state() != State.Paid && candidate.state() != State.Refunding && candidate.state() != State.Refunded) return Result.InvalidState;
         if (candidate.refund() != null) {

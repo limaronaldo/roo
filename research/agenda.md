@@ -46,3 +46,7 @@ Publish a future comparison only with requirements, toolchain versions, full can
 Which relationships merit a written contract, and which are obvious enough to remain local? When does explicit identity resolution add more complexity than it removes? How can capability boundaries express revocation? What vocabulary best describes temporal ownership in async APIs? Where do highly connected graphs, ECS systems, FFI, pinned values and external resource lifecycles require specialized guidance?
 
 The method should evolve by answering these questions with concrete designs and counterexamples.
+
+## Note added 2026-10-13
+
+Added after the fact; the text above is not rewritten. This agenda is the v0.1 plan (line 3). The "Next editions" labels (0.2, 0.3, 0.4) were planning labels and the tagged releases did not follow that table. The release-preparation commits read: v0.2.0 "eight-field contract release", v0.3.0 "persistent authorization release", v0.4.0 "operation permissions release", v0.4.1 "method and implementations release", v0.4.2 "validation kit release", v0.4.3 "human validation round release" (`git log --oneline`; the v0.4.1 and v0.4.3 tags sit on later follow-up fix commits). The comparison protocol in "A reproducible comparison" is unchanged, and nothing in this file reports its results.

@@ -10,9 +10,10 @@ integration, automated checks, and review on 2026-10-11.
 
 ## Authorship and review
 
-The ledger records requested Luna and Sol model profiles. A separate Sol
-agent reviewed the initial integrated candidate; some authors used the same
-model family. The historical phrase “independent review” means a different
+The ledger records requested Luna (`gpt-6-luna`) and Sol (`gpt-6.1-sol`)
+model profiles and notes that provider-level model identity was not separately
+verified. A separate Sol agent reviewed the initial integrated candidate; some
+authors used the same model family. The historical phrase “independent review” means a different
 agent with a separate read-only assignment. It does not mean an independent
 human reviewer or an external validation of the method.
 

@@ -149,3 +149,16 @@ cost. No independent provider telemetry verifies actual model/effort, usage,
 cache, cost, or quota. Unavailable values are not zero. No recursive delegate
 or external client was used. Writers were parallel because files were disjoint;
 integration and final qualification are serialized by dependency.
+
+## Provenance and drift note (2026-10-13)
+
+Added after the fact; the earlier text is not rewritten. This report relies on the adoption manifests listed below. Those manifests list `{path, sha256, bytes}` for a working tree as it stood **before** it was committed; they are preserved unedited. Measured on 2026-10-13 against git with `python3 -I research/manifest-audit.py --rev 8bf017f --also 0c3e2bb --also v0.1.0` (full results: [manifest-provenance-8bf017f.json](manifest-provenance-8bf017f.json)):
+
+| Manifest | Entries | Match no git blob | Identical at `0c3e2bb` | Identical at `8bf017f` (v0.4.3) | Identical at `0c3e2bb` but changed by later commits |
+|---|---:|---:|---:|---:|---:|
+| `roo-adoption-baseline.json` | 171 | 3 | 168 | 126 | 42 |
+| `roo-adoption-candidate.json` | 178 | 4 | 174 | 129 | 45 |
+
+- **Pre-commit state.** "Match no git blob" counts entries whose recorded SHA-256 equals no blob reachable from any git ref: those bytes were never committed, and the repository does not retain their intermediate content. `0c3e2bb` is the commit that first contains these manifests.
+- **What "matched" means here.** Where this report says the candidate files matched the manifest, that was a working-tree comparison made at review time. This note neither repeats nor disproves it; it only shows that the claim cannot be reproduced from git for the entries counted above.
+- **Drift after acceptance.** "Frozen" and "unchanged" in this report hold for the acceptance date only. At `8bf017f`, 49 of 178 entries in `roo-adoption-candidate.json` differ from the manifest (by area: 32 in `case-studies/`, 10 in `docs/`, 4 in `repository root files`, 2 in `templates/`, 1 in `src/`). 45 of those were byte-identical at `0c3e2bb` and were changed by later commits; the rest were already different from git at the first commit. The manifest was not updated, because historical manifests are not edited.

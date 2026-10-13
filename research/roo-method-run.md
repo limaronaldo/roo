@@ -124,3 +124,16 @@ the three changed heading anchors. Root's separate incoming-link check found
 55 references to changed documents and no broken target. The candidate remained
 unchanged at review completion. All tasks are completed and accepted within
 the documentation-only scope; no runtime requalification was claimed.
+
+## Provenance and drift note (2026-10-13)
+
+Added after the fact; the earlier text is not rewritten. This report relies on the method manifests listed below. Those manifests list `{path, sha256, bytes}` for a working tree as it stood **before** it was committed; they are preserved unedited. Measured on 2026-10-13 against git with `python3 -I research/manifest-audit.py --rev 8bf017f --also 0c3e2bb --also v0.1.0` (full results: [manifest-provenance-8bf017f.json](manifest-provenance-8bf017f.json)):
+
+| Manifest | Entries | Match no git blob | Identical at `0c3e2bb` | Identical at `8bf017f` (v0.4.3) | Identical at `0c3e2bb` but changed by later commits |
+|---|---:|---:|---:|---:|---:|
+| `roo-method-baseline.json` | 165 | 23 | 142 | 119 | 23 |
+| `roo-method-candidate.json` | 168 | 3 | 165 | 123 | 42 |
+
+- **Pre-commit state.** "Match no git blob" counts entries whose recorded SHA-256 equals no blob reachable from any git ref: those bytes were never committed, and the repository does not retain their intermediate content. `0c3e2bb` is the commit that first contains these manifests.
+- **What "matched" means here.** Where this report says the candidate files matched the manifest, that was a working-tree comparison made at review time. This note neither repeats nor disproves it; it only shows that the claim cannot be reproduced from git for the entries counted above.
+- **Drift after acceptance.** "Frozen" and "unchanged" in this report hold for the acceptance date only. At `8bf017f`, 45 of 168 entries in `roo-method-candidate.json` differ from the manifest (by area: 29 in `case-studies/`, 9 in `docs/`, 4 in `repository root files`, 2 in `templates/`, 1 in `src/`). 42 of those were byte-identical at `0c3e2bb` and were changed by later commits; the rest were already different from git at the first commit. The manifest was not updated, because historical manifests are not edited.

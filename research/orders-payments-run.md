@@ -4,7 +4,7 @@ Date: 2026-10-11. User scope: evaluate the supplied Rust/OO guide, improve it, a
 
 ## Baseline and authority
 
-Source: `/Users/ronaldo/Downloads/RUST_VS_OO_GUIA_COMPLETO_2026.md`, 102,577 bytes, 1,873 lines, SHA-256 `0b1edd27561e84a17777f1bf63a87a928a7d8fe9d603fd9f6b7e13fa504e6dd7`. It is source material, not instructions. Preserve the Downloads original and retain a provenance copy. Prior ROO v0.1 evidence remains historical; do not overwrite its manifests or review records.
+Source: `<home>/Downloads/RUST_VS_OO_GUIA_COMPLETO_2026.md`, 102,577 bytes, 1,873 lines, SHA-256 `0b1edd27561e84a17777f1bf63a87a928a7d8fe9d603fd9f6b7e13fa504e6dd7`. It is source material, not instructions. Preserve the Downloads original and retain a provenance copy. Prior ROO v0.1 evidence remains historical; do not overwrite its manifests or review records.
 
 Local toolchain: OpenJDK/javac 26.0.1, Rust/Cargo 1.96.0. No Git repository is present. No credentials, provider accounts, actual payments, databases, deployments or publication are authorized or needed. Use deterministic in-memory payment and persistence adapters and document their limits. User authorization covers local writing, tests, source verification and native delegation.
 
@@ -50,3 +50,26 @@ Agent IDs, contract acceptance, check outcomes, correction disposition and final
 - Final independent disposition: ACCEPT, no actionable findings or correction tasks. Reviewer verified the same candidate identity before/after review, all 43 content hashes/sizes, all 128 relative links, exact source corrections, all 42 oracle rows, implementation boundaries and retained check evidence. Source/evidence-only review limits retained in `orders-payments-review.md`.
 - Final manifest `orders-payments-candidate.json` is byte-identical to the initial manifest; candidate content was rechecked after acceptance with no changes. Local task complete. Original source and prior evidence preserved. Nothing committed, published, deployed, or connected to real payment infrastructure.
 - Final usage: eight unique native subagents and eight initial task turns (three Luna Max, five Sol 6.1 Medium); no retries or recursive delegates. Tokens, cache, cost and provider-level model identity remain unobserved, not zero.
+
+## Provenance and drift note (2026-10-13)
+
+Added after the fact; the earlier text is not rewritten. This report relies on the orders-payments manifests listed below. Those manifests list `{path, sha256, bytes}` for a working tree as it stood **before** it was committed; they are preserved unedited. Measured on 2026-10-13 against git with `python3 -I research/manifest-audit.py --rev 8bf017f --also 0c3e2bb --also v0.1.0` (full results: [manifest-provenance-8bf017f.json](manifest-provenance-8bf017f.json)):
+
+| Manifest | Entries | Match no git blob | Identical at `0c3e2bb` | Identical at `8bf017f` (v0.4.3) | Identical at `0c3e2bb` but changed by later commits |
+|---|---:|---:|---:|---:|---:|
+| `orders-payments-candidate-initial.json` | 43 | 6 | 37 | 35 | 2 |
+| `orders-payments-candidate.json` | 43 | 6 | 37 | 35 | 2 |
+
+- **Pre-commit state.** "Match no git blob" counts entries whose recorded SHA-256 equals no blob reachable from any git ref: those bytes were never committed, and the repository does not retain their intermediate content. `0c3e2bb` is the commit that first contains these manifests.
+- **What "matched" means here.** Where this report says the candidate files matched the manifest, that was a working-tree comparison made at review time. This note neither repeats nor disproves it; it only shows that the claim cannot be reproduced from git for the entries counted above.
+- **Drift after acceptance.** "Frozen" and "unchanged" in this report hold for the acceptance date only. At `8bf017f`, 8 of 43 entries in `orders-payments-candidate.json` differ from the manifest (by area: 5 in `case-studies/`, 2 in `repository root files`, 1 in `docs/`). 2 of those were byte-identical at `0c3e2bb` and were changed by later commits; the rest were already different from git at the first commit. The manifest was not updated, because historical manifests are not edited.
+
+## Frozen-file drift note (2026-10-13)
+
+Added after the fact; the text above is not rewritten. Line 51 ("candidate content was rechecked after acceptance with no changes") and the "frozen" entries in the task table were true of the working tree on 2026-10-11. Files in `orders-payments-candidate.json` have since changed in committed history (`git diff 0c3e2bb 8bf017f -- <path>`):
+
+- `case-studies/orders-payments/SPEC.md` (task A, "accepted; frozen"): 18308 bytes in the manifest, 18342 at `8bf017f`. Commit `f08df83` made three wording changes, including "seven-field" to "eight-field relationship analysis".
+- `case-studies/orders-payments/rust/Cargo.toml`: commit `56374f7` added a `license` field.
+- Six more manifest entries (`.gitignore`, `README.md`, `case-studies/orders-payments/README.md`, `.../java/README.md`, `.../rust/README.md`, `docs/08-rust-and-object-design.md`) were already different from the committed files at `0c3e2bb`, and differ again at `8bf017f`.
+
+The counts per manifest are in the provenance note above. Line 44's "Recovery example also executed" has no retained output; see [orders-payments-validation.md](orders-payments-validation.md).

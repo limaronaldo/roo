@@ -30,6 +30,9 @@ public final class FixtureRunner {
             if (fields.length != 4) {
                 throw new IllegalArgumentException("Expected four tab-separated input columns");
             }
+            if (fields[0].isEmpty()) {
+                throw new IllegalArgumentException("invalid scenario: name must not be empty");
+            }
             if (!scenario.equals(fields[0])) {
                 scenario = fields[0];
                 coordinator = new Coordinator(List.of("order-1", "order-2"));

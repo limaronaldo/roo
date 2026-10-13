@@ -8,6 +8,64 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+Apply the sustained findings of the 2026-10-12 repository review, which had been
+written and locally qualified but never committed, against a branch 20 commits
+behind `main`. Each finding was re-audited against `main` before any change:
+some were already fixed there, and some targeted content that never reached it.
+The full per-finding account, including the findings that correctly received no
+fix and the limits of what this establishes, is in
+[the port report](research/repo-review-2026-10-12-port-2026-10-13.md).
+
+### Fixed
+
+- Stop external code from mutating the in-memory Java store. The concrete store
+  is package-private, so an order can no longer be driven back to `Draft` with a
+  forged refund event from outside the package. A third negative-compilation
+  sample pins the boundary.
+- Reject a declined refund before any write, in the Java in-memory pair and the
+  Rust PostgreSQL adapter. Both previously installed an intermediate state and
+  only then failed, leaving the order wedged in `Refunding`.
+- Distinguish an oversized HTTP body from a framing or truncation fault in the
+  Rust server. Every body-read error was previously reported as `413`.
+- Reject request targets carrying a URL fragment in the Rust HTTP server, which
+  the Java server already rejected. Bound the Java server's body readers and
+  their deadline, so stalled clients can no longer starve the listener.
+- Detect a conflicting fact delivered under an already-seen `EventId` in the
+  Rust in-memory consumer, matching the Java and PostgreSQL consumers. It
+  previously deduplicated on identity alone and silently dropped the conflict.
+- Return a fixture error instead of panicking on an empty scenario name, in both
+  the Rust example and its Java counterpart.
+- Measure the track boundary controls against the real runner and server. They
+  previously compared two fixed strings and could never fail.
+- Read the container exit status from the host rather than from a file the
+  container can overwrite, so a run's status cannot be forged.
+- Resolve the real path in the track verifier, which failed whenever the
+  repository path contained a symlink.
+- Remove the author's absolute home-directory path from seven tracked evidence
+  files in this public repository, preserving every recorded hash.
+
+### Added
+
+- Run the base, PostgreSQL, HTTP and regression verifiers in CI. None of them
+  had ever run hosted, so the shared oracle, the Java unit tests and the
+  negative compilation controls were qualified only locally. Each phase writes
+  its receipt to its own path, so a hosted run never replaces a dated one.
+- Declare CPU, memory and PID limits for the track container. There is
+  deliberately no disk limit, because the writable layer has no portable quota.
+- Accept `--evidence-output` and `ROO_EVIDENCE_PATH` in the PostgreSQL and HTTP
+  verifiers, validated before the long run starts.
+- Fail the build when a tracked file carries an authoring machine's absolute
+  home directory, an assistant transcript path, or a session identifier.
+  Recorded hashes are untouched, since those are the integrity anchors.
+
+### Changed
+
+- Widen the documentation and example guards, which were silently skipping most
+  of what they appeared to check, and refuse site links pinned to bytes that
+  differ from the committed object.
+- Date the evidence records that could not be reproduced from git, rather than
+  editing the historical manifests or restating unsupported claims.
+
 ## [0.4.3] — 2026-10-12
 
 Prepare the first human validation round for the published v0.4.2 kit.

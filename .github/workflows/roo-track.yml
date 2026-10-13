@@ -4,24 +4,13 @@ on:
   pull_request:
     paths:
       - 'case-studies/orders-payments/**'
-      - 'src/**'
-      - 'examples/**'
-      - 'templates/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
       - 'compose.yaml'
       - '.dockerignore'
       - '.github/workflows/roo-track.yml'
   push:
-    branches:
-      - '**'
+    branches: [main]
     paths:
       - 'case-studies/orders-payments/**'
-      - 'src/**'
-      - 'examples/**'
-      - 'templates/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
       - 'compose.yaml'
       - '.dockerignore'
       - '.github/workflows/roo-track.yml'
@@ -29,6 +18,14 @@ on:
 
 permissions:
   contents: read
+
+# A pull request builds only through its pull_request event (push is limited to
+# main), and a newer push to the same pull request supersedes the 60-minute
+# run in flight. A run in flight on main is never cancelled, so merged commits
+# keep their hosted qualification.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   qualify:

@@ -82,6 +82,61 @@ def snapshot(entry):
     return target
 
 
+def verify_pinned_target(path, source, ref, kind):
+    """Reject GitHub links whose local targets differ from the pinned Git tree."""
+    if kind not in {"publisher", "development"}:
+        return
+    if path.is_symlink():
+        raise ValueError(f"GitHub source link target is a symlink: {source}")
+    object_type = subprocess.run(
+        ["git", "cat-file", "-t", f"{ref}:{source}"], cwd=ROOT,
+        text=True, capture_output=True, check=False,
+    )
+    if object_type.returncode != 0:
+        raise ValueError(f"GitHub source link target is absent from pinned commit {ref}: {source}")
+    object_type = object_type.stdout.strip()
+    if path.is_file():
+        if object_type != "blob":
+            raise ValueError(f"GitHub source link target is not a file at pinned commit {ref}: {source}")
+        pinned = subprocess.check_output(["git", "show", f"{ref}:{source}"], cwd=ROOT)
+        if path.read_bytes() != pinned:
+            raise ValueError(f"GitHub source link target differs from pinned commit {ref}: {source}")
+    elif path.is_dir():
+        if object_type != "tree":
+            raise ValueError(f"GitHub source link target is not a directory at pinned commit {ref}: {source}")
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all", "--", source], cwd=ROOT,
+            text=True, capture_output=True, check=False,
+        )
+        if status.returncode != 0:
+            raise ValueError(f"Could not inspect GitHub source link target at pinned commit {ref}: {source}")
+        if status.stdout.strip():
+            raise ValueError(f"GitHub source link directory differs from pinned commit {ref}: {source}")
+    else:
+        raise ValueError(f"GitHub source link target is not a regular file or directory: {source}")
+
+
+def configure_output(output):
+    """Use a caller-owned empty directory without deleting existing output."""
+    global BUILD, SITE
+    if output is None:
+        return
+    requested = Path(output).expanduser()
+    if requested.is_symlink():
+        raise ValueError(f"Build output must not be a symlink: {requested}")
+    destination = requested.resolve()
+    root = ROOT.resolve()
+    if destination == root or root in destination.parents:
+        raise ValueError("Explicit build output must be outside the repository")
+    if destination.exists():
+        if not destination.is_dir() or any(destination.iterdir()):
+            raise ValueError(f"Refusing to overwrite nonempty build output: {destination}")
+    else:
+        destination.mkdir(parents=True, exist_ok=False)
+    BUILD = destination
+    SITE = BUILD / "site"
+
+
 def prepare(entry, source_root, publisher_commit, dirty, default="v0.1.0"):
     content = BUILD / "content" / entry["id"]
     if content.exists():
@@ -120,9 +175,10 @@ def prepare(entry, source_root, publisher_commit, dirty, default="v0.1.0"):
         if target in reverse:
             relative = posixpath.relpath(reverse[target], posixpath.dirname(page) or ".")
             return urlunsplit(("", "", relative, parts.query, parts.fragment))
-        _, ref, _ = origin(target)
-        kind = "tree" if path.is_dir() else "blob"
-        return urlunsplit(("https", "github.com", f"/limaronaldo/roo/{kind}/{ref}/{quote(target, safe='/')}", parts.query, parts.fragment))
+        _, ref, edition_kind = origin(target)
+        verify_pinned_target(path, target, ref, edition_kind)
+        object_kind = "tree" if path.is_dir() else "blob"
+        return urlunsplit(("https", "github.com", f"/limaronaldo/roo/{object_kind}/{ref}/{quote(target, safe='/')}", parts.query, parts.fragment))
 
     def render_links(text, source, page):
         # Escape Mermaid punctuation only in the generated publication copy.
@@ -204,7 +260,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--release-tag", default="", help="Require this stable tag to be present in the edition set")
     parser.add_argument("--previous-state", type=Path, help="Fail if any published release identity, navigation, or document changes")
+    parser.add_argument("--output", type=Path, help="Build into an empty directory outside the repository")
     args = parser.parse_args()
+    configure_output(args.output)
     data = registry(args.release_tag)
     previous = json.loads(args.previous_state.read_text()) if args.previous_state else None
     if previous is not None:
@@ -233,7 +291,7 @@ def main():
         target.write_text(redirect(destination))
     (SITE / "404.html").write_text('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ROO — Page not found</title></head><body><h1>Page not found</h1><p>Choose a documentation edition:</p>' + "".join(f'<p><a href="{v["url"]}">{escape(v["label"])}</a></p>' for v in versions) + '</body></html>\n')
     import check_site
-    check_site.main()
+    check_site.main(site_root=SITE, validation_path=BUILD / "validation.json")
     preview = BUILD / "preview" / "roo"
     if preview.exists():
         shutil.rmtree(preview)

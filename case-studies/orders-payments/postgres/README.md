@@ -94,6 +94,21 @@ Rust/Cargo 1.96, and PostgreSQL 18 server tools must be available. This recorded
 run used JDK 26 and compiled for release 21. The cluster script uses `pg_ctl`
 from `PATH`, or the directory named by `ROO_PG_BINDIR`.
 
+The harness records its observations in a machine-readable receipt. By
+default `verify.py` rewrites the tracked historical receipt,
+`research/postgres-integration-evidence.json`, whose run ID the
+[Executed validation](#executed-validation) section cites. To keep that file
+untouched, redirect the receipt with the `ROO_EVIDENCE_PATH` environment
+variable, which `verify.sh` passes through, or pass `--evidence-output PATH`
+when running `verify.py` directly after `cluster.py start` and `cluster.py
+schema`. The flag takes precedence over the variable, and the destination must
+be a file in an existing directory; both are checked before the run starts.
+
+```sh
+ROO_EVIDENCE_PATH="$(mktemp -d)/postgres-integration-evidence.json" \
+  bash case-studies/orders-payments/postgres/verify.sh
+```
+
 The harness selects a free port and stores its configuration and data under
 this case's `.runtime` directory. It binds only to `127.0.0.1` and passes the
 explicit `ROO_PG_HOST`, `ROO_PG_PORT`, `ROO_PG_DATABASE`, and `ROO_PG_USER`
@@ -193,6 +208,12 @@ to the Java and Rust adapters while they hold the order lock. In particular,
 PostgreSQL's `CHECK` constraints are not a substitute for checking every
 cross-row rule in the same serialized transaction.
 
+The adapters assume this trusted educational database is written through their
+protocol. They differ in defensive loading: Rust reconstructs accepted lines
+and rejects a stored-total mismatch; Java loads the order's stored total without
+that reconstruction. Arbitrary SQL corruption is outside the shared contract;
+the Rust check does not imply equivalent corruption detection in Java.
+
 ## One payment, several short transactions
 
 The core protocol is a local durable intent, an independent provider effect,
@@ -208,15 +229,15 @@ sequenceDiagram
     participant A as roo_app
     participant P as roo_provider
 
-    W->>A: BEGIN; SELECT order FOR UPDATE
-    W->>A: validate Draft; write Pending + PaymentId
+    W->>A: BEGIN#59; SELECT order FOR UPDATE
+    W->>A: validate Draft#59; write Pending + PaymentId
     W->>A: COMMIT (release order lock)
     W->>P: BEGIN on a separate connection
-    W->>P: lock provider scope; inspect key + fingerprint
+    W->>P: lock provider scope#59; inspect key + fingerprint
     W->>P: insert Approved or Declined record
     W->>P: COMMIT provider result
-    W->>A: BEGIN; reload and lock order
-    W->>A: validate same intent; write terminal state + outbox event
+    W->>A: BEGIN#59; reload and lock order
+    W->>A: validate same intent#59; write terminal state + outbox event
     W->>A: COMMIT
 ```
 
@@ -408,6 +429,11 @@ commits `Refunded` and one `RefundApproved` outbox fact. A refund is a separate
 compensating effect with a separate stable identity. It is not a rollback of the
 earlier payment.
 
+A refund has no `decline` mode. The fixture grammar rejects it and the schema
+refuses a `Declined` refund record. A library caller that hands the Rust
+`Database::step` a refund with `Mode::Decline` gets `InvalidState` before any
+transaction opens, so no refund intent is committed and the order stays `Paid`.
+
 ### Read a snapshot
 
 The eleven-column fixture output stays unchanged. The persistent runner reports
@@ -467,8 +493,8 @@ sequenceDiagram
     participant A as roo_app connection
     participant C as roo_consumer connection
 
-    R->>A: BEGIN; lock order; read pending events in seq order
-    R->>C: BEGIN; INSERT inbox event ON CONFLICT DO NOTHING
+    R->>A: BEGIN#59; lock order#59; read pending events in seq order
+    R->>C: BEGIN#59; INSERT inbox event ON CONFLICT DO NOTHING
     R->>C: New statement reads winner and compares full event fingerprint
     R->>C: COMMIT consumer inbox
     R->>A: Mark event delivered
