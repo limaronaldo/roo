@@ -372,10 +372,28 @@ Required checks, with exact results recorded only after execution:
 7. Start all listeners explicitly on loopback, reject other hosts before bind,
    retain process cleanup on every failure, and preserve the accepted source hash
    manifest. Run appropriate new checks and the accepted regressions serially.
-8. Saturate the body-reader gate with 16 connections that announce a body and
-   never send it, observe `503 Busy` on an unrelated request while the gate is
-   full, observe every stalled connection closed by the five-second deadline, and
-   observe capacity recover afterwards without state mutation.
+8. Establish 16 stalled body readers without letting the observation request
+   compete for the last permit. Send no body bytes. Serial standard
+   `Expect: 100-continue` exchanges establish HTTP-parser progress for the first
+   16 POSTs; Java's interim response is not an application-admission signal.
+   Send one additional incomplete POST and require exactly one final, fully
+   framed `503 Busy` response among the 17, retaining 16 pending readers. Only
+   then require exact `503 Busy` on an unrelated GET. Both complete Busy
+   observations must arrive within four seconds measured before the first
+   stalled request, strictly before its conservative five-second deadline.
+   Monitor every POST, rejecting any second Busy or premature disconnect;
+   preserve split/coalesced interim and final response bytes. Serial parser
+   progress also prevents Rust's separate request-line gate from masquerading
+   as body-reader saturation. Close only the positively identified rejected
+   overflow POST after its complete response, as an ordinary HTTP client would;
+   its unread body has no admitted-reader timer. Keep all 16 retained clients
+   open locally and observe their server-side deadline termination with the
+   existing five-second transport-observation allowance, anchored
+   before setup; require capacity recovery within two seconds and the complete
+   snapshot unchanged. The server limit remains 16 and its absolute body-read
+   deadline remains five seconds; the seventeenth POST is an overflow probe.
+   Record `connections_closed: 16` only for observed server closures and record
+   the overflow client's closure separately; it is never deadline evidence.
 
 The harness always writes a run log to `.runtime/http-last-run.json`, which is not
 tracked. It writes a second copy of that receipt only when a destination is named,

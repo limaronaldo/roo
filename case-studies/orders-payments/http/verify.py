@@ -140,59 +140,195 @@ def negotiation(server):
     EVIDENCE["variants"][server.variant]["negotiation_cases"] = ["media_case_charset_whitespace_wildcard_accept", "absent_accept"]
 
 
+class _BodyReaderClient:
+    """Bounded raw HTTP reader preserving coalesced interim and final responses."""
+    def __init__(self, port, deadline):
+        self.socket = socket.create_connection(("127.0.0.1", port), timeout=self.remaining(deadline))
+        self.buffer = bytearray()
+        self.continues = 0
+        self.final = None
+        self.closed = False
+
+    @staticmethod
+    def remaining(deadline):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise AssertionError("Body-reader observation exceeded its absolute deadline")
+        return remaining
+
+    def send(self, data, deadline):
+        self.socket.settimeout(self.remaining(deadline))
+        self.socket.sendall(data)
+        self.socket.setblocking(False)
+        self.remaining(deadline)
+
+    def receive(self):
+        try:
+            data = self.socket.recv(4096)
+        except BlockingIOError:
+            return
+        except ConnectionResetError:
+            data = b""
+        if not data:
+            self.closed = True
+            if self.buffer:
+                raise AssertionError("Incomplete body-reader HTTP response")
+            return
+        self.buffer.extend(data)
+        if len(self.buffer) > 65536:
+            raise AssertionError("Body-reader response exceeded harness bound")
+        self.parse()
+
+    def parse(self):
+        while b"\r\n\r\n" in self.buffer:
+            head, tail = self.buffer.split(b"\r\n\r\n", 1)
+            lines = head.decode("ascii").split("\r\n")
+            fields = lines[0].split(" ", 2)
+            if len(fields) < 2 or fields[0] not in ("HTTP/1.0", "HTTP/1.1"):
+                raise AssertionError("Invalid body-reader HTTP status line")
+            status = int(fields[1])
+            headers = {}
+            for line in lines[1:]:
+                key, value = line.split(":", 1)
+                key = key.lower()
+                if key in headers:
+                    raise AssertionError("Duplicate body-reader response header")
+                headers[key] = value.strip()
+            if "transfer-encoding" in headers:
+                raise AssertionError("Unsupported body-reader transfer encoding")
+            if status == 100:
+                if self.final is not None or self.continues or headers.get("content-length", "0") != "0":
+                    raise AssertionError("Unexpected interim body-reader response")
+                self.continues += 1
+                self.buffer = bytearray(tail)
+                continue
+            length = headers.get("content-length", "")
+            if not length.isascii() or not length.isdecimal() or int(length) > 65536:
+                raise AssertionError("Unbounded body-reader response framing")
+            length = int(length)
+            if len(tail) < length:
+                return
+            if self.final is not None or len(tail) != length:
+                raise AssertionError("Unexpected extra body-reader response bytes")
+            if (headers.get("content-type", "").lower().split(";")[0] != "application/json"
+                    or headers.get("cache-control") != "no-store"
+                    or headers.get("connection", "").lower() != "close"):
+                raise AssertionError("Incorrect body-reader response headers")
+            self.final = (status, json.loads(tail.decode("utf-8")), headers)
+            self.buffer.clear()
+
+    def close(self):
+        self.socket.close()
+
+
+def _poll_body_clients(clients, deadline):
+    active = [client for client in clients if not client.closed]
+    readable, _, _ = select.select([client.socket for client in active], [], [],
+                                 min(0.1, _BodyReaderClient.remaining(deadline)))
+    _BodyReaderClient.remaining(deadline)
+    for client in active:
+        if client.socket in readable:
+            client.receive()
+    # A complete exact Busy response arriving at or after the cutoff is a failure.
+    _BodyReaderClient.remaining(deadline)
+
+
+def _body_error(client, status, code):
+    expected = {"error": {"code": code, "message": MESSAGES[code]}}
+    if client.final is None or client.final[:2] != (status, expected):
+        raise AssertionError(f"Unexpected body-reader response: {client.final}; expected {status} {expected}")
+
+
+def _body_get(server, path, deadline, observers=()):
+    client = _BodyReaderClient(server.port, deadline)
+    try:
+        client.send((f"GET {path} HTTP/1.1\r\nHost: 127.0.0.1:{server.port}\r\n"
+                     "Accept: application/json\r\nConnection: close\r\n\r\n").encode("ascii"), deadline)
+        while client.final is None:
+            _poll_body_clients([*observers, client], deadline)
+            if client.closed and client.final is None:
+                raise AssertionError("Body-reader GET closed without a response")
+        _BodyReaderClient.remaining(deadline)
+        return client.final
+    finally:
+        client.close()
+
+
 def bounded_body_readers(server):
-    """A stalled body must hold a bounded permit for a bounded time, not a worker forever."""
+    """Establish 16 held readers before an unrelated GET can compete for a permit."""
     scope = server.seed("slow_body")
     before = server.get(scope)
-    target = "/v1/scopes/" + scope + "/payments"
+    path = "/v1/scopes/" + scope
+    target = path + "/payments"
     prefix = (f"POST {target} HTTP/1.1\r\n"
               f"Host: 127.0.0.1:{server.port}\r\n"
-              "Accept: application/json\r\n"
-              "Content-Type: application/json\r\n"
-              "Content-Length: 20\r\n"
+              "Accept: application/json\r\nContent-Type: application/json\r\n"
+              "Content-Length: 20\r\nExpect: 100-continue\r\n"
               "Connection: close\r\n\r\n").encode("ascii")
-    # Warm the same reject-before-mutation body path so a cold handler cannot be
-    # mistaken for an unsaturated gate inside the bounded observation window.
     error(server, "POST", target, b"", 400, "InvalidRequest", raw=True)
     clients = []
+    started = time.monotonic()
+    gate_deadline = started + BODY_READ_DEADLINE_SECONDS - 1
+    busy = None
     try:
+        # Serial HTTP-parser progress prevents Rust's separate request-line gate
+        # from supplying a false body-admission witness. Java sends 100 before
+        # application admission: only the final POST Busy below witnesses fullness.
         for _ in range(BODY_READERS):
-            client = socket.create_connection(("127.0.0.1", server.port), timeout=3)
-            client.sendall(prefix)
-            client.setblocking(False)
+            client = _BodyReaderClient(server.port, gate_deadline)
             clients.append(client)
-        # Saturation must be observable strictly before the first reader's deadline.
-        gate_deadline = time.monotonic() + BODY_READ_DEADLINE_SECONDS - 1
-        while True:
-            status, payload, _ = server.request("GET", "/v1/scopes/" + scope)
-            if status == 503 and payload == {"error": {"code": "Busy", "message": MESSAGES["Busy"]}}:
-                break
-            if status != 200 or time.monotonic() >= gate_deadline:
-                raise AssertionError(f"{server.variant}: {BODY_READERS} stalled body readers did not saturate the gate: {status} {payload}")
-            time.sleep(0.025)
-        pending = set(clients)
-        deadline = time.monotonic() + BODY_READ_DEADLINE_SECONDS + 5
-        while pending and time.monotonic() < deadline:
-            readable, _, _ = select.select(list(pending), [], [], 0.1)
-            for client in readable:
-                try:
-                    data = client.recv(4096)
-                except OSError:
-                    data = b""
-                if not data:
-                    pending.remove(client)
-        if pending:
-            raise AssertionError(f"{server.variant}: stalled body readers outlived their deadline")
+            client.send(prefix, gate_deadline)
+            while not client.continues:
+                _poll_body_clients(clients, gate_deadline)
+                if any(item.closed or item.final is not None for item in clients):
+                    raise AssertionError("A body reader was rejected before the overflow POST")
+            if any(item.closed or item.final is not None for item in clients):
+                raise AssertionError("A body reader was rejected before the overflow POST")
+        overflow = _BodyReaderClient(server.port, gate_deadline)
+        clients.append(overflow)
+        overflow.send(prefix, gate_deadline)
+        while busy is None:
+            _poll_body_clients(clients, gate_deadline)
+            finished = [client for client in clients if client.final is not None]
+            if len(finished) > 1:
+                raise AssertionError("More than one overflow POST: fewer than 16 body readers were held")
+            if finished:
+                busy = finished[0]
+                _body_error(busy, 503, "Busy")
+            if any(client.closed and client is not busy for client in clients):
+                raise AssertionError("A stalled body reader closed before saturation was witnessed")
+        held = [client for client in clients if client is not busy]
+        if len(held) != BODY_READERS or any(client.final is not None for client in held):
+            raise AssertionError("The overflow witness did not retain 16 stalled readers")
+        # This rejected request has no admitted-reader timer. Like the original
+        # HTTP GET client, close it after its complete fixed-length response.
+        # Never count that client closure as server-deadline evidence.
+        busy.close()
+        observed = _body_get(server, path, gate_deadline, held)
+        expected_busy = {"error": {"code": "Busy", "message": MESSAGES["Busy"]}}
+        if observed[:2] != (503, expected_busy):
+            raise AssertionError(f"{server.variant}: saturated body-reader GET returned {observed}")
+        if any(client.final is not None or client.closed for client in held):
+            raise AssertionError("A stalled reader ended before the overflow GET completed")
+        observed_after = time.monotonic() - started
+        # Preserve the existing five-second transport-observation allowance, but
+        # anchor it before setup instead of extending it after Busy is received.
+        closure_deadline = started + BODY_READ_DEADLINE_SECONDS + 5
+        while any(not client.closed for client in held):
+            _poll_body_clients(held, closure_deadline)
+            for client in held:
+                if client.final is not None:
+                    # Rust responds InvalidRequest at its deadline; Java closes.
+                    _body_error(client, 400, "InvalidRequest")
         recovery_deadline = time.monotonic() + 2
         while True:
-            status, payload, _ = server.request("GET", "/v1/scopes/" + scope)
+            status, payload, _ = _body_get(server, path, recovery_deadline)
             if status == 200 and payload == {"snapshot": before}:
                 break
-            if status != 503 or payload != {"error": {"code": "Busy", "message": MESSAGES["Busy"]}}:
+            if status != 503 or payload != expected_busy:
                 raise AssertionError(f"{server.variant}: body-reader recovery returned {status} {payload}")
-            if time.monotonic() >= recovery_deadline:
-                raise AssertionError(f"{server.variant}: body-reader permits remained exhausted after deadline")
-            time.sleep(0.025)
+            _BodyReaderClient.remaining(recovery_deadline)
+            time.sleep(min(0.025, _BodyReaderClient.remaining(recovery_deadline)))
     finally:
         for client in clients:
             client.close()
@@ -201,8 +337,13 @@ def bounded_body_readers(server):
     EVIDENCE["variants"][server.variant]["slow_body"] = {
         "concurrent_readers": BODY_READERS,
         "deadline_seconds": BODY_READ_DEADLINE_SECONDS,
+        "establishment_requests": BODY_READERS + 1,
+        "continue_handshakes": BODY_READERS,
+        "post_overflow_witness": "503 Busy",
         "overflow_request": "503 Busy",
-        "connections_closed": len(clients),
+        "busy_observed_after_seconds": observed_after,
+        "connections_closed": len(held),
+        "overflow_connection_closed_by_client": True,
         "capacity_recovered": True,
     }
 
