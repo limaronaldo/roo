@@ -159,6 +159,51 @@ same contract. Alternative backends need their own qualification.
 
 </div>
 
+## Stronger checks at the boundaries
+
+The unreleased development corrections strengthen the reference laboratories
+and make their evidence easier to inspect.
+
+<div class="roo-paths" markdown="1">
+
+<div markdown="1">
+
+### Preserve the original fact
+
+Declined refunds leave the order unchanged. A repeated event identity with a
+different fact is detected, preserving the original delivery. HTTP handling
+distinguishes malformed input and bounds slow body readers.
+
+[Inspect the behavior](../../docs/development-improvements.md#behavior-and-boundaries)
+
+</div>
+
+<div markdown="1">
+
+### Exercise the boundary
+
+Track probes use the real runner and server. The host records Docker status
+and checks CPU, memory, and process limits. Verification phases write distinct
+receipts, and a privacy guard checks tracked files.
+
+[Inspect the checks](../../docs/development-improvements.md#checks-and-evidence)
+
+</div>
+
+<div markdown="1">
+
+### Keep the claim bounded
+
+The port report records 27 passing local checks. Hosted qualification of that
+candidate and an actual JDK 21 runtime remain unverified. These improvements
+are not a new published release or a completed evaluation of ROO.
+
+[Read the validation scope](../../docs/development-improvements.md#validation-scope)
+
+</div>
+
+</div>
+
 <div class="roo-home-close" markdown="1">
 
 ## Bring it a real design

@@ -60,6 +60,9 @@ fix and the limits of what this establishes, is in
 
 ### Changed
 
+- Surface the unreleased corrections in the repository overview and Development
+  homepage. Add a source-linked improvements guide distinguishing the recorded
+  local qualification from unverified hosted CI and JDK 21 runtime behavior.
 - Widen the documentation and example guards, which were silently skipping most
   of what they appeared to check, and refuse site links pinned to bytes that
   differ from the committed object.
