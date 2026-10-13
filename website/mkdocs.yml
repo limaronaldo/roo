@@ -116,6 +116,7 @@ nav:
           - Docker and CI: case-studies/orders-payments/track/DOCKER.md
   - Evidence:
       - Claims and limits: docs/claims-and-limits.md
+      - Academic research: docs/academic-research.md
       - How ROO was made: docs/how-roo-was-made.md
       - GitHub reproduction: docs/10-github-reproduction.md
       - Validation kit:
