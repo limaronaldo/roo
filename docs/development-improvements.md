@@ -64,7 +64,7 @@ documented follow-up, not a correction claimed here.
 
 ## Validation scope
 
-| Evidence | What it establishes | What remains open |
+| Evidence | What it establishes | What this evidence does not establish |
 |---|---|---|
 | The port report's 27 passing local checks | Recorded local qualification of the correction candidate, including verifier, compiler, documentation, privacy, and workflow-lint checks | Hosted execution of the candidate |
 | Local Java qualification on JDK 26 with `--release 21` | Compilation targeting Java 21 and the recorded checks on the local runtime | Behavior on an actual JDK 21 runtime |
@@ -72,6 +72,8 @@ documented follow-up, not a correction claimed here.
 | This README and site update | Presentation of the corrections, their evidence, and their remaining limitations | A new release, completed human evaluation, or evidence of ROO's efficacy |
 
 The reported check count belongs to the dated port report; this documentation
-update does not claim to have rerun its full qualification. Publication,
-hosted CI, and human evaluation are separate outcomes. The frozen MAAD pilot
-is preserved; no MAAD run or empirical result is introduced by this update.
+update does not claim to have rerun its full qualification. Subsequent
+[CI runs](https://github.com/limaronaldo/roo/actions) record their own checkout
+and evidence; compare those source identities before transferring a result.
+Publication, hosted CI, and human evaluation are separate outcomes. The frozen
+MAAD pilot is preserved; no MAAD run or empirical result is introduced by this update.

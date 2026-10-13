@@ -194,9 +194,11 @@ receipts, and a privacy guard checks tracked files.
 
 ### Keep the claim bounded
 
-The port report records 27 passing local checks. Hosted qualification of that
-candidate and an actual JDK 21 runtime remain unverified. These improvements
-are not a new published release or a completed evaluation of ROO.
+The dated port report records 27 passing local checks. That evidence does not
+establish hosted qualification or behavior on an actual JDK 21 runtime.
+Subsequent [CI runs](https://github.com/limaronaldo/roo/actions) have their own
+source identity. These improvements are not a new published release or a
+completed evaluation of ROO.
 
 [Read the validation scope](../../docs/development-improvements.md#validation-scope)
 

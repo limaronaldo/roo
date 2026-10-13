@@ -1008,25 +1008,36 @@ def main():
             EVIDENCE["variants"][variant] = {}
             startup_rejections(variant)
             legacy = Server(variant)
-            legacy_servers[variant] = legacy
             auth = Server(variant, auth=True, principal=PRINCIPAL)
-            auth_servers[variant] = auth
-            expect_error(legacy, "GET", "/v1/scopes/legacy_auth_route/authorization", None,
-                         404, "RouteNotFound")
-            identity_and_isolation(variant, legacy, auth)
-            operation_matrix(variant, legacy, auth)
-            coarse_and_route_contract(variant, legacy, auth)
-            hidden_outcomes(variant, legacy, auth)
-            observation_schedules(variant, legacy, auth)
-            execution_before_revocation(variant, legacy)
-            relay_vs_queued_revocation(variant, legacy)
-            durable_gaps(variant, legacy, auth)
-            process_crash(variant, legacy)
-            refund_prepare_gap(variant, legacy, auth)
-            refund_recovery(variant, legacy, auth)
+            try:
+                expect_error(legacy, "GET", "/v1/scopes/legacy_auth_route/authorization", None,
+                             404, "RouteNotFound")
+                identity_and_isolation(variant, legacy, auth)
+                operation_matrix(variant, legacy, auth)
+                coarse_and_route_contract(variant, legacy, auth)
+                hidden_outcomes(variant, legacy, auth)
+                observation_schedules(variant, legacy, auth)
+                execution_before_revocation(variant, legacy)
+                relay_vs_queued_revocation(variant, legacy)
+                durable_gaps(variant, legacy, auth)
+                process_crash(variant, legacy)
+                refund_prepare_gap(variant, legacy, auth)
+                refund_recovery(variant, legacy, auth)
+            finally:
+                # Idle Java pools still consume the container's task budget.
+                # Do not retain completed variants while gated servers run.
+                auth.stop()
+                legacy.stop()
+            EVIDENCE["variants"][variant]["scenario_servers_stopped"] = (
+                legacy.process.poll() is not None and auth.process.poll() is not None)
             EVIDENCE["variants"][variant]["status"] = "PASS"
             print(f"PASS {variant}: authorization boundary, witnessed revocation, durable gaps and process recovery", flush=True)
 
+        # Preserve the shared restart oracle: every variant has live HTTP
+        # processes before the same PostgreSQL shutdown and recovery.
+        for variant in VARIANTS:
+            legacy_servers[variant] = Server(variant)
+            auth_servers[variant] = Server(variant, auth=True, principal=PRINCIPAL)
         restart(auth_servers, legacy_servers)
         EVIDENCE["status"] = "PASS"
     except BaseException as error:

@@ -62,7 +62,10 @@ fix and the limits of what this establishes, is in
 
 - Surface the unreleased corrections in the repository overview and Development
   homepage. Add a source-linked improvements guide distinguishing the recorded
-  local qualification from unverified hosted CI and JDK 21 runtime behavior.
+  local qualification from subsequent hosted CI and JDK 21 runtime evidence.
+- Stop each authorization variant's HTTP servers after its scenarios, before
+  starting the next variant. Create fresh live pairs for the shared PostgreSQL
+  restart oracle, preserving its assertions within the existing Docker task cap.
 - Widen the documentation and example guards, which were silently skipping most
   of what they appeared to check, and refuse site links pinned to bytes that
   differ from the committed object.

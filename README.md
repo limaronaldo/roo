@@ -108,10 +108,11 @@ the evidence used to assess them:
   assistant session details.
 
 The [development improvements guide](docs/development-improvements.md) maps
-each correction to its source and checks. The port report records 27 passing
-local checks; hosted qualification of that candidate and an actual JDK 21
-runtime remain unverified. These changes are not a new published release or
-an evaluation of the method's efficacy.
+each correction to its source and checks. The dated port report records 27
+passing local checks; that evidence does not establish hosted qualification
+or behavior on an actual JDK 21 runtime. Consult the [CI runs](https://github.com/limaronaldo/roo/actions)
+for subsequent integration results. These changes are not a new published
+release or an evaluation of the method's efficacy.
 
 ## Status and provenance
 
