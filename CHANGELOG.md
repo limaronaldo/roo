@@ -8,6 +8,15 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+### Academic documentation
+
+- Integrate the selective 123-entry literature ledger, qualified Garcia/Lucena
+  comparison, proposed concern-diffusion measures, upstream assistance review,
+  and revised research agenda into development documentation. Distinguish
+  established antecedents, the proposed ROO contribution, and remaining
+  validation. This AI-assisted integration preserves the frozen MAAD pilot
+  and introduces no executed experiment or method-effectiveness result.
+
 Apply the sustained findings of the 2026-10-12 repository review, which had been
 written and locally qualified but never committed, against a branch 20 commits
 behind `main`. Each finding was re-audited against `main` before any change:

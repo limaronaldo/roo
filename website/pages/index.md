@@ -206,6 +206,20 @@ completed evaluation of ROO.
 
 </div>
 
+## Academic grounding and open questions
+
+Responsibility-driven design, explicit relations, ownership, capabilities,
+concern separation, and concept synchronizations all precede ROO. The proposed
+contribution is their integration into a relationship review procedure;
+historical distinctness and engineering benefit remain to be evaluated.
+
+The development research guide connects a selective 123-entry source ledger,
+the Garcia/Lucena comparison, proposed measurement adaptations, and the next
+evaluation questions. This is AI-assisted documentary review, with access
+limits recorded; it is neither independent human validation nor a MAAD result.
+
+[Read the academic research guide](../../docs/academic-research.md){ .md-button }
+
 <div class="roo-home-close" markdown="1">
 
 ## Bring it a real design
