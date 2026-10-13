@@ -8,6 +8,15 @@ compatibility policy in [RELEASING.md](RELEASING.md).
 
 ## [Unreleased]
 
+### HTTP verification
+
+- Establish body-reader saturation with an incomplete POST overflow witness
+  before probing with GET, preventing the probe from stealing the last reader
+  permit and silently rejecting a stalled POST. Keep the 16-reader capacity,
+  five-second server deadline, exact Busy responses, closure, recovery, and
+  unchanged-state checks; enforce absolute observation deadlines and retain
+  interim-response bytes. This changes the verifier, not server limits.
+
 ### Academic documentation
 
 - Integrate the selective 123-entry literature ledger, qualified Garcia/Lucena
