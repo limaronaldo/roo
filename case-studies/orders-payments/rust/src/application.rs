@@ -457,7 +457,7 @@ mod tests {
         assert_eq!(lab.consumer.facts()[0].id().as_str(), "payment:p1");
         assert_eq!(lab.consumer.facts()[1].id().as_str(), "refund:r1");
         let copied = lab.consumer.facts()[0].clone();
-        lab.consumer.deliver(&copied);
+        assert_eq!(lab.consumer.deliver(&copied), Outcome::RelayOk);
         assert_eq!(lab.consumer.count(), 2);
         assert_eq!(lab.app().relay(RelayMode::AckFail), Outcome::RelayOk);
         assert_eq!(lab.app().relay(RelayMode::SendFail), Outcome::RelayOk);

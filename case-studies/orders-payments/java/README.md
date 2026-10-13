@@ -42,15 +42,19 @@ java -cp case-studies/orders-payments/java/build/classes roo.payments.TemplateRu
 
 The build requires a JDK supporting `--release 21`, compiles with all lint warnings
 as errors, runs explicit unit assertions for each coordinator, then checks the
-negative examples fail with private-access and final-override diagnostics. It
-uses no Maven, third-party dependencies, assertion-enable flag, clock, or network.
-Negative diagnostics are retained under build/negative. The build script uses
-standard bash arrays compatible with macOS bash 3.2.
+negative examples fail with private-access, final-override, and non-public-store
+diagnostics. Those samples compile under an English locale
+(`-J-Duser.language=en -J-Duser.country=US`) so the expected diagnostic text stays
+stable on a localized JDK. It uses no Maven, third-party dependencies,
+assertion-enable flag, clock, or network. Negative diagnostics are retained under
+build/negative. The build script uses standard bash arrays compatible with macOS
+bash 3.2.
 
 Unit tests inspect intermediate failures, immutable snapshots, overflow parsing,
-persisted-before-remote ordering, refund identity conflict, stable event facts,
-provider request fingerprints including order/currency/amount/payment identity,
-terminal replay, independent remote effects, and consumer redelivery deduplication.
+persisted-before-remote ordering, refund identity conflict, declined refunds
+rejected before any local write, stable event facts, provider request fingerprints
+including order/currency/amount/payment identity, terminal replay, independent
+remote effects, and consumer redelivery deduplication.
 Compiler-negative examples establish only their named Java access restrictions.
 The parent SPEC describes simulator assumptions and production limitations.
 Execution results belong in the parent evidence ledger; authored tests alone are

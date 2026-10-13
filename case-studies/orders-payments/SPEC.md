@@ -130,8 +130,12 @@ counts records, pending_outbox counts unacknowledged records.
 Relay scans unacknowledged events in insertion order. `ok` sends each event and
 acknowledges it. `send_fail` stops before the first delivery or acknowledgement.
 `ack_fail` sends the first pending event, then stops before acknowledgement.
-The consumer remembers EventId and applies each unique event once. A redelivery
-after ack_fail increments neither consumer_count nor any payment effect. No
+The consumer remembers EventId and applies each unique event once. Reusing a
+delivered EventId for different content is a conflict rather than a duplicate:
+the consumer applies nothing, keeps the fact it delivered first, and leaves the
+record unacknowledged. Each realization reports that conflict in its own
+vocabulary. A redelivery after ack_fail increments neither consumer_count nor
+any payment effect. No
 pending messages means any relay mode returns RelayOk. The simulated successful
 ack is local and infallible except for the selected ack_fail point.
 

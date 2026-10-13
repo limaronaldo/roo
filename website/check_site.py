@@ -70,15 +70,17 @@ def homepage_errors(page, edition, versions, require_contract=True):
     return errors
 
 
-def main():
-    versions = json.loads((SITE / "versions.json").read_text())
-    rendered = {p: Page(p.read_text()) for p in SITE.rglob("*.html")}
+def main(site_root=SITE, validation_path=None):
+    site = Path(site_root)
+    validation = Path(validation_path) if validation_path else site.parent / "validation.json"
+    versions = json.loads((site / "versions.json").read_text())
+    rendered = {p: Page(p.read_text()) for p in site.rglob("*.html")}
     errors = []
     checked = 0
     for path, page in rendered.items():
         if page.lang != "en":
-            errors.append(f"Expected English HTML metadata: {path.relative_to(SITE)}")
-        relative = path.relative_to(SITE).as_posix()
+            errors.append(f"Expected English HTML metadata: {path.relative_to(site)}")
+        relative = path.relative_to(site).as_posix()
         url = urljoin(BASE, relative)
         for link in page.links:
             target = urlsplit(urljoin(url, link))
@@ -87,7 +89,7 @@ def main():
             if not target.path.startswith("/roo/"):
                 errors.append(f"Link escapes the project base path: {relative}: {link}")
                 continue
-            destination = SITE / unquote(target.path.removeprefix("/roo/"))
+            destination = site / unquote(target.path.removeprefix("/roo/"))
             if destination.is_dir():
                 destination /= "index.html"
             if not destination.is_file():
@@ -97,7 +99,7 @@ def main():
             checked += 1
     editions = []
     for version in versions["versions"]:
-        edition = SITE / version["id"]
+        edition = site / version["id"]
         manifest = json.loads((edition / "source-manifest.json").read_text())
         homepage = rendered.get(edition / "index.html")
         if homepage:
@@ -115,13 +117,13 @@ def main():
                 continue
             html = rendered[destination]
             if html.canonical != BASE + version["id"] + "/" + location:
-                errors.append(f"Incorrect edition canonical URL: {destination.relative_to(SITE)}")
+                errors.append(f"Incorrect edition canonical URL: {destination.relative_to(site)}")
             selected = [o for o in html.options if "selected" in o]
             if len(selected) != 1 or selected[0]["value"] != version["url"] + location:
-                errors.append(f"Incorrect selected edition: {destination.relative_to(SITE)}")
+                errors.append(f"Incorrect selected edition: {destination.relative_to(site)}")
             wanted = {v["url"] + (location if location in v["routes"] else "") for v in versions["versions"]}
             if {o["value"] for o in html.options} != wanted:
-                errors.append(f"Incorrect version destinations: {destination.relative_to(SITE)}")
+                errors.append(f"Incorrect version destinations: {destination.relative_to(site)}")
             if source["origin"] == "release":
                 original = subprocess.check_output(["git", "show", f"{source['commit']}:{source['source']}"], cwd=ROOT)
                 release_sources += 1
@@ -138,11 +140,12 @@ def main():
                 errors.append(f"Navigation page is absent from edition search: {version['id']}/{location}")
         editions.append({"id": version["id"], "pages": len(expected), "release_sources_verified": release_sources, "search_entries": len(search["docs"]), "documentation_commit": manifest["documentation_commit"], "homepage_contract_keys": homepage.contract_keys if homepage else []})
     for location, target in versions["redirects"].items():
-        old = rendered.get(SITE / location / "index.html")
+        old = rendered.get(site / location / "index.html")
         if not old or target not in old.links:
             errors.append(f"Missing legacy URL redirect: {location}")
     report = {"status": "FAIL" if errors else "PASS", "editions": editions, "html_files": len(rendered), "local_references": checked, "legacy_redirects": len(versions["redirects"]), "errors": errors}
-    (ROOT / ".site-build/validation.json").write_text(json.dumps(report, indent=2) + "\n")
+    validation.parent.mkdir(parents=True, exist_ok=True)
+    validation.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
     if errors:
         raise SystemExit(1)

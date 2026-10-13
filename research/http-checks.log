@@ -28,7 +28,7 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s
-   Generated /Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/http/rust/target/doc/roo_http_case/index.html and 1 other file
+   Generated <home>/Projects/limaronaldo/roo/case-studies/orders-payments/http/rust/target/doc/roo_http_case/index.html and 1 other file
 Owned PostgreSQL cluster started on loopback
 Shared schema applied to owned test database
 PASS Java composition: 42 HTTP oracle rows, 41 rejection cases, 2 negotiation cases, 8 ordinary-mode cases, 4 startup rejections

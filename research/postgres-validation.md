@@ -142,3 +142,7 @@ policies supported by source review, not separately injected runtime proofs.
 No existing PostgreSQL service, real payment, credential store, Git publication
 or deployment was used. The owned cluster is stopped and synthetic data retained
 under the ignored .runtime directory.
+
+## Note added 2026-10-13: boundary receipt scope
+
+Added after the fact; the paragraph at line 107 is not rewritten. The retained [boundary receipt](postgres-boundary-evidence.json) contains three booleans, all `true`: `ambient_libpq_settings_ignored`, `mismatched_data_directory_rejected`, `owned_cluster_stopped`. It does not retain the values given to `PGHOSTADDR`, `PGSERVICE` or `PGOPTIONS`, the script that injected them (`git grep PGHOSTADDR` matches only this report and [postgres-security.md](postgres-security.md), which describes the finding), or any network observation. Consequently the sentence "no connection to the supplied non-loopback address was made" is **not recorded**: no packet capture, listener log or address survives. At most it follows from `ambient_libpq_settings_ignored: true`. Treat it as an unverified inference.

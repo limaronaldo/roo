@@ -10,6 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +20,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** Stateless adapter composition shared by the two independently selectable coordinators. */
 final class HttpService {
     private HttpService() { }
+    private static final int BODY_READERS = 16;
+    private static final long BODY_READ_DEADLINE_SECONDS = 5;
     record Config(int port, boolean test, Long gate, String worker, boolean authorization, Long authorizationGate) {
         static Config parse(Map<String, String> env) {
             if (!"127.0.0.1".equals(env.get("ROO_HTTP_HOST"))) throw new IllegalArgumentException("Invalid host");
@@ -54,23 +58,32 @@ final class HttpService {
     static void run(String[] args, boolean template) {
         HttpServer server = null;
         ThreadPoolExecutor workers = null;
+        ScheduledThreadPoolExecutor deadlines = new ScheduledThreadPoolExecutor(1, task -> {
+            Thread thread = new Thread(task, "roo-http-body-deadline");
+            thread.setDaemon(true);
+            return thread;
+        });
+        deadlines.setRemoveOnCancelPolicy(true);
         try {
             if (args.length != 0) throw new IllegalArgumentException("Unexpected arguments");
             Map<String, String> env = Map.copyOf(System.getenv());
             Config config = Config.parse(env);
             Database db = new Database(env);
             var admission = new Semaphore(16);
+            var bodyReaders = new Semaphore(BODY_READERS);
             workers = new ThreadPoolExecutor(32, 32, 0L, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(64), new ThreadPoolExecutor.CallerRunsPolicy());
             server = HttpServer.create(new InetSocketAddress("127.0.0.1", config.port()), 64);
             server.setExecutor(workers);
-            server.createContext("/", exchange -> handle(exchange, config, db, template, admission));
+            server.createContext("/", exchange -> handle(exchange, config, db, template, admission, bodyReaders, deadlines));
             HttpServer listener = server;
             ThreadPoolExecutor pool = workers;
+            ScheduledThreadPoolExecutor timer = deadlines;
             AtomicBoolean stopped = new AtomicBoolean();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 if (!stopped.compareAndSet(false, true)) return;
                 listener.stop(60);
+                timer.shutdownNow();
                 pool.shutdown();
                 try {
                     if (!pool.awaitTermination(60, TimeUnit.SECONDS)) pool.shutdownNow();
@@ -82,17 +95,30 @@ final class HttpService {
         } catch (IOException | RuntimeException failure) {
             if (server != null) server.stop(0);
             if (workers != null) workers.shutdownNow();
+            deadlines.shutdownNow();
             System.err.println("HTTP startup failed: invalid configuration or unavailable listener.");
             System.exit(1);
         }
     }
-    private static void handle(HttpExchange exchange, Config config, Database db, boolean template, Semaphore admission) {
+    private static void handle(HttpExchange exchange, Config config, Database db, boolean template,
+                              Semaphore admission, Semaphore bodyReaders, ScheduledThreadPoolExecutor deadlines) {
         boolean admitted = false;
+        boolean bodyReaderAdmitted = false;
+        ScheduledFuture<?> bodyDeadline = null;
         try (exchange) {
             try {
                 // Match Rust's route, method, principal, and header precedence before reading the stream.
                 HttpProtocol.preflight(exchange.getRequestURI(), exchange.getRequestMethod(), exchange.getRequestHeaders(), config.test(), config.authorization());
+                // A stalled body must not hold a worker thread indefinitely: take a
+                // bounded reader permit first, then read under an absolute deadline.
+                bodyReaderAdmitted = bodyReaders.tryAcquire();
+                if (!bodyReaderAdmitted) throw new HttpProtocol.Rejection(503, "Busy");
+                bodyDeadline = deadlines.schedule(exchange::close, BODY_READ_DEADLINE_SECONDS, TimeUnit.SECONDS);
                 byte[] body = HttpProtocol.read(exchange.getRequestBody());
+                bodyDeadline.cancel(false);
+                bodyDeadline = null;
+                bodyReaders.release();
+                bodyReaderAdmitted = false;
                 HttpProtocol.Input input = HttpProtocol.validate(exchange.getRequestURI(), exchange.getRequestMethod(), exchange.getRequestHeaders(), body, config.test(), config.authorization());
                 admitted = admission.tryAcquire();
                 if (!admitted) throw new HttpProtocol.Rejection(503, "Busy");
@@ -138,6 +164,8 @@ final class HttpService {
             } catch (RuntimeException unexpected) {
                 send(exchange, 500, HttpProtocol.error("InternalError"));
             } finally {
+                if (bodyDeadline != null) bodyDeadline.cancel(false);
+                if (bodyReaderAdmitted) bodyReaders.release();
                 if (admitted) admission.release();
             }
         } catch (IOException disconnected) {

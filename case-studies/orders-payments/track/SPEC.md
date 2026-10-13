@@ -24,12 +24,18 @@ It never executes shell text or accepts learner-provided state as evidence.
 Reject malformed input before policy evaluation: wrong arity, unknown exercise
 or phase, invalid state/outcome, invalid identity, invalid integer, negative
 total/pending count, or invalid lookup. Exit 2, no stdout, generic English
-diagnostic. Payment identities are ASCII `[A-Za-z0-9]{1,64}` or `-` for absence,
-matching the bounded in-memory domain. PostgreSQL scope names are separate.
+diagnostic. Payment identities are ASCII `[A-Za-z0-9]{1,64}` or `-` for
+absence, matching the HTTP and track protocol bound. The in-memory domain
+itself accepts any nonempty ASCII alphanumeric identity. PostgreSQL scope names
+are separate.
 Integers use optional ASCII minus plus one or more ASCII digits, within i64;
 no plus sign, whitespace, decimal, Unicode digit, or overflow. States are
-Draft, Pending, Paid, Declined, Refunding, Refunded. Outcomes are `-` or the
-existing base Domain.Result/Outcome names. Lookup is `ok` or `unavailable`.
+Draft, Pending, Paid, Declined, Refunding, and Refunded. Outcomes are `-` or
+`Added`, `InvalidLine`, `Overflow`, `InvalidOrder`, `InvalidState`,
+`IntentConflict`, `Approved`, `Declined`, `Unknown`, `NotFound`,
+`AlreadyApplied`, `AlreadyDeclined`, `LocalPrepareFailed`,
+`LocalCommitFailed`, `KeyConflict`, `RelayOk`, `RelaySendFailed`, or
+`RelayAckFailed`. Lookup is `ok` or `unavailable`.
 Validate the entire input even when an exercise does not use every field.
 
 | Exercise | Allowed phase | Completed next action |
@@ -73,7 +79,10 @@ exceptions/panics as successful starter failures.
   consumer fact, one event still pending. Execute learner redelivery and
   assert one applied fact, no pending event; zero pending selects stop.
   Check delivery identity/content through the public observers available in
-  each language; Rust's common guarantee is ID deduplication.
+  each language. All three realizations share one consumer guarantee: an
+  identical redelivery is applied once, and the same event ID carrying
+  different content is a conflict that applies nothing and keeps the first
+  fact (Rust returns `KeyConflict`; Java throws `IllegalStateException`).
 
 ## PostgreSQL exercise e5
 
@@ -116,10 +125,16 @@ fresh server and GET. Invoke learner decisions on those observations:
   300. An explicitly authorized second caller action adds 50 to reach 350,
   demonstrating that line POST has no durable replay receipt.
 
-Reject wrong boundary policies (new payment ID, blind line replay, skipped
-reconciliation) with specific action or state assertions. Do not classify a
-missing dependency, compilation failure, database error, server startup failure,
-or missing lock witness as expected learner failure.
+The evaluator checks that wrong boundary decisions are rejected with concrete
+actions and state. A changed payment ID must return `IntentConflict` without
+changing the persisted intent; skipping reconciliation must leave the Pending
+intent unresolved; and a blind line replay control must demonstrate that the
+addition is applied again while the learner's inspect/stop dispatch sends no
+POST. Record each control's action, result, and before/after snapshots. Count
+learner-dispatched HTTP requests at the host executor boundary rather than
+reporting a fixed count. Do not classify a missing dependency, compilation
+failure, database error, server startup failure, or missing lock witness as an
+expected learner failure.
 
 ## Qualification and evidence
 
@@ -129,10 +144,10 @@ failures for all six groups in all three realizations. Require solved native
 e1–e4, policy parity including malformed input, PostgreSQL e5, and HTTP e6 to
 pass. Build/compiler/format checks and runtime evidence are separate.
 
-Record current run evidence under this track's runtime directory or new
-research files. Do not overwrite existing historical validation receipts.
-Keep source, fixtures, dependencies, identifiers, schemas, original templates,
-and previous research records unchanged. Navigation and new ignore entries
-are permitted. Document progressive commands, student edit locations,
-comparison with solutions, architecture translation, and evidence limits in
-English. No publication is part of this track.
+## Evidence handling
+
+Each run writes its current evaluator receipt under the ignored `.runtime/`
+directory. Keep historical validation receipts immutable; record later runs in
+their own runtime location or a new, run-specific evidence file. A receipt
+supports only the bounded scenarios and source identity it records, as described
+above; it is not evidence for untested interleavings or production operation.

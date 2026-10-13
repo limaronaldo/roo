@@ -10,4 +10,11 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     stop_grace_period: 45s
+    # Resource limits for student code. Keep in sync with the expected_* values
+    # in case-studies/orders-payments/track/compose.sh, which verifies them on
+    # the live container. There is deliberately no disk limit: the writable
+    # layer has no portable quota (see track/DOCKER.md).
+    cpus: 2.0
+    mem_limit: 4g
+    pids_limit: 256
     command: [qualify]

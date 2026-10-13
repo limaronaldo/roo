@@ -7,31 +7,31 @@ on:
       - 'website/**'
       - 'docs/**'
       - 'templates/**'
-      - 'case-studies/orders-payments/**/*.md'
+      - 'case-studies/orders-payments/**'
+      - 'examples/**'
+      - 'research/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
       - '*.md'
-      - 'scripts/check_doc_examples.py'
-      - 'scripts/check_vocabulary.py'
       - 'src/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'LICENSE*'
-      - '.github/workflows/docs.yml'
-      - '.github/workflows/docs-release.yml'
   pull_request:
     paths:
       - 'website/**'
       - 'docs/**'
       - 'templates/**'
-      - 'case-studies/orders-payments/**/*.md'
+      - 'case-studies/orders-payments/**'
+      - 'examples/**'
+      - 'research/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
       - '*.md'
-      - 'scripts/check_doc_examples.py'
-      - 'scripts/check_vocabulary.py'
       - 'src/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'LICENSE*'
-      - '.github/workflows/docs.yml'
-      - '.github/workflows/docs-release.yml'
   workflow_dispatch:
     inputs:
       release_tag:
@@ -78,6 +78,8 @@ jobs:
           python scripts/check_doc_examples.py
       - name: Check current method vocabulary
         run: python scripts/check_vocabulary.py
+      - name: Check no authoring-machine paths reach the public repository
+        run: python scripts/check_local_paths.py
       - name: Capture the published release preservation baseline
         run: python website/release_tags.py capture --output .site-build/previous-publication.json
       - name: Build and validate every release edition and development

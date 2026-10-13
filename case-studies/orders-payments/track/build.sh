@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Serial compilation; cached dependency helpers verify pinned artifacts.
 set -euo pipefail
-TRACK="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+TRACK="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 CASE="$TRACK/.."
 if [[ "${1:-}" == "--help" ]]; then
     echo "Usage: build.sh [starter|solution|all] (default: all)"

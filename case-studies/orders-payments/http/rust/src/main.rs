@@ -7,14 +7,30 @@ use axum::{
     http::{Method, StatusCode, header},
     response::{IntoResponse, Response},
 };
+use hyper_util::rt::{TokioIo, TokioTimer};
 use postgres::{Config, NoTls};
 use roo_http_case::{self as boundary, Fault, Route};
 use roo_postgres_case::{database::Database, fixture::Action};
 use serde_json::Value;
-use std::{env, future::IntoFuture, sync::Arc, time::Duration};
+use std::{
+    env,
+    error::Error,
+    io,
+    pin::Pin,
+    sync::Arc,
+    task::{Context, Poll},
+    time::Duration,
+};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};
 use tokio::sync::{Semaphore, watch};
+use tower::ServiceExt;
 
 const WORKERS: usize = 16;
+const BODY_READERS: usize = 16;
+const BODY_READ_DEADLINE: Duration = Duration::from_secs(5);
+const REQUEST_LINE_LIMIT: usize = 8192;
+const REQUEST_LINE_DEADLINE: Duration = Duration::from_secs(5);
+const REQUEST_LINE_READERS: usize = 16;
 const DRAIN: Duration = Duration::from_secs(180);
 
 #[derive(Clone)]
@@ -25,6 +41,7 @@ struct App {
     authorization: bool,
     authorization_gate: Option<Gate>,
     admission: Arc<Semaphore>,
+    body_readers: Arc<Semaphore>,
 }
 #[derive(Clone)]
 struct Gate {
@@ -74,6 +91,21 @@ fn error(fault: Fault) -> Response {
     response(fault.status(), fault.body(), None)
 }
 
+// Only a typed length-limit failure is oversize; framing and truncation are not.
+fn body_fault(error: &(dyn Error + 'static)) -> Fault {
+    let mut cause: Option<&(dyn Error + 'static)> = Some(error);
+    while let Some(error) = cause {
+        if error
+            .downcast_ref::<http_body_util::LengthLimitError>()
+            .is_some()
+        {
+            return Fault::BodyTooLarge;
+        }
+        cause = error.source();
+    }
+    Fault::InvalidRequest
+}
+
 async fn handle(State(app): State<App>, request: Request<Body>) -> Response {
     let (scope, route) =
         match boundary::route_with_authorization(request.uri(), app.test, app.authorization) {
@@ -92,10 +124,23 @@ async fn handle(State(app): State<App>, request: Request<Body>) -> Response {
         Ok(v) => v,
         Err(e) => return error(e),
     };
+    let body_permit = match app.body_readers.clone().try_acquire_owned() {
+        Ok(v) => v,
+        Err(_) => return error(Fault::Busy),
+    };
     // Axum enforces the actual streamed byte limit, including chunked requests.
-    let body = match to_bytes(request.into_body(), boundary::BODY_LIMIT).await {
-        Ok(body) => body,
-        Err(_) => return error(Fault::BodyTooLarge),
+    // The deadline and semaphore bound both memory and time held by a stalled
+    // Content-Length or chunked body before database admission.
+    let body_result = tokio::time::timeout(
+        BODY_READ_DEADLINE,
+        to_bytes(request.into_body(), boundary::BODY_LIMIT),
+    )
+    .await;
+    drop(body_permit);
+    let body = match body_result {
+        Ok(Ok(body)) => body,
+        Ok(Err(read_error)) => return error(body_fault(&read_error)),
+        Err(_) => return error(Fault::InvalidRequest),
     };
     let action = if method == Method::GET {
         if !body.is_empty() {
@@ -284,6 +329,7 @@ fn configure() -> Result<(u16, App), ()> {
             authorization: authorization.enabled,
             authorization_gate,
             admission: Arc::new(Semaphore::new(WORKERS)),
+            body_readers: Arc::new(Semaphore::new(BODY_READERS)),
         },
     ))
 }
@@ -306,30 +352,202 @@ async fn termination() {
     }
 }
 
+// Replay exactly the consumed request line; Hyper remains responsible for HTTP
+// framing. A single request per connection prevents later unvalidated targets.
+struct PrefixedStream {
+    stream: tokio::net::TcpStream,
+    prefix: Vec<u8>,
+    offset: usize,
+}
+impl AsyncRead for PrefixedStream {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut ReadBuf<'_>,
+    ) -> Poll<io::Result<()>> {
+        if self.offset < self.prefix.len() && buf.remaining() > 0 {
+            let end = (self.offset + buf.remaining()).min(self.prefix.len());
+            buf.put_slice(&self.prefix[self.offset..end]);
+            self.offset = end;
+            return Poll::Ready(Ok(()));
+        }
+        Pin::new(&mut self.stream).poll_read(cx, buf)
+    }
+}
+impl AsyncWrite for PrefixedStream {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<io::Result<usize>> {
+        Pin::new(&mut self.stream).poll_write(cx, buf)
+    }
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.stream).poll_flush(cx)
+    }
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.stream).poll_shutdown(cx)
+    }
+}
+
+async fn request_line(stream: &mut tokio::net::TcpStream) -> Result<Vec<u8>, ()> {
+    let mut line = Vec::with_capacity(128);
+    loop {
+        if line.len() == REQUEST_LINE_LIMIT {
+            return Err(());
+        }
+        let byte = stream.read_u8().await.map_err(|_| ())?;
+        line.push(byte);
+        if byte == b'\n' {
+            // Check the raw second field before http::Uri can discard a fragment.
+            // Strict CRLF and field separation also prevent parser disagreement
+            // about which request line was validated (including leading blanks).
+            let text = line.strip_suffix(b"\r\n").ok_or(())?;
+            let fields: Vec<_> = text.split(|byte| *byte == b' ').collect();
+            if fields.len() != 3
+                || fields.iter().any(|field| field.is_empty())
+                || fields[1].contains(&b'#')
+                || !matches!(fields[2], b"HTTP/1.0" | b"HTTP/1.1")
+            {
+                return Err(());
+            }
+            return Ok(line);
+        }
+    }
+}
+
+async fn reject_transport(stream: &mut tokio::net::TcpStream, fault: Fault) {
+    let body = fault.body().to_string();
+    let reason = if fault == Fault::Busy {
+        "Service Unavailable"
+    } else {
+        "Bad Request"
+    };
+    let response = format!(
+        "HTTP/1.1 {} {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\nCache-Control: no-store\r\n\r\n{}",
+        fault.status(),
+        reason,
+        body.len(),
+        body,
+    );
+    // A client that never reads must not retain a rejecting connection task.
+    let _ = tokio::time::timeout(Duration::from_secs(1), async {
+        stream.write_all(response.as_bytes()).await?;
+        stream.shutdown().await
+    })
+    .await;
+}
+
+async fn connection(
+    mut stream: tokio::net::TcpStream,
+    router: Router,
+    readers: Arc<Semaphore>,
+    mut stopped: watch::Receiver<bool>,
+) {
+    let permit = match readers.try_acquire_owned() {
+        Ok(permit) => permit,
+        Err(_) => {
+            reject_transport(&mut stream, Fault::Busy).await;
+            return;
+        }
+    };
+    let line = tokio::select! {
+        biased;
+        _ = async {
+            // Drop watch::Ref here so select never retains it across a drain await.
+            let _ = stopped.wait_for(|stopped| *stopped).await;
+        } => return,
+        line = tokio::time::timeout(REQUEST_LINE_DEADLINE, request_line(&mut stream)) => line,
+    };
+    drop(permit);
+    let prefix = match line {
+        Ok(Ok(line)) => line,
+        _ => {
+            reject_transport(&mut stream, Fault::InvalidRequest).await;
+            return;
+        }
+    };
+    let service =
+        hyper::service::service_fn(move |request: hyper::Request<hyper::body::Incoming>| {
+            router.clone().oneshot(request.map(Body::new))
+        });
+    let mut builder = hyper::server::conn::http1::Builder::new();
+    builder
+        .keep_alive(false)
+        .half_close(true)
+        .timer(TokioTimer::new())
+        .header_read_timeout(REQUEST_LINE_DEADLINE);
+    let connection = builder.serve_connection(
+        TokioIo::new(PrefixedStream {
+            stream,
+            prefix,
+            offset: 0,
+        }),
+        service,
+    );
+    tokio::pin!(connection);
+    tokio::select! {
+        _ = &mut connection => {},
+        _ = async {
+            // Drop watch::Ref here so select never retains it across a drain await.
+            let _ = stopped.wait_for(|stopped| *stopped).await;
+        } => {
+            connection.as_mut().graceful_shutdown();
+            let _ = connection.await;
+        }
+    }
+}
+
 async fn serve(port: u16, app: App) -> Result<(), ()> {
     let listener = tokio::net::TcpListener::bind(("127.0.0.1", port))
         .await
         .map_err(|_| ())?;
     let port = listener.local_addr().map_err(|_| ())?.port();
     let admission = app.admission.clone();
+    let body_readers = app.body_readers.clone();
+    let line_readers = Arc::new(Semaphore::new(REQUEST_LINE_READERS));
     let router = Router::new().fallback(handle).with_state(app);
-    let (stop, mut stopped) = watch::channel(false);
-    let server = axum::serve(listener, router).with_graceful_shutdown(async move {
-        let _ = stopped.wait_for(|stopped| *stopped).await;
-    });
+    let (stop, stopped) = watch::channel(false);
+    let mut connections = tokio::task::JoinSet::new();
+    let termination = termination();
+    tokio::pin!(termination);
     // Emit readiness only after binding, never include database configuration.
     println!("{{\"host\":\"127.0.0.1\",\"port\":{port},\"ready\":true}}");
-    let server = server.into_future();
-    tokio::pin!(server);
-    tokio::select! {
-        result = &mut server => result.map_err(|_| ()),
-        _ = termination() => {
-            admission.close();
-            let _ = stop.send(true);
-            // Stop accepting, drain active handlers; hanging clients are bounded too.
-            tokio::time::timeout(DRAIN, &mut server).await.map_err(|_| ())?.map_err(|_| ())
+    let mut result = Ok(());
+    loop {
+        tokio::select! {
+            biased;
+            _ = &mut termination => break,
+            completed = connections.join_next(), if !connections.is_empty() => {
+                if completed.is_some_and(|result| result.is_err()) { result = Err(()); }
+            }
+            accepted = listener.accept() => match accepted {
+                Ok((stream, _)) => {
+                    connections.spawn(connection(stream, router.clone(), line_readers.clone(), stopped.clone()));
+                }
+                Err(_) => { result = Err(()); break; }
+            }
         }
     }
+    drop(listener);
+    admission.close();
+    body_readers.close();
+    line_readers.close();
+    let _ = stop.send(true);
+    // Stop accepting and drain active handlers, including tracked transport tasks.
+    if tokio::time::timeout(DRAIN, async {
+        while let Some(completed) = connections.join_next().await {
+            if completed.is_err() {
+                result = Err(());
+            }
+        }
+    })
+    .await
+    .is_err()
+    {
+        return Err(()); // Dropping JoinSet aborts remaining async connections.
+    }
+    result
 }
 
 fn main() {
@@ -359,5 +577,24 @@ fn main() {
     if result.is_err() {
         eprintln!("Server stopped with an error");
         std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn body_read_errors_are_not_all_reported_as_oversize() {
+        let oversized = to_bytes(
+            Body::from(vec![b'x'; boundary::BODY_LIMIT + 1]),
+            boundary::BODY_LIMIT,
+        )
+        .await
+        .expect_err("body above the byte limit must fail");
+        assert_eq!(body_fault(&oversized), Fault::BodyTooLarge);
+
+        let truncated = std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "truncated body");
+        assert_eq!(body_fault(&truncated), Fault::InvalidRequest);
     }
 }

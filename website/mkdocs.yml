@@ -127,6 +127,7 @@ nav:
           - Practical exercise: docs/validation/exercise.md
           - Facilitator guide: docs/validation/facilitator-guide.md
   - Project:
+      - Development improvements: docs/development-improvements.md
       - Release notes: RELEASE_NOTES.md
       - Changelog: CHANGELOG.md
       - Contributing: CONTRIBUTING.md

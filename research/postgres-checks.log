@@ -1,7 +1,7 @@
 PASS pgJDBC 42.7.14: pinned SHA-256 verified
 Java PostgreSQL pure checks: 52
 Java PostgreSQL compiler negatives: private fields and final algorithm rejected
-   Compiling roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+   Compiling roo-postgres-case v0.1.0 (<home>/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 0.40s
      Running unittests src/lib.rs (case-studies/orders-payments/postgres/rust/target/debug/deps/roo_postgres_case-8b0fe1280f7da923)
 
@@ -39,14 +39,14 @@ test src/lib.rs - (line 4) - compile fail ... ok
 test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
 
 all doctests ran in 0.37s; merged doctests compilation took 0.15s
-    Checking roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+    Checking roo-postgres-case v0.1.0 (<home>/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.24s
-   Compiling roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+   Compiling roo-postgres-case v0.1.0 (<home>/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
-    Checking roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
- Documenting roo-postgres-case v0.1.0 (/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+    Checking roo-postgres-case v0.1.0 (<home>/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
+ Documenting roo-postgres-case v0.1.0 (<home>/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.49s
-   Generated /Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust/target/doc/roo_postgres_case/index.html and 1 other file
+   Generated <home>/Projects/limaronaldo/roo/case-studies/orders-payments/postgres/rust/target/doc/roo_postgres_case/index.html and 1 other file
 PASS Rust compiler negatives: 4 intended diagnostics
 Owned PostgreSQL cluster started on loopback
 Shared schema applied to owned test database

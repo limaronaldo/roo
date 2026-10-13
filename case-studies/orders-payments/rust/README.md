@@ -44,7 +44,8 @@ dated validation record establishes which checks actually ran.
 - `domain.rs`: validated identity and money types, order-owned lines, immutable
   intent snapshots, closed state/results, and crate-private transitions.
 - `adapters.rs`: independent simulated provider records/effects, atomic candidate
-  replacement, retained outbox acknowledgement flags, and consumer deduplication.
+  replacement, retained outbox acknowledgement flags, and consumer deduplication
+  by EventId and complete fact.
 - `application.rs`: composed coordinator borrowing store, provider, and consumer.
   It persists an intent before asking the provider and reloads committed state
   after any failed candidate commit. It retains no mutable cached order.
@@ -63,14 +64,14 @@ and supply the idempotency guarantee themselves.
 
 ## Relationship contracts
 
-| Relationship | Owner / custodian | Identity | Invariant coordinator | Authorization | Access regime | Validity horizon | Execution domain | Failure boundary |
+| Relationship | Owner / resource custodian | Stable identity | Invariant coordinator | Authorization | Access regime | Validity horizon | Execution domain | Failure boundary |
 |---|---|---|---|---|---|---|---|---|
 | Order to lines | Order owns its vector | Embedded values, no external line IDs | Private validated add operation through application | Not implemented; synthetic callers only | Owned values; observers receive counts/totals | Lines retained for order; frozen at Pending | One synchronous coordinator | Checked candidate arithmetic before installing any line |
 | Application to Store | Caller owns Store | One O1 committed snapshot | Exclusive application capability; store replaces candidate | Not implemented; synthetic callers only | Short `&mut Store`; shared observation outside call | Application borrow ends before caller observes store | Single thread, no suspension | Failed replacement installs neither order nor events |
 | Order to payment/refund intent | Order owns immutable request snapshots | Separate PaymentId/RefundId correlated with OrderId | Private preparation and finalization | Not implemented; synthetic callers only | Owned copies for provider calls | Retained through terminal order state | Two separate local transactions around remote call | Preparation failure precedes remote effect; final failure keeps persisted intent |
 | Application to Provider | Caller owns independent simulator | Typed operation key plus complete request fingerprint | Application sends only persisted request; fixture probe separate | Not implemented; synthetic callers only | Short exclusive borrow; lookup read-only | Complete key records retained for fresh scenario | Same thread, independent effect boundary | Unknown observation never fabricates a terminal record; stable retry/reconcile |
 | Store to event | Store owns committed facts and ack flags | EventId derived from typed intent | Domain constructs fact; store commits it with terminal state | Not implemented; synthetic callers only | Owned facts, shared read views | Retained for scenario, independent of transient candidate | Local candidate commit and later relay | Failed commit installs no event; send/ack failure retains pending record |
-| Relay to Consumer | Caller owns consumer and dedup set | EventId | Deliver capability; fact payload immutable | Not implemented; synthetic callers only | Borrowed event copied into consumer on first delivery | Seen IDs retained for entire scenario | Single synchronous relay | Lost ack causes redelivery; duplicate fact has no second application |
+| Relay to Consumer | Caller owns consumer and its seen-fact record | EventId plus the complete fact | Deliver capability; fact payload immutable | Not implemented; synthetic callers only | Borrowed event copied into consumer on first delivery | Seen IDs retained for entire scenario | Single synchronous relay | Lost ack causes redelivery; an identical fact has no second application; the same EventId with different content is `KeyConflict`, applies nothing, and stays pending |
 
 `Order`, `Store`, and their resource bindings are not Copy. Compiler-negative
 doctests in `lib.rs` demonstrate use after transfer (`E0382`), overlapping shared
@@ -89,8 +90,9 @@ malformed late actions; initial preparation failure; terminal/reconciliation
 commit failure; Unknown versus NotFound; payment fingerprint mismatch across
 order/currency/amount; refund mismatch across payment/order/currency/amount;
 independent typed namespaces; frozen lines; invalid states; refund timeout before
-retry and identity conflict; stable fact identity; consumer deduplication and
-outbox ordering after send/ack failures.
+retry and identity conflict; stable fact identity; consumer deduplication, rejection
+of a changed fact under a delivered EventId, and outbox ordering after send/ack
+failures.
 
 The complete shared fixture comparison is separate acceptance evidence owned by
 the verification harness. No test here proves every interleaving. This is a deterministic

@@ -46,3 +46,16 @@ Frozen initial candidate: a3b25017dcfe58184956a16df7130af346a661e61291824f5d174d
 Initial review confirmed every hash, 201 relative Markdown targets, baseline preservation and all recorded execution counts. It requested one Low source-ledger wording correction: the simulator's bounded local consumer transaction deliberately runs while the app order lock is held, unlike provider calls. Root corrected that sentence, replaced the README's pending-review wording with a link to the separate review receipt, and preserved the initial review. These are documentation-only changes; no runtime recheck is warranted. A new manifest and focused independent re-review will bind the final acceptance.
 
 Final focused independent result: ACCEPT, no remaining findings. Candidate d1594cd230a03bcad6edbb2b590cbcb3bbcbc5f94604cdc4fbb0af59596bd7ac has 120 files; every hash/size matched before and after review. Exact scope is two text corrections and one added initial-review receipt, with implementation/runtime evidence unchanged. All 202 manifested relative Markdown targets resolve. Final review is retained in postgres-review.md. Owned PostgreSQL status is stopped, synthetic data retained; no existing service or external action was used. All authorized work is complete.
+
+## Provenance and drift note (2026-10-13)
+
+Added after the fact; the earlier text is not rewritten. This report relies on the PostgreSQL manifests listed below. Those manifests list `{path, sha256, bytes}` for a working tree as it stood **before** it was committed; they are preserved unedited. Measured on 2026-10-13 against git with `python3 -I research/manifest-audit.py --rev 8bf017f --also 0c3e2bb --also v0.1.0` (full results: [manifest-provenance-8bf017f.json](manifest-provenance-8bf017f.json)):
+
+| Manifest | Entries | Match no git blob | Identical at `0c3e2bb` | Identical at `8bf017f` (v0.4.3) | Identical at `0c3e2bb` but changed by later commits |
+|---|---:|---:|---:|---:|---:|
+| `postgres-candidate-initial.json` | 119 | 22 | 97 | 86 | 11 |
+| `postgres-candidate.json` | 120 | 21 | 99 | 88 | 11 |
+
+- **Pre-commit state.** "Match no git blob" counts entries whose recorded SHA-256 equals no blob reachable from any git ref: those bytes were never committed, and the repository does not retain their intermediate content. `0c3e2bb` is the commit that first contains these manifests.
+- **What "matched" means here.** Where this report says the candidate files matched the manifest, that was a working-tree comparison made at review time. This note neither repeats nor disproves it; it only shows that the claim cannot be reproduced from git for the entries counted above.
+- **Drift after acceptance.** "Frozen" and "unchanged" in this report hold for the acceptance date only. At `8bf017f`, 32 of 120 entries in `postgres-candidate.json` differ from the manifest (by area: 15 in `case-studies/`, 9 in `docs/`, 4 in `repository root files`, 3 in `templates/`, 1 in `src/`). 11 of those were byte-identical at `0c3e2bb` and were changed by later commits; the rest were already different from git at the first commit. The manifest was not updated, because historical manifests are not edited.

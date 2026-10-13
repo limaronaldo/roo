@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-TRACK="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+TRACK="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 if [[ "${1:-}" == "--help" ]]; then
     echo "Usage: verify.sh"
     echo "Build serially, require all independent starter RED groups, then qualify the full solution."

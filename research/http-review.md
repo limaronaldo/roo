@@ -40,3 +40,18 @@ The initial security findings are resolved in the reviewed candidate: raw-route/
 **Findings:** no blocking defect, required-scope omission, or unresolved actionable finding identified. No optional improvement is promoted to an acceptance requirement.
 
 **Evidence limits:** I performed read-only source, manifest, and receipt inspection; I did not independently execute builds, tests, HTTP, SQL, network access, cluster operations, or Git, and wrote no files. Acceptance relies on root-retained execution evidence reconciled against the frozen sources. It covers the documented local educational simulator, not authentication, real payment networks, native malformed-framing parity, slow-client protection, exhaustive interleavings, worst-case combined shutdown duration, hardware power loss, dependency advisory clearance, or production readiness. The pending final review artifact is expected and does not invalidate this candidate.
+
+## Provenance and drift note (2026-10-13)
+
+Added after the fact; the earlier text is not rewritten. This report relies on the HTTP manifests listed below. Those manifests list `{path, sha256, bytes}` for a working tree as it stood **before** it was committed; they are preserved unedited. Measured on 2026-10-13 against git with `python3 -I research/manifest-audit.py --rev 8bf017f --also 0c3e2bb --also v0.1.0` (full results: [manifest-provenance-8bf017f.json](manifest-provenance-8bf017f.json)):
+
+| Manifest | Entries | Match no git blob | Identical at `0c3e2bb` | Identical at `8bf017f` (v0.4.3) | Identical at `0c3e2bb` but changed by later commits |
+|---|---:|---:|---:|---:|---:|
+| `http-candidate-initial.json` | 154 | 24 | 130 | 108 | 22 |
+| `http-candidate.json` | 154 | 24 | 130 | 108 | 22 |
+
+- **Pre-commit state.** "Match no git blob" counts entries whose recorded SHA-256 equals no blob reachable from any git ref: those bytes were never committed, and the repository does not retain their intermediate content. `0c3e2bb` is the commit that first contains these manifests.
+- **What "matched" means here.** Where this report says the candidate files matched the manifest, that was a working-tree comparison made at review time. This note neither repeats nor disproves it; it only shows that the claim cannot be reproduced from git for the entries counted above.
+- **Drift after acceptance.** "Frozen" and "unchanged" in this report hold for the acceptance date only. At `8bf017f`, 46 of 154 entries in `http-candidate.json` differ from the manifest (by area: 29 in `case-studies/`, 9 in `docs/`, 4 in `repository root files`, 3 in `templates/`, 1 in `src/`). 22 of those were byte-identical at `0c3e2bb` and were changed by later commits; the rest were already different from git at the first commit. The manifest was not updated, because historical manifests are not edited.
+
+- **The "154/154 match" figure.** It was a working-tree statement made during review. Re-measured on 2026-10-13 against git for `http-candidate.json` (154 entries): 130 are byte-identical in the `0c3e2bb` tree and 24 are not. Those 24 are the entries counted above as matching no git blob (the counts are equal and a no-blob entry necessarily differs from the committed file). In the `8bf017f` tree 108 of 154 are identical. The figure is therefore not a statement about any commit.

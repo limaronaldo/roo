@@ -1,6 +1,6 @@
 # ROO Concept Atlas
 
-**First edition · English · 2026-10-11**
+**Concept atlas · English · 2026-10-11**
 
 ROO means **Relationship & Ownership Oriented design**: a language-independent method for making domain responsibilities, relationships, identity, authority, and lifecycle decisions explicit. Useful object-oriented concepts are inputs to that method. Rust is the executable laboratory used here to explore one implementation; Java and other languages can realize the same domain decisions through their own mechanisms.
 
@@ -12,7 +12,7 @@ explain the method's intent.
 
 For every stored relation, distinguish **domain identity** (which entity this is) from **memory ownership** (which value controls its lifetime). A database key does not own an object in memory; an `Arc` does not by itself establish domain identity. Rust's ownership checks constrain aliasing and lifetimes, while domain invariants and behavioral promises remain design responsibilities. The [Rust Book](https://doc.rust-lang.org/stable/book/ch04-01-what-is-ownership.html) and [Rust Reference](https://doc.rust-lang.org/reference/) describe language rules; this atlas adds a design reading of those rules.
 
-The entries follow **Classical intent → Relationship decision → Rust translation → Rust ownership mapping → Tradeoff.** Any model sketch below is conceptual pseudocode, not a claim that a snippet was compiled. The executable laboratory, when available, is the source of compile evidence; this atlas makes no compiler claim.
+The entries follow **Classical intent → Relationship decision → Rust translation → Rust ownership mapping → Tradeoff.** Any model sketch below is conceptual pseudocode, not a claim that a snippet was compiled. The [executable laboratory](laboratory.md) is the source of compile evidence; this atlas makes no compiler claim for its sketches.
 
 ## 1. Core concepts
 
@@ -323,4 +323,4 @@ The references below are primary language documents, standards, or the original/
 - Robert C. Martin, [The SOLID Principles of Software Design](https://cleancoder.com/files/solid.md), course outline and associated design material.
 - Craig Larman, [Applying UML and Patterns excerpt on responsibility assignment and GRASP](https://www.informit.com/articles/article.aspx?p=360440&seqNum=2).
 
-This first edition is a practical atlas, not an exhaustive survey or formal proof of the recommendations. The executable laboratory, when included, is the place to verify code examples; this document deliberately labels its hierarchy sketches as conceptual and does not assert compiler success for them.
+This practical atlas is not an exhaustive survey or formal proof of the recommendations. The [executable laboratory](laboratory.md) identifies checked code; this document labels its hierarchy sketches as conceptual and does not assert compiler success for them.

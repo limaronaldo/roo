@@ -143,3 +143,9 @@ disconnected socket does not prove rollback. Natural operation identities,
 persisted intent, provider fingerprints, short transactions, finalization and
 inbox deduplication carry the recovery protocol; a Rust borrow or Java final
 method cannot make those durable boundaries atomic.
+
+## Notes added 2026-10-13
+
+Added after the fact; the text above is not rewritten.
+
+**Exit status of the Java servers (line 44, "clean exit").** In the "Active graceful stop" row, "clean exit" means the server stopped on its own without being force-killed. It does not mean exit status 0. The retained receipt [http-integration-evidence.json](http-integration-evidence.json) records `"exit_code": 143` in the `graceful_drain` block of both Java variants (Java composition and Java inheritance) and `0` for Rust composition. 143 is 128 + 15, the shell convention for termination by SIGTERM (signal 15), and is the status a JVM normally reports when it shuts down in response to SIGTERM after running its shutdown hooks. It is the expected result of a graceful stop of the Java servers, not a failure. The harness accepts both values: `case-studies/orders-payments/http/verify.py` line 197 (`if gated.process.returncode not in (0, 143):`, checked in the `8bf017f` tree) raises `AssertionError("Graceful drain required forced termination")` for any other status, and the `"forced_termination": false` field is only written after that check passes.

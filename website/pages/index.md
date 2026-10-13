@@ -85,7 +85,9 @@ Lifetimes and garbage collectors manage the first clock. The other two are
 managed only where the design says how; that is what the `horizon` line in a
 contract is for.
 
-## Try it on one relationship { #try-it }
+<a id="try-it"></a>
+
+## Try it on one relationship
 
 Pick one arrow in a system you know, preferably one that crosses a process, a
 transaction, a lifecycle, or a trust boundary. Fill in the eight fields. A line you can’t
@@ -152,6 +154,53 @@ their mechanisms and evidence, or evaluate another technology against the
 same contract. Alternative backends need their own qualification.
 
 [Open the implementation guides](../../docs/implementations.md)
+
+</div>
+
+</div>
+
+## Stronger checks at the boundaries
+
+The unreleased development corrections strengthen the reference laboratories
+and make their evidence easier to inspect.
+
+<div class="roo-paths" markdown="1">
+
+<div markdown="1">
+
+### Preserve the original fact
+
+Declined refunds leave the order unchanged. A repeated event identity with a
+different fact is detected, preserving the original delivery. HTTP handling
+distinguishes malformed input and bounds slow body readers.
+
+[Inspect the behavior](../../docs/development-improvements.md#behavior-and-boundaries)
+
+</div>
+
+<div markdown="1">
+
+### Exercise the boundary
+
+Track probes use the real runner and server. The host records Docker status
+and checks CPU, memory, and process limits. Verification phases write distinct
+receipts, and a privacy guard checks tracked files.
+
+[Inspect the checks](../../docs/development-improvements.md#checks-and-evidence)
+
+</div>
+
+<div markdown="1">
+
+### Keep the claim bounded
+
+The dated port report records 27 passing local checks. That evidence does not
+establish hosted qualification or behavior on an actual JDK 21 runtime.
+Subsequent [CI runs](https://github.com/limaronaldo/roo/actions) have their own
+source identity. These improvements are not a new published release or a
+completed evaluation of ROO.
+
+[Read the validation scope](../../docs/development-improvements.md#validation-scope)
 
 </div>
 

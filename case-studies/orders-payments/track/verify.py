@@ -77,14 +77,39 @@ def expect_action(action, expected, exercise):
         raise Behavior(f"BEHAVIOR {exercise}: expected action {expected}, observed {action}")
 
 
-def negative_control(action, expected, exercise):
-    try:
-        expect_action(action, expected, exercise)
-    except Behavior as failure:
-        if not str(failure).startswith(f"BEHAVIOR {exercise}:"):
-            raise AssertionError("Negative control lacks specific behavioral diagnosis")
-        return {"injected_action": action, "required_action": expected, "rejected": True, "diagnostic": str(failure)}
-    raise AssertionError("Boundary negative control unexpectedly accepted")
+def postgres_decision(runner, scope, action, outcome=None):
+    """Inspect, stop, or send a caller action through the persistent runner."""
+    if action == "inspect":
+        return runner.row("snapshot", scope)
+    if action == "stop":
+        return None
+    return runner.step(scope, action, outcome)
+
+
+def http_request_counter(server):
+    """Count requests at the HTTP harness's actual client dispatch boundary."""
+    counts = {"GET": 0, "PUT": 0, "POST": 0}
+    original = server.snapshot_response
+
+    def counted(method, *args, **kwargs):
+        counts[method] = counts.get(method, 0) + 1
+        return original(method, *args, **kwargs)
+
+    server.snapshot_response = counted
+    return counts
+
+
+def request_delta(counts, before):
+    return {method: counts.get(method, 0) - before.get(method, 0) for method in counts}
+
+
+def http_decision(server, scope, action, outcome=None):
+    """Inspect, stop, or send a learner action through the existing HTTP client."""
+    if action == "inspect":
+        return server.get(scope)
+    if action == "stop":
+        return None
+    return server.step(scope, action, outcome)
 
 
 def inputs():
@@ -182,12 +207,25 @@ def restart_e5(pg, retained):
         if fresh != snapshot:
             raise AssertionError("Normalized retained snapshot differs after restart")
         record["after_restart"] = fresh
-        record["negative_controls"] = [
-            negative_control("pay:pNEW:approve:none", "inspect", "e5"),
-            negative_control("stop", "reconcile:ok:none", "e5")]
+        before_changed_key = runner.row("snapshot", scope)
+        changed_key = postgres_decision(runner, scope, "pay:pNEW:approve:none", "IntentConflict")
+        after_changed_key = runner.row("snapshot", scope)
+        if changed_key["last_result"] != "IntentConflict" or after_changed_key != before_changed_key:
+            raise AssertionError("Changed payment identity was not rejected without changing the pending intent")
+        before_skip = runner.row("snapshot", scope)
+        postgres_decision(runner, scope, "stop")
+        after_skip = runner.row("snapshot", scope)
+        if after_skip != before_skip or after_skip["state"] != "Pending":
+            raise AssertionError("Skipping pending-intent reconciliation changed the retained state")
+        record["boundary_probes"] = [
+            {"case": "changed_payment_key", "action": "pay:pNEW:approve:none",
+             "result": changed_key["last_result"], "before": before_changed_key,
+             "after": after_changed_key, "rejected_without_mutation": after_changed_key == before_changed_key},
+            {"case": "skipped_reconciliation", "action": "stop", "before": before_skip,
+             "after": after_skip, "pending_unchanged": after_skip == before_skip and after_skip["state"] == "Pending"}]
         action = observed(cmd, "e5", "recover", fresh, record["transcript"])
         expect_action(action, "reconcile:ok:none", "e5")
-        runner.step(scope, action, "Approved")
+        postgres_decision(runner, scope, action, "Approved")
         record["final"] = pg.state(runner, scope, "Paid")
         record["status"] = "PASS"
 
@@ -216,29 +254,63 @@ def e6(http, variant, cmd, record):
                         gated.stop(crash=True)
                         loss = lost_response(future)
                 fresh = http.Server(VARIANTS[variant])
+                requests = http_request_counter(fresh)
                 snapshot = http.state(fresh, scope, "Paid") if kind == "payment" else http.state(fresh, scope, "Draft", total=300, charges=0, events=0, payment="-")
+                policy_request_start = dict(requests)
                 selected = observed(cmd, "e6", phase, snapshot, record["transcript"], requested="pNEW")
                 if kind == "payment":
                     # A different caller key cannot replace a persisted intent.
                     expect_action(selected, "pay:p1:approve:none", "e6")
-                    fresh.step(scope, selected, "AlreadyApplied")
+                    http_decision(fresh, scope, selected, "AlreadyApplied")
+                    policy_dispatch = request_delta(requests, policy_request_start)
                     final = http.state(fresh, scope, "Paid")
-                    fresh.step(scope, "pay:pNEW:approve:none", "IntentConflict")
-                    if fresh.get(scope) != final:
+                    before_changed_key = fresh.get(scope)
+                    before_probe_requests = dict(requests)
+                    changed_key = fresh.step(scope, "pay:pNEW:approve:none", "IntentConflict")
+                    after_changed_key = fresh.get(scope)
+                    probe_dispatch = request_delta(requests, before_probe_requests)
+                    if (changed_key["last_result"] != "IntentConflict" or after_changed_key != before_changed_key
+                            or probe_dispatch["POST"] != 1):
                         raise AssertionError("Changed-key negative control mutated committed payment")
+                    record.setdefault("boundary_probes", []).append({
+                        "case": "changed_payment_key", "action": "pay:pNEW:approve:none",
+                        "result": changed_key["last_result"], "before": before_changed_key,
+                        "after": after_changed_key,
+                        "client_post_dispatches": probe_dispatch["POST"],
+                        "rejected_without_mutation": after_changed_key == before_changed_key})
                 else:
                     expect_action(selected, "inspect", "e6")
-                    inspected = fresh.get(scope)
+                    inspected = http_decision(fresh, scope, selected)
+                    if inspected != snapshot:
+                        raise AssertionError("Inspect action changed the committed line snapshot")
                     selected = observed(cmd, "e6", "line_inspected", inspected, record["transcript"])
                     expect_action(selected, "stop", "e6")
-                    if fresh.get(scope) != snapshot:
-                        raise AssertionError("Line recovery automatically replayed a non-idempotent addition")
-                    record["automatic_line_posts"] = 0
+                    http_decision(fresh, scope, selected)
+                    policy_dispatch = request_delta(requests, policy_request_start)
+                    after_stop = fresh.get(scope)
+                    if after_stop != inspected:
+                        raise AssertionError("Stop action changed the committed line snapshot")
+                    if policy_dispatch["POST"] != 0:
+                        raise AssertionError("Line recovery policy issued an automatic POST")
+                    record["automatic_line_posts"] = policy_dispatch["POST"]
+                    record["line_policy_dispatch"] = policy_dispatch
                     # Explicit second caller action demonstrates absence of a line receipt.
-                    fresh.step(scope, "add:50:1", "Added")
+                    before_blind_replay = fresh.get(scope)
+                    before_replay_requests = dict(requests)
+                    replay = fresh.step(scope, "add:50:1", "Added")
+                    replay_dispatch = request_delta(requests, before_replay_requests)
                     final = http.state(fresh, scope, "Draft", total=350, charges=0, events=0, payment="-")
+                    if replay["last_result"] != "Added" or before_blind_replay == final or replay_dispatch["POST"] != 1:
+                        raise AssertionError("Blind line replay control did not demonstrate a second addition")
+                    record.setdefault("boundary_probes", []).append({
+                        "case": "blind_line_replay", "actor": "explicit control action outside policy",
+                        "action": "add:50:1", "result": replay["last_result"],
+                        "before": before_blind_replay, "after": final,
+                        "client_post_dispatches": replay_dispatch["POST"],
+                        "replay_changed_state": before_blind_replay != final})
                 record[kind] = {"scope": scope, "client_exception": loss, "fresh_get": snapshot, "final": final,
                                 "gate": "http_after_snapshot", "signal": "SIGKILL"}
+                record[kind]["policy_dispatch"] = policy_dispatch
             finally:
                 if gated is not None: gated.stop()
                 if fresh is not None: fresh.stop()
@@ -258,10 +330,6 @@ def e6(http, variant, cmd, record):
             "final": http.state(server, scope, "Paid", payment="p202")}
         if any(item["observation"]["exercise"] != "e6" for item in record["transcript"]):
             raise AssertionError("e6 invoked another exercise's learner policy")
-        record["negative_controls"] = [
-            {"changed_payment_key": "pNEW", "domain_result": "IntentConflict", "unchanged_snapshot": True},
-            negative_control("add:50:1", "inspect", "e6"),
-            negative_control("add:50:1", "stop", "e6")]
         record["status"] = "PASS"
     finally:
         server.stop()
@@ -270,7 +338,7 @@ def e6(http, variant, cmd, record):
 def source_hashes():
     files = list(TRACK.glob("java/**/*.java")) + list(TRACK.glob("rust/*/src/**/*.rs")) + list(TRACK.glob("rust/*.rs"))
     files += list(TRACK.glob("rust/*/Cargo.toml")) + [TRACK / "build.sh", TRACK / "verify.sh", TRACK / "check_independence.py"]
-    files += [TRACK / "SPEC.md", TRACK / "policy-cases.tsv", TRACK / "malformed-cases.json", Path(__file__)]
+    files += [TRACK / "SPEC.md", TRACK / "policy-cases.tsv", TRACK / "malformed-cases.json", Path(__file__).resolve()]
     return {str(path.relative_to(TRACK)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(files)}
 
 

@@ -8,7 +8,8 @@ with no additional implementation or qualification implied by this reorganizatio
 
 
 ROO is a practitioner-method proposal with an executable teaching laboratory.
-v0.1.0 is the first edition (preview); a published snapshot is not a maturity
+Every pre-1.0 edition is a preview, and the version selector and release tag
+identify which one you are reading; a published snapshot is not a maturity
 certification. The project has no documented field study demonstrating that
 ROO improves delivery speed, defect rates, or architectural quality.
 

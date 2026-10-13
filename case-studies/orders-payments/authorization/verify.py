@@ -22,6 +22,25 @@ def rows(path):
     return [line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("#")]
 
 
+def check_empty_scenario_rejected(java, directory):
+    """An empty scenario name must be a diagnosed fixture error in both runners."""
+    malformed = Path(directory) / "empty-scenario.tsv"
+    malformed.write_text("\tobserve\talice\torder-1\n", encoding="utf-8")
+    runners = {
+        "Java": [*java, "roo.authorization.FixtureRunner", str(malformed)],
+        "Rust": ["cargo", "run", "--quiet", "--locked", "--offline", "--example",
+                 "authorization_cases", "--", str(malformed)],
+    }
+    for language, command in runners.items():
+        result = subprocess.run(command, cwd=ROOT, text=True, encoding="utf-8",
+                                capture_output=True, timeout=120, check=False)
+        # Exit 101 is a Rust panic: rejection must be a reported error, not a crash.
+        if result.returncode in (0, 101) or result.stdout or "invalid scenario" not in result.stderr:
+            raise SystemExit(f"FAIL {language} malformed fixture was not rejected diagnostically\n"
+                             f"exit={result.returncode}\n{result.stdout}{result.stderr}")
+        print(f"PASS {language}: empty scenario rejected before execution")
+
+
 def main():
     inputs = rows(HERE / "cases.tsv")
     expected = rows(HERE / "expected.tsv")
@@ -33,6 +52,8 @@ def main():
         fields, output = source.split("\t"), target.split("\t")
         if len(fields) != 4 or len(output) != 5:
             raise SystemExit("FAIL fixture/oracle column count")
+        if not fields[0]:
+            raise SystemExit("FAIL invalid scenario")
         if fields[0] != current:
             if fields[0] in scenarios:
                 raise SystemExit("FAIL noncontiguous scenario")
@@ -57,6 +78,7 @@ def main():
             "Rust": run("cargo", "run", "--quiet", "--locked", "--offline", "--example",
                         "authorization_cases", "--", str(HERE / "cases.tsv")),
         }
+        check_empty_scenario_rejected(java, directory)
     for language, output in outputs.items():
         actual = output.splitlines()
         if actual != expected:

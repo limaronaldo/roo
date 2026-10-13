@@ -553,7 +553,7 @@ sequenceDiagram
         PSP-->>App: Approved or declined
         App->>DB: Persist result
     else response lost
-        Note over App,PSP: Outcome may be unknown; reconcile
+        Note over App,PSP: Outcome may be unknown, so reconcile
     end
 ```
 
@@ -695,9 +695,9 @@ Use the [learning path](07-learning-path.md) for exercises and suggested reading
 ### Relationship and domain
 
 - [ ] The invariant and identity rule are stated before choosing a pointer or class.
-- [ ] Owner/resource custodian is distinct from domain responsibility, stable identity, and caller authorization.
+- [ ] Owner / resource custodian is distinct from Invariant coordinator, Stable identity, and Authorization.
 - [ ] Invariant coordination and caller authorization are separate.
-- [ ] Access mode, validity horizon, execution domain, and failure boundary are explicit.
+- [ ] Access regime, Validity horizon, Execution domain, and Failure boundary are explicit.
 - [ ] Stale, missing, deleted, cross-tenant, and reused IDs have defined handling.
 - [ ] Snapshots state their version or freshness boundary.
 
@@ -733,7 +733,7 @@ Use the [learning path](07-learning-path.md) for exercises and suggested reading
 
 ## 19. Coverage crosswalk and sources
 
-The following crosswalk preserves each of the 29 original topics. The destination numbers refer to this guide's sections.
+The following crosswalk maps the 29 original topics. The destination numbers refer to this guide's sections; the map does not assert that every original statement is retained.
 
 | Original topic | Original section | Coverage here |
 |---|---:|---|

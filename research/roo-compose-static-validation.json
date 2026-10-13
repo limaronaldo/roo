@@ -6,8 +6,8 @@
       "command": [
         "bash",
         "-n",
-        "/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/track/compose.sh",
-        "/Users/ronaldo/Projects/limaronaldo/roo/case-studies/orders-payments/track/docker/entrypoint.sh"
+        "<home>/Projects/limaronaldo/roo/case-studies/orders-payments/track/compose.sh",
+        "<home>/Projects/limaronaldo/roo/case-studies/orders-payments/track/docker/entrypoint.sh"
       ],
       "exit_code": 0,
       "stdout": "",

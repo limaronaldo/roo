@@ -347,17 +347,40 @@ are rejected as `400 InvalidRequest` before SQL. For a no-field request, send
 `{}`; an empty body is not another spelling of an empty object. `GET` accepts no
 body.
 
-`Accept` may be absent, `application/json`, or `*/*`. This educational contract
-does not implement weighted media ranges. Multiple `Content-Type`, `Accept`,
+`Accept` may be absent, `application/json`, or `*/*`, with case-insensitive
+comparison of the media-type token and a literal match for `*/*`. The value is
+not list-parsed, so `application/json, */*` is `406 NotAcceptable`. This
+educational contract does not implement weighted media ranges. Multiple `Content-Type`, `Accept`,
 `Idempotency-Key`, or synthetic control header values are rejected. Normal
 responses carry `Content-Type: application/json`, `Cache-Control: no-store`,
 and `Connection: close`; clients should make a fresh HTTP connection for each
 request.
 
-The parser limits and body cap protect the contract's input shape. They do not
-establish header-count limits or a slow-client defense. Native HTTP parser
-rejections for malformed wire framing and header syntax are outside the
-cross-language JSON parity contract.
+Every non-GET request needs that media type even when its body is empty, so a
+bodyless `PUT` without `Content-Type` is `415 UnsupportedMediaType`. The
+trailing-content rule is the adapter's, not the parser library's: a streaming
+JSON parser accepts several root values in sequence, so the Java adapter asks
+for one more token after the root object's closing brace and rejects any
+remainder.
+
+At most 16 requests hold a body-reader permit, taken before any body byte is
+read; a full gate answers `503 Busy` without reading. Each body read then has an
+absolute five-second deadline. Java closes a timed-out exchange and Rust answers
+`400 InvalidRequest` for a timeout or any non-length-limit read error, so a
+malformed chunked body or a body truncated below its declared `Content-Length`
+is never reported as `413 BodyTooLarge`. The separate 16-request database
+admission still applies after input validation.
+
+The body cap, the reader permits and the deadline bound body buffering and slow
+body readers. They do not establish header-count limits or a general
+connection-establishment cap. Native parser rejections for malformed
+request-line and header syntax remain outside the cross-language JSON parity
+contract. Rust checks the raw request line before URI parsing can discard a
+fragment: that check caps the line at 8192 bytes, bounds it with a five-second
+deadline and 16 reader permits, rejects a literal `#` with
+`400 InvalidRequest`, then replays the consumed bytes to Hyper. HTTP/1
+keep-alive is disabled, so a pipelined or subsequent request on the same
+connection is never dispatched.
 
 Decimal text follows `[+-]?[0-9]+` and is limited to 128 ASCII characters.
 Malformed spelling or overlong text is `400 InvalidRequest`. Syntactically
@@ -507,9 +530,13 @@ that action's own decision while its following snapshot may include another
 worker's later commit. It is not an atomic command receipt.
 
 Both Java entrypoints and the Rust server bound database-bearing work to 16
-concurrent requests. Java's `HttpServer` also uses a separately bounded pool of
-32 workers and a queue capped at 64 requests; the admission gate still limits
-database work to 16. Rust holds one of 16 admission permits through a
+concurrent requests, and bound body reading separately with 16 reader permits
+and a five-second deadline. A client that announces a body and never sends it
+therefore occupies one reader permit for at most five seconds instead of pinning
+a worker thread until the client gives up. Java's `HttpServer` also uses a
+separately bounded pool of 32 workers and a queue capped at 64 requests; the
+admission gate still limits database work to 16. Rust holds one of 16 admission
+permits through a
 `spawn_blocking` PostgreSQL call, keeping the synchronous client off the async
 reactor thread. A full admission gate returns `503 Busy`. No global application
 mutex hides the row-lock schedule. Different requests can therefore contend at
@@ -682,6 +709,12 @@ payment, refund, and add), and four PostgreSQL restart scopes. Across variants,
 all 12 snapshots recovered while the same three HTTP processes returned
 `503 DatabaseUnavailable` during downtime and reconnected afterward.
 
+Those counts describe that dated run and are not refreshed here. The rejection
+matrix and the Java protocol suite have both grown since: the `#` fragment
+target, the bodyless non-GET media-type rejection, the raw-wire Rust transport
+cases, and the body-reader gate were added afterwards. Read the current counts
+from the receipt the harness writes, not from this paragraph.
+
 Java passed 72 pure protocol checks; Rust passed five unit tests plus formatting,
 Clippy, build, and documentation checks. The run verified pinned JDBC and
 Jackson hashes. All owned processes and the synthetic PostgreSQL cluster
@@ -701,7 +734,18 @@ the earlier accepted PostgreSQL evidence remains intact.
 For exact commands, toolchain, and checks, see the dated [run](../../../research/http-run.md),
 [validation](../../../research/http-validation.md), and [qualification log](../../../research/http-checks.log).
 The [integration receipt](../../../research/http-integration-evidence.json) records
-scenarios, statuses, counters, process IDs, and recovery schedules; the
+scenarios, statuses, counters, process IDs, and recovery schedules. It belongs to
+its own dated run, and a later run does not refresh it. Every run writes its log
+to the untracked `.runtime/http-last-run.json`; `verify.py` writes a second copy
+elsewhere only when you name a destination, with `--evidence-output PATH` or the
+`ROO_EVIDENCE_PATH` environment variable, the flag winning over the variable. A
+named destination is validated before the long run starts. So a plain run leaves
+every tracked receipt untouched:
+
+```sh
+bash verify.sh                                            # scratch receipt only
+ROO_EVIDENCE_PATH=/tmp/http-evidence.json bash verify.sh   # plus a named copy
+``` The
 [separate AI-agent review](../../../research/http-review.md) assesses the frozen scope.
 The earlier PostgreSQL evidence remains in the [PostgreSQL tutorial](../postgres/README.md)
 and its own research records. A source route or compiled server alone does not
@@ -713,6 +757,8 @@ check where the server was stopped, what the client observed, and what recovery 
 | File | What it owns |
 |---|---|
 | [HTTP contract](SPEC.md) | Routes, validation, statuses, natural-key idempotency, gates, and acceptance scope |
+| [Pinned parser fetch](fetch_json.py) | Verifies the pinned Jackson bytes and publishes them with one atomic rename |
+| [Pinned parser fetch tests](test_fetch_json.py) | Network-free checks that a failed or unverified publish never leaves a partial jar |
 | [HTTP Java protocol](java/src/roo/postgres/HttpProtocol.java) | Request parsing, validation, snapshot JSON, status/error mapping |
 | [HTTP Java service](java/src/roo/postgres/HttpService.java) | Listener, bounded workers, database admission, routing into accepted application |
 | [Java composition entrypoint](java/src/roo/postgres/HttpCompositionServer.java) | Selects the accepted composition coordinator |

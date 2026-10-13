@@ -121,6 +121,14 @@ can omit `--previous-state`; that preview does **not** prove preservation of
 all previously published editions. CI always captures and checks the baseline.
 Use `--release-tag vX.Y.Z` to additionally require a particular existing tag.
 
+Links from Development and the publisher interface to repository files are
+published as GitHub permalinks pinned to the publisher commit. The build refuses
+a link whose target is absent from that commit or whose working-tree bytes
+differ from it, so commit linked sources before building. A dirty tree whose
+linked targets are unchanged still builds and is recorded as `working_tree_dirty`
+in each manifest. Pass `--output DIR` to build into an empty directory outside
+the repository instead of `.site-build/`.
+
 Tests use disposable Git repositories to exercise semantic ordering, annotated
 and lightweight tags, new editions, frozen content and navigation, selector
 fallback, rejected moved/deleted tags, unavailable baselines, and event

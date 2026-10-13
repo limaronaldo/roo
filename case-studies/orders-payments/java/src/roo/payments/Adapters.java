@@ -69,7 +69,8 @@ public final class Adapters {
             return old == null ? Result.NotFound : old.equals(request) ? Result.Approved : Result.KeyConflict;
         }
     }
-    public static final class Store implements StorePort {
+    /** Package-private: only this package may construct a store or install committed state. */
+    static final class Store implements StorePort {
         private Order committed = new Order(new OrderId("O1"));
         private final List<Event> events = new ArrayList<>();
         private final Set<EventId> acknowledged = new HashSet<>();

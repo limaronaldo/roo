@@ -49,13 +49,22 @@ stderr. Explicit host configuration is validated before binding or connecting.
 
 The [HTTP contract](../SPEC.md) defines the exact routes, request fields, status
 mapping, eleven string snapshot fields, and recovery protocol. Input is immutable
-and validated before SQL. Jackson rejects duplicate properties and trailing JSON;
-strict UTF-8 decoding and an actual streamed 8192-byte cap precede parsing. Up to
-16 database-bearing requests run concurrently, with 32 HTTP worker threads and
-a bounded 64-task executor queue. The additional HTTP workers can reject excess
-database-bearing requests with JSON `503 Busy` while all database slots are occupied.
-When the queue fills the dispatcher handles a task under that same admission
-limit. No application
+and validated before SQL. Jackson rejects duplicate property names; the adapter,
+not Jackson, rejects trailing content after the root object, by asking for one
+more token after its closing brace. Strict UTF-8 decoding and an actual streamed
+8192-byte cap precede parsing.
+
+Metadata is validated before any body byte is read. Up to 16 requests then hold
+a body-reader permit; a full gate answers JSON `503 Busy` without reading, and
+each body read runs under an absolute five-second deadline enforced by a daemon
+timer that closes the exchange. A client that announces a `Content-Length` and
+never sends the body therefore holds one permit for at most five seconds and
+loses its connection, instead of pinning a worker thread until it gives up.
+Separately, up to 16 database-bearing requests run concurrently, with 32 HTTP
+worker threads and a bounded 64-task executor queue. The additional HTTP workers
+can reject excess database-bearing requests with JSON `503 Busy` while all
+database slots are occupied. When the queue fills the dispatcher handles a task
+under that same admission limit. No application
 mutex spans a request; the accepted database locks remain authoritative.
 
 Test controls are absent by default. Set exactly `ROO_HTTP_TEST_MODE=1` to enable

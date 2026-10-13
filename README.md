@@ -92,6 +92,28 @@ Chapter examples and local authorization have [separate checks](CONTRIBUTING.md#
 The [hosted guide](docs/10-github-reproduction.md) explains commit-bound AMD64
 evidence. A successful lab run is evidence for those scenarios and candidate.
 
+## Development improvements
+
+The unreleased review corrections strengthen the reference laboratories and
+the evidence used to assess them:
+
+- Declined refunds leave the order unchanged; redelivering an event with a
+  conflicting fact is detected and keeps the original fact.
+- HTTP handling distinguishes size and framing errors, rejects URL fragments,
+  and bounds slow body readers.
+- Track boundary probes exercise the real runner and server. Docker status
+  comes from the host, with CPU, memory, and process limits checked.
+- CI definitions run the base, PostgreSQL, HTTP, and regression verifiers with
+  distinct receipts. A tracked-file privacy guard checks for local paths and
+  assistant session details.
+
+The [development improvements guide](docs/development-improvements.md) maps
+each correction to its source and checks. The dated port report records 27
+passing local checks; that evidence does not establish hosted qualification
+or behavior on an actual JDK 21 runtime. Consult the [CI runs](https://github.com/limaronaldo/roo/actions)
+for subsequent integration results. These changes are not a new published
+release or an evaluation of the method's efficacy.
+
 ## Status and provenance
 
 v0.4.3 prepares the first human validation round for the v0.4.2 kit, with

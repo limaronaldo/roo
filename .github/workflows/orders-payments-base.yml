@@ -1,0 +1,157 @@
+name: ROO orders and payments base verification
+
+on:
+  pull_request:
+    paths:
+      - 'case-studies/orders-payments/**'
+      - 'src/**'
+      - 'examples/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/orders-payments-base.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'case-studies/orders-payments/**'
+      - 'src/**'
+      - 'examples/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/orders-payments-base.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  verify:
+    name: Base, PostgreSQL, and HTTP verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test atomic downloads and host-owned evidence status
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 -B -m unittest discover -s case-studies/orders-payments/postgres/tests -p 'test_fetch_jdbc.py'
+          python3 -B -m unittest discover -s case-studies/orders-payments/http -p 'test_*.py'
+          python3 -B -m unittest discover -s case-studies/orders-payments/track/tests -p 'test_compose_evidence.py'
+      - name: Install the pinned Rust toolchain
+        run: rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy
+      - name: Fetch locked Rust dependencies
+        env:
+          RUSTUP_TOOLCHAIN: '1.96.0'
+        run: |
+          cargo fetch --locked --manifest-path case-studies/orders-payments/rust/Cargo.toml
+          cargo fetch --locked --manifest-path Cargo.toml
+      - name: Verify the runner-provided JDK 21
+        shell: bash
+        run: |
+          set -euo pipefail
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          javac -version
+          case "$(javac -version 2>&1)" in
+            "javac 21."*) ;;
+            *)
+              echo "Expected runner-provided JDK 21" >&2
+              exit 1
+              ;;
+          esac
+      - name: Verify the base case and root laboratory
+        env:
+          RUSTUP_TOOLCHAIN: '1.96.0'
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          bash case-studies/orders-payments/verify.sh
+      - name: Install the PostgreSQL 18 server tools from the PGDG repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The ubuntu-24.04 image carries PostgreSQL 16 only, and the case study
+          # requires 18. Enable the PGDG repository with the helper that ships in
+          # postgresql-common (its key is referenced through Signed-By).
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-common
+          # The verifier owns a private loopback cluster; skip the packaged default one.
+          echo 'create_main_cluster = false' | sudo tee -a /etc/postgresql-common/createcluster.conf > /dev/null
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-18
+      - name: Select the PostgreSQL 18 server tools
+        id: postgres
+        shell: bash
+        run: |
+          set -euo pipefail
+          bindir=/usr/lib/postgresql/18/bin
+          for tool in postgres initdb pg_ctl psql createdb; do
+            test -x "$bindir/$tool" || {
+              echo "PostgreSQL 18 tools are incomplete: $bindir/$tool" >&2
+              exit 1
+            }
+          done
+          version="$("$bindir/postgres" --version)"
+          case "$version" in
+            *"(PostgreSQL) 18."*) ;;
+            *)
+              echo "Expected the PostgreSQL 18 server tools; found: $version" >&2
+              exit 1
+              ;;
+          esac
+          echo "bindir=$bindir" >> "$GITHUB_OUTPUT"
+          echo "$version"
+      - name: Prepare separate verification evidence directories
+        run: mkdir -p artifacts/roo-track/base/postgres artifacts/roo-track/base/http artifacts/roo-track/base/regression
+      - name: Verify PostgreSQL implementations on the marked loopback cluster
+        env:
+          RUSTUP_TOOLCHAIN: '1.96.0'
+          PYTHONDONTWRITEBYTECODE: '1'
+          ROO_PG_BINDIR: ${{ steps.postgres.outputs.bindir }}
+          ROO_EVIDENCE_PATH: ${{ github.workspace }}/artifacts/roo-track/base/postgres/postgres-integration-evidence.json
+        run: |
+          set -euo pipefail
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          bash case-studies/orders-payments/postgres/verify.sh
+      - name: Verify HTTP implementations on the marked loopback cluster
+        env:
+          RUSTUP_TOOLCHAIN: '1.96.0'
+          PYTHONDONTWRITEBYTECODE: '1'
+          ROO_PG_BINDIR: ${{ steps.postgres.outputs.bindir }}
+          ROO_EVIDENCE_PATH: ${{ github.workspace }}/artifacts/roo-track/base/http/http-integration-evidence.json
+        run: |
+          set -euo pipefail
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          bash case-studies/orders-payments/http/verify.sh
+      - name: Requalify unchanged baselines without replacing historical receipts
+        env:
+          RUSTUP_TOOLCHAIN: '1.96.0'
+          PYTHONDONTWRITEBYTECODE: '1'
+          ROO_PG_BINDIR: ${{ steps.postgres.outputs.bindir }}
+          ROO_EVIDENCE_PATH: ${{ github.workspace }}/artifacts/roo-track/base/regression/http-postgres-regression-evidence.json
+        run: |
+          set -euo pipefail
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          bash case-studies/orders-payments/http/regression.sh
+      - name: Preserve base qualification evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: roo-base-verification-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/roo-track/base/
+          if-no-files-found: warn
+          retention-days: 14
+          include-hidden-files: false

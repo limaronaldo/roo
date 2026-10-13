@@ -31,7 +31,9 @@ provider, persist to a database, or move money.
 > and the standalone recovery example also passed. These are local educational
 > checks only; see [validation evidence](../../research/orders-payments-validation.md)
 > and the [research source ledger](../../research/orders-payments-sources.md)
-> for their scope and limits.
+> for their scope and limits. These counts are the dated record's; later changes
+> have added tests and a third Java negative example (see
+> [Running and validating](#running-and-validating-the-implementations)).
 
 ## Read this as a design method
 
@@ -371,23 +373,23 @@ sequenceDiagram
     Caller->>App: pay(PaymentId, mode, failure)
     App->>Store: load committed Draft
     Store-->>App: detached snapshot
-    App->>Order: validate nonempty Draft; prepare intent
+    App->>Order: validate nonempty Draft, prepare intent
     App->>Store: commit Pending + payment intent
     alt prepare fails
-        Store-->>App: failure; committed Draft retained
+        Store-->>App: failure, committed Draft retained
         App-->>Caller: LocalPrepareFailed
     else intent committed
         Store-->>App: committed Pending snapshot
         App->>Provider: request(PaymentId, OrderId, USD, amount)
         alt provider returns Unknown
             Provider-->>App: Unknown
-            App-->>Caller: Unknown; remain Pending
+            App-->>Caller: Unknown, remain Pending
         else provider returns terminal result
             Provider-->>App: Approved or Declined
-            App->>Order: apply terminal result; create immutable event
+            App->>Order: apply terminal result, create immutable event
             App->>Store: commit terminal state + outbox event
             alt final commit fails
-                Store-->>App: failure; reload Pending
+                Store-->>App: failure, reload Pending
                 App-->>Caller: LocalCommitFailed
             else final commit succeeds
                 Store-->>App: committed terminal snapshot
@@ -821,11 +823,18 @@ The case makes no performance, cost, productivity, or novelty claim.
 
 The Java build compiles the source with `javac --release 21`, all lint warnings
 treated as errors, and runs the explicit `UnitTests` program. It then compiles
-the two negative examples and checks for the intended private-access and
-final-override diagnostics. The sources are in
-[`java/src/roo/payments`](java/src/roo/payments); the negative cases are
-[`PrivateMutation.java`](java/negative/PrivateMutation.java) and
-[`OverrideAlgorithm.java`](java/negative/OverrideAlgorithm.java). The runners
+three negative examples under an English locale and requires each one to fail
+with its intended diagnostic. The sources are in
+[`java/src/roo/payments`](java/src/roo/payments); the negative cases are:
+
+| Negative example | Intended diagnostic | What the rejection shows |
+|---|---|---|
+| [`PrivateMutation.java`](java/negative/PrivateMutation.java) | `add(long,long) has private access` | Code outside `Domain.Order` cannot call its private mutation. |
+| [`OverrideAlgorithm.java`](java/negative/OverrideAlgorithm.java) | `overridden method is final` | A subclass cannot replace the template's final `pay` algorithm. |
+| [`ExternalStoreMutation.java`](java/negative/ExternalStoreMutation.java) | `Store is not public in Adapters; cannot be accessed from outside package` | Code in another package (`attacker`) cannot name or construct the in-memory `Store`, so it cannot call `Store.commit` to overwrite the committed order or add outbox events. |
+
+These are compile-time access checks only: code inside package `roo.payments`
+can still use `Store`, and reflective access is not tested. The runners
 are [`CompositionRunner.java`](java/src/roo/payments/CompositionRunner.java)
 and [`TemplateRunner.java`](java/src/roo/payments/TemplateRunner.java).
 
@@ -860,9 +869,17 @@ positive doctests, and three compile-fail doctests; the independent negative
 checker confirmed exactly the intended codes `E0382`, `E0502`, and `E0624`.
 Formatting, Clippy with warnings denied, and the binary build passed. Each of the
 three runners matched all 42 rows of the independent TSV oracle and rejected all
-10 malformed fixtures with a nonzero result and diagnostic. The original ROO
-laboratory's 10 unit tests, three positive doctests, and four compile-fail
-doctests also remained passing.
+10 malformed fixtures with a nonzero result and diagnostic. At the time of that
+separate run, the original ROO laboratory's 10 unit tests, three positive
+doctests, and four compile-fail doctests also passed.
+
+Later changes add to those counts. The Java `Store` is now package-private and
+the Java build has a third negative example; after `java/build.sh`, the current
+`UnitTests` program reports 296 unit checks
+(`java -cp case-studies/orders-payments/java/build/classes roo.payments.UnitTests`).
+The current root crate runs 14 unit tests, six positive doctests, and four
+compile-fail doctests under `cargo test --locked --offline`; the additions are
+the authorization tests and the chapter doctests that arrived after the record.
 
 The standalone recovery example can be run with:
 

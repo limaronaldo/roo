@@ -135,7 +135,7 @@ this order:
 | `exercise` | `e1` through `e6` |
 | `phase` | The permitted point in the exercise |
 | `state` | Latest observed order state |
-| `total` | Latest observed total in signed 64 bit USD minor units |
+| `total` | Latest observed non-negative signed 64 bit USD minor units |
 | `payment_id` | Persisted payment identity or `-` |
 | `last_result` | Result of the preceding action or `-` |
 | `pending_outbox` | Latest observed number of unacknowledged events |
@@ -145,6 +145,18 @@ this order:
 | `lookup` | `ok` or `unavailable` |
 
 All fields are validated, including fields a particular decision does not use.
+Payment IDs must match `[A-Za-z0-9]{1,64}` or be `-` for absence. Integers use
+ASCII digits with an optional leading `-` and must fit signed 64 bit; `+`,
+whitespace, decimals, and Unicode digits are rejected. Leading zeroes and
+`-0` are accepted and normalized (`0007` becomes `7`, `-0` becomes `0`)
+before the policy runs. `total` and `pending_outbox` must be non-negative.
+States are `Draft`, `Pending`, `Paid`, `Declined`, `Refunding`, and `Refunded`;
+`last_result` is `-` or one of `Added`, `InvalidLine`, `Overflow`,
+`InvalidOrder`, `InvalidState`, `IntentConflict`, `Approved`, `Declined`,
+`Unknown`, `NotFound`, `AlreadyApplied`, `AlreadyDeclined`,
+`LocalPrepareFailed`, `LocalCommitFailed`, `KeyConflict`, `RelayOk`,
+`RelaySendFailed`, and `RelayAckFailed`. The [track contract](SPEC.md) lists
+the complete accepted values and exercise phases.
 The policy returns one LF terminated action and writes no other text to stdout.
 The available actions are `add:UNIT:QUANTITY`,
 `pay:ID:approve:none`, `reconcile:LOOKUP:none`, `relay:ok`, `inspect`, and

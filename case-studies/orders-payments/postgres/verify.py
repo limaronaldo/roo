@@ -5,6 +5,7 @@ Only cluster.py's marked, synthetic, loopback cluster is permitted. Processes
 are interrupted at observed database barriers; elapsed sleeps are not evidence.
 """
 
+import argparse
 import csv
 import io
 import json
@@ -20,6 +21,10 @@ import uuid
 import cluster
 
 CASE = Path(__file__).resolve().parent
+# Ordinary runs keep refreshing the tracked historical receipt. Isolated
+# verification redirects it with --evidence-output or this environment variable.
+EVIDENCE_ENV = "ROO_EVIDENCE_PATH"
+HISTORICAL_EVIDENCE = CASE.parents[2] / "research/postgres-integration-evidence.json"
 HEADER = "scenario state total charge_count refund_count event_count consumer_count pending_outbox last_result payment_id refund_id".split()
 RUN = "pg_" + uuid.uuid4().hex[:12]
 EVIDENCE = {"run_id": RUN, "variants": {}, "barriers": [], "restart": {}, "constraints": []}
@@ -423,7 +428,24 @@ def constraints():
         EVIDENCE["constraints"].append({"case": name, "sqlstate": code})
 
 
+def evidence_destination(cli_path=None, environ=os.environ):
+    """Pick the receipt path: flag, then ROO_EVIDENCE_PATH, then the historical file."""
+    chosen = cli_path if cli_path is not None else (environ.get(EVIDENCE_ENV) or None)
+    destination = Path(chosen) if chosen else HISTORICAL_EVIDENCE
+    if destination.is_dir() or not destination.parent.is_dir():
+        raise ValueError(f"Evidence output must be a file in an existing directory: {destination}")
+    return destination
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--evidence-output",
+        type=Path,
+        help=f"write evidence here (overrides {EVIDENCE_ENV} and the historical default)",
+    )
+    # Resolve before the long run so a bad destination fails fast.
+    output = evidence_destination(parser.parse_args().evidence_output)
     if not cluster.running(cluster.configuration()):
         raise AssertionError("Start the owned cluster and apply schema first")
     classes = str(CASE / "java/build/classes")
@@ -432,21 +454,22 @@ def main():
                Runner("Java inheritance", ["java", "-cp", classes + os.pathsep + jar, "roo.postgres.TemplateRunner"]),
                Runner("Rust composition", [str(CASE / "rust/target/debug/roo-postgres")])]
     for runner in runners:
+        evidence = EVIDENCE["variants"][runner.name]
         fixtures(runner)
-        print(f"PASS {runner.name}: 42 shared oracle rows and 10 malformed fixtures", flush=True)
+        print(f"PASS {runner.name}: {evidence['oracle_rows']} shared oracle rows and {evidence['malformed_fixtures']} malformed fixtures", flush=True)
         persistent_guards(runner)
-        print(f"PASS {runner.name}: 3 persistent boundary guards", flush=True)
+        print(f"PASS {runner.name}: {len(evidence['persistent_guards'])} persistent boundary guards", flush=True)
         concurrency(runner)
-        print(f"PASS {runner.name}: 7 witnessed concurrent schedules", flush=True)
+        print(f"PASS {runner.name}: {len(evidence['concurrency'])} witnessed concurrent schedules", flush=True)
         process_crashes(runner)
-        print(f"PASS {runner.name}: 5 SIGKILL and fresh-process recovery cases", flush=True)
+        print(f"PASS {runner.name}: {len(evidence['process_crashes'])} SIGKILL and fresh-process recovery cases", flush=True)
     restart(runners)
     constraints()
     EVIDENCE["status"] = "PASS"
-    output = CASE.parents[2] / "research/postgres-integration-evidence.json"
     output.write_text(json.dumps(EVIDENCE, indent=2) + "\n")
-    print("PASS PostgreSQL immediate restart: 12 durable snapshots preserved and recovered", flush=True)
-    print("PASS 5 SQL constraint probes; all three implementations satisfy one shared contract", flush=True)
+    recovered = sum(len(variant["restart_scopes"]) for variant in EVIDENCE["variants"].values())
+    print(f"PASS PostgreSQL immediate restart: {recovered} durable snapshots preserved and recovered", flush=True)
+    print(f"PASS {len(EVIDENCE['constraints'])} SQL constraint probes; all {len(runners)} implementations satisfy one shared contract", flush=True)
 
 
 if __name__ == "__main__":

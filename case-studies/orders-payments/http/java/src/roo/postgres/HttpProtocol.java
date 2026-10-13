@@ -135,7 +135,8 @@ final class HttpProtocol {
         String content = header(headers, "Content-Type"), accept = header(headers, "Accept");
         String key = header(headers, "Idempotency-Key");
         if (header(headers, "X-Roo-Test-Drop-Response") != null) throw invalid();
-        if (accept != null && !Set.of("application/json", "*/*").contains(accept.trim())) throw new Rejection(406, "NotAcceptable");
+        if (accept != null && !accept.trim().equalsIgnoreCase("application/json")
+            && !accept.trim().equals("*/*")) throw new Rejection(406, "NotAcceptable");
         if (key != null && (!Set.of("payments", "refunds").contains(route.resource()) || !key.matches("[A-Za-z0-9]{1,64}"))) throw invalid();
         if (!method.equals("GET") && (content == null || !content.trim().matches("(?i)application/json(?:\\s*;\\s*charset\\s*=\\s*utf-8)?")))
             throw new Rejection(415, "UnsupportedMediaType");

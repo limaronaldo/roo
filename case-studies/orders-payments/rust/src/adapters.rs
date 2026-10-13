@@ -2,7 +2,7 @@ use crate::application::{Lookup, Mode, RelayMode};
 use crate::domain::{
     Event, EventId, Order, Outcome, PaymentId, PaymentRequest, RefundId, RefundRequest,
 };
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct OutboxRecord {
@@ -73,7 +73,11 @@ impl Store {
             if mode == RelayMode::SendFail {
                 return Outcome::RelaySendFailed;
             }
-            consumer.deliver(&record.event);
+            let delivered = consumer.deliver(&record.event);
+            if delivered != Outcome::RelayOk {
+                // Conflicting content under a delivered identity stays pending.
+                return delivered;
+            }
             if mode == RelayMode::AckFail {
                 return Outcome::RelayAckFailed;
             }
@@ -189,10 +193,13 @@ impl Provider {
     }
 }
 
-/// Remembers immutable fact identities; duplicate delivery applies no new fact.
+/// Remembers immutable facts by identity. Redelivering an identical fact applies
+/// nothing new; the same `EventId` with different content is a `KeyConflict`,
+/// as in the Java and PostgreSQL consumers.
 #[derive(Debug, Default)]
 pub struct Consumer {
-    seen: HashSet<EventId>,
+    /// Position in `applied` of the fact first delivered under each identity.
+    seen: HashMap<EventId, usize>,
     applied: Vec<Event>,
 }
 impl Consumer {
@@ -202,9 +209,19 @@ impl Consumer {
     pub fn facts(&self) -> &[Event] {
         &self.applied
     }
-    pub fn deliver(&mut self, event: &Event) {
-        if self.seen.insert(event.id().clone()) {
-            self.applied.push(event.clone());
+    /// `RelayOk` for a new fact or an identical redelivery; `KeyConflict` when the
+    /// `EventId` was already delivered with different content. A conflict applies
+    /// nothing and leaves the first fact in place.
+    #[must_use = "KeyConflict means the event was not applied"]
+    pub fn deliver(&mut self, event: &Event) -> Outcome {
+        match self.seen.get(event.id()) {
+            Some(&position) if self.applied[position] == *event => Outcome::RelayOk,
+            Some(_) => Outcome::KeyConflict,
+            None => {
+                self.seen.insert(event.id().clone(), self.applied.len());
+                self.applied.push(event.clone());
+                Outcome::RelayOk
+            }
         }
     }
 }
@@ -359,6 +376,48 @@ mod tests {
         assert_eq!(provider.refund(&refund, Mode::Approve), Outcome::Approved);
         assert_eq!(provider.charge_count(), 1);
         assert_eq!(provider.refund_count(), 1);
+    }
+    /// A payment fact for `payment:p1`; a different `unit` changes the fact's content
+    /// without changing its `EventId`.
+    fn payment_fact(unit: i64, approved: bool) -> Event {
+        let mut order = Order::new(OrderId::new("O1").unwrap());
+        assert_eq!(order.add(unit, 1), Outcome::Added);
+        assert_eq!(
+            order.prepare_payment(PaymentId::new("p1").unwrap()),
+            Outcome::Added
+        );
+        order.finish_payment(approved)
+    }
+    #[test]
+    fn consumer_dedups_identical_redelivery_and_rejects_changed_fact_under_same_id() {
+        let mut consumer = Consumer::default();
+        let first = payment_fact(100, true);
+        assert_eq!(consumer.deliver(&first), Outcome::RelayOk);
+        assert_eq!(consumer.deliver(&first.clone()), Outcome::RelayOk);
+        assert_eq!(consumer.count(), 1);
+        for changed in [payment_fact(250, true), payment_fact(100, false)] {
+            assert_eq!(changed.id(), first.id());
+            assert_eq!(consumer.deliver(&changed), Outcome::KeyConflict);
+        }
+        assert_eq!(consumer.facts(), std::slice::from_ref(&first));
+        assert_eq!(consumer.deliver(&first), Outcome::RelayOk);
+        assert_eq!(consumer.count(), 1);
+    }
+    #[test]
+    fn relay_rejects_same_event_id_with_different_fact_and_keeps_it_pending() {
+        let first = payment_fact(100, true);
+        let mut consumer = Consumer::default();
+        let mut store = Store::new(Order::new(OrderId::new("O1").unwrap()));
+        let mut candidate = store.candidate();
+        candidate.append(payment_fact(250, true));
+        assert!(store.commit(candidate, false));
+        assert_eq!(consumer.deliver(&first), Outcome::RelayOk);
+        assert_eq!(
+            store.relay(&mut consumer, RelayMode::Ok),
+            Outcome::KeyConflict
+        );
+        assert_eq!(store.pending_outbox(), 1);
+        assert_eq!(consumer.facts(), [first]);
     }
     #[test]
     fn failed_store_commit_installs_neither_candidate_order_nor_event() {

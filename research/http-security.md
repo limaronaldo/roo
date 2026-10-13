@@ -175,3 +175,17 @@ initial drain-coverage observation. Executed results for these additions,
 cleanup outcomes, preserved baseline hashes, and final frozen-candidate
 acceptance must still come from root's retained qualification receipts and
 independent final review.
+
+## Note added 2026-10-13: fragment handling in the Rust server
+
+Added after the fact; the text above is left as written.
+
+**The original statement was wrong.** Lines 32-34 say Rust "only excludes non-ASCII, percent, fragment, repeated slash, and trailing slash". The word *fragment* in that list was not true when the review was written (2026-10-11) and was still not true in the published v0.4.3 source (`8bf017f`):
+
+- At `8bf017f`, `route_with_authorization` in `case-studies/orders-payments/http/rust/src/lib.rs` inspects only `uri.path()` and `uri.query()` of an already-parsed `http::Uri`. `git grep -n -E "'#'|\"#\"" 8bf017f -- case-studies/orders-payments/http/rust/src` finds no check for `#` in `lib.rs` or `main.rs`.
+- `http::Uri` discards the fragment while parsing. Checked on 2026-10-13 with a throwaway crate pinned to `http` 1.5.0, the version in this crate's `Cargo.lock`: `/v1/scopes/s/orders#frag` parsed to path `/v1/scopes/s/orders` with no query, and `/v1/scopes/s/orders?x=1#f` to path `/v1/scopes/s/orders`, query `x=1`. A request line carrying a fragment therefore reached routing as if it had none.
+- The contract already required rejection: `http/SPEC.md:87` and `http/README.md:324` list fragments among the rejected forms at `8bf017f`. The Rust server did not implement that.
+
+**Behaviour after the fix (2026-10-13).** The fix landed on 2026-10-13 in this port's working tree and, when this note was written, was an uncommitted change. `request_line` in `case-studies/orders-payments/http/rust/src/main.rs` now reads the raw request line and rejects any request whose target field contains `#` before `http::Uri` or routing see it. The comment in that function states the reason: check the raw second field before `http::Uri` can discard a fragment.
+
+**Not claimed here.** I did not build or run the fixed server, so this note does not say that its tests pass. The Java HTTP path and the other findings in this report are unaffected by this note.

@@ -11,6 +11,7 @@ RULES = {
     "retired seven-field enumeration": r"\b(?:custody|custodian|owner),\s*identity,\s*authority,\s*access,\s*horizon,\s*execution,\s*(?:and\s+)?failure\b",
     "ambiguous matrix header": r"\|\s*authority\s+and\s+access\s*\|",
     "ambiguous laboratory header": r"\|\s*owner\s+and\s+authority\s*\|",
+    "retired grouped relationship heading": r"\|\s*(?:owner\s+and\s+identity|mutation\s+and\s+validity|execution\s+and\s+failure)\s*\|",
     "retired diagram label": r"\[\s*owner,\s*access,\s*and\s+authority\s*\]",
 }
 
@@ -27,7 +28,7 @@ HISTORICAL_QUOTES = {
 
 
 def current_sources(root):
-    """Scan current prose, excluding tagged snapshots and historical records."""
+    """Scan current prose and Rust doc comments, excluding tagged snapshots."""
     for name in ("README.md", "CONTRIBUTING.md", "RELEASING.md", "CHANGELOG.md"):
         path = root / name
         if path.is_file():
@@ -36,6 +37,48 @@ def current_sources(root):
         for path in sorted((root / directory).rglob("*.md")):
             if not EXCLUDED.intersection(path.relative_to(root).parts) and not path.is_symlink():
                 yield path
+    for directory in ("src", "examples"):
+        base = root / directory
+        if base.is_dir():
+            for path in sorted(base.rglob("*.rs")):
+                if not EXCLUDED.intersection(path.relative_to(root).parts) and not path.is_symlink():
+                    yield path
+
+
+def rust_doc_comments(text):
+    """Keep Rust line and block doc comments while preserving source line numbers."""
+    output = []
+    in_block = False
+    for line in text.splitlines(keepends=True):
+        newline = "\n" if line.endswith("\n") else ""
+        body = line[:-1] if newline else line
+        if in_block:
+            content, closed = (body.split("*/", 1)[0], "*/" in body)
+            content = re.sub(r"^\s*\* ?", "", content)
+            output.append(content + newline)
+            if closed:
+                in_block = False
+            continue
+
+        line_doc = re.match(r"^[ \t]*(?:///|//!)[ \t]?(.*)$", body)
+        if line_doc:
+            output.append(line_doc.group(1) + newline)
+            continue
+
+        block_doc = re.match(r"^[ \t]*/\*\*[!]?", body)
+        inner_block_doc = re.match(r"^[ \t]*/\*!", body)
+        if block_doc or inner_block_doc:
+            opening = block_doc or inner_block_doc
+            content = body[opening.end():]
+            closed = "*/" in content
+            if closed:
+                content = content.split("*/", 1)[0]
+            content = re.sub(r"^\s*\* ?", "", content)
+            output.append(content + newline)
+            in_block = not closed
+        else:
+            output.append(newline)
+    return "".join(output)
 
 
 def violations(text, source):
@@ -64,7 +107,10 @@ def check(root=ROOT):
     sources = list(current_sources(root))
     for path in sources:
         source = path.relative_to(root).as_posix()
-        errors.extend(f"{source}:{line}: {message}" for line, message in violations(path.read_text(), source))
+        text = path.read_text()
+        if path.suffix == ".rs":
+            text = rust_doc_comments(text)
+        errors.extend(f"{source}:{line}: {message}" for line, message in violations(text, source))
     return sources, errors
 
 
